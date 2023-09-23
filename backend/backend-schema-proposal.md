@@ -47,6 +47,25 @@ GET `/location`
 - Any timestamp more than 1 min in the future should be discarded
 - Communication can be HTTP or HTTPS, but HTTPS is already being used
 
+GET `/routes`
+
+- Retrieves a predefined list of waypoints along a route
+- Coordinates are defined in a config file
+- Responses are a JSON array of routes in the following format:
+
+```json
+[{
+    name: string
+    waypoints: [{
+        index: int,
+        stop: bool,
+        name: string | undefined,
+        longitude: double,
+        latitude: double,
+    }]
+}]
+```
+
 POST `/request`
 
 - Makes ADA request for the driver
@@ -81,13 +100,6 @@ DELETE `/admin/outage/{route_id}`
 - Communication is HTTPS only
 
 ## Status
-
-GET `/status`
-
-- Reports status of all routes (active or inactive) and an outage message
-  if required
-- Response body is serialized JSON
-- Does not require authentication
 
 GET `/admin/status`
 
