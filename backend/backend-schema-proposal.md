@@ -53,7 +53,7 @@ GET `/routes`
 - Coordinates are defined in a config file
 - Responses are a JSON array of routes in the following format:
 
-```json
+```typescript
 [{
     name: string
     waypoints: [{
