@@ -49,7 +49,7 @@ GET `/location`
 
 GET `/routes`
 
-- Retrieves a predefined list of waypoints along a route
+- Retrieves a predefined list of routes and their waypoints
 - Coordinates are defined in a config file
 - Responses are a JSON array of routes in the following format:
 
