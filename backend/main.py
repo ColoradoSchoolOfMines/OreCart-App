@@ -11,8 +11,15 @@ class VanLocation(BaseModel):
     timestamp: int
 
 
-@app.get("/location/van_id}")
+@app.get("/location/{van_id}")
 def get_van_location(van_id: int) -> VanLocation:
     # get van location and return a proper VanLocation object
 
     return VanLocation(lat=0.0, long=0.0, van_id=van_id, timestamp=0)
+
+@app.post("/location/{van_id}")
+def post_van_location(van_id: int, van_location: VanLocation):
+
+    # update van location in database
+
+    return {"message": "Location updated successfully."}
