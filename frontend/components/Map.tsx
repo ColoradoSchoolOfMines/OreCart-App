@@ -3,18 +3,25 @@ import { Marker, Region, LatLng } from 'react-native-maps';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { Coordinate } from '../services/location'
 
+// Used by default when location is unavailable.
+const MAPLE_PLAZA: Coordinate = {
+  lat: 39.7512546,
+  lon: -105.2195490
+}
+
 export function Map(props: MapProps) {
   return (
     <MapView style={styles.map}
-      initialRegion={getNearbyRegion(props.currentLocation)}>
-      <Marker coordinate={asLatLng(props.currentLocation)} />
+      region={getNearbyRegion(props.currentLocation ? props.currentLocation : MAPLE_PLAZA)}
+      initialRegion={getNearbyRegion(MAPLE_PLAZA)}>
+      {props.currentLocation && <Marker coordinate={asLatLng(props.currentLocation)} />}
     </MapView>
   )
 }
 
 export interface MapProps {
   style: ViewStyle,
-  currentLocation: Coordinate
+  currentLocation: Coordinate | null
 }
 
 const styles = StyleSheet.create({

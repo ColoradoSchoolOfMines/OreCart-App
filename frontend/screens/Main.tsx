@@ -4,10 +4,19 @@ import { useState, useEffect } from 'react';
 import { Coordinate, getUserLocation } from '../services/location';
 
 export function Main() {
+  let [location, setLocation] = useState<Coordinate | null>(null)
+
+  useEffect(() => {
+    (async () => {
+      const coords = await getUserLocation();
+      setLocation(coords);
+    })();
+  }, []);
+
   return (
     <View>
       <Map style={StyleSheet.absoluteFillObject} 
-        currentLocation={{ lat: 39.749729, lon: -105.222740}} />
+        currentLocation={location ? location : { lat: 39.7512546, lon: -105.2195490 }} />
     </View>
   )
 }
