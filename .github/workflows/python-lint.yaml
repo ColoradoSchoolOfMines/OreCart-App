@@ -11,7 +11,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10.13"
-      - run: pip install black mypy isort pylint
+      - run: pip install -r ./backend/requirements.txt
       - run: black --check --diff ./backend/
       - run: isort --check --diff ./backend/
       - run: mypy ./backend/
