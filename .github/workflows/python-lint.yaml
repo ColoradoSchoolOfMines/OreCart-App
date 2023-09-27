@@ -11,11 +11,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.10.13"
-          max-line-length: "120"
-      - run: pip install black mypy isort
+      - run: pip install black mypy isort pylint
       - run: black --check --diff ./backend/
       - run: isort --check --diff ./backend/
       - run: mypy ./backend/
-
-  
-  
+      - run: pylint -E ./backend/
