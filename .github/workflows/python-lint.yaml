@@ -7,14 +7,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: psf/black@stable
-          with:
-            options: "--check --verbose"
-            src: "./backend"
-      - uses: actions/checkout@v2
-      - uses: actions/setup-python@v2
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
         with:
-          python-version: 3.10
-      - uses: isort/isort-action@master
-        with:
-            requirementsFiles: "requirements.txt requirements-test.txt"
+          python-version: "3.10.13"
+          max-line-length: "120"
+      - run: pip install black mypy isort
+      - run: black --check --diff ./backend/
+      - run: isort --check --diff ./backend/
+      - run: mypy ./backend/
+
+  
+  
