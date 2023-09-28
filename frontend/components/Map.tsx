@@ -1,7 +1,7 @@
 import MapView from 'react-native-maps'
 import { StyleSheet, type ViewStyle } from 'react-native'
 
-export function Map (props: MapProps) {
+export function Map (props: MapProps): any {
   return (
     <MapView style={styles.map} />
   )
