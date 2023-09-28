@@ -1,0 +1,17 @@
+name: Lint
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Node environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - run: npm ci
+      - run: ./node_modules/.bin/eslint ./frontend/App.tsx
+      - run: ./node_modules/.bin/eslint ./frontend/screens/*
+      - run: ./node_modules/.bin/eslint ./frontend/components/*
