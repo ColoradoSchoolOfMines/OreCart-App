@@ -1,9 +1,9 @@
-name: Lint
+name: Lint-Node
 
 on: [push, pull_request]
 
 jobs:
-  lint:
+  lint-node:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -11,7 +11,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-      - run: npm ci
-      - run: ./node_modules/.bin/eslint ./frontend/App.tsx
-      - run: ./node_modules/.bin/eslint ./frontend/screens/*
-      - run: ./node_modules/.bin/eslint ./frontend/components/*
+      - name: clean install
+        working-directory: ./frontend/
+        run: npm ci
+      - name: run eslint
+        working-directory: ./frontend/
+        run: |
+          ./node_modules/.bin/eslint ./App.tsx
+          ./node_modules/.bin/eslint ./screens/*
+          ./node_modules/.bin/eslint ./components/*
