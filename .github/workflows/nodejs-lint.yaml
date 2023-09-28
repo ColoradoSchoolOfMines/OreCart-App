@@ -17,6 +17,4 @@ jobs:
       - name: run eslint
         working-directory: ./frontend/
         run: |
-          ./node_modules/.bin/eslint ./App.tsx
-          ./node_modules/.bin/eslint ./screens/*
-          ./node_modules/.bin/eslint ./components/*
+          npx eslint *.ts? */*.ts? --debug
