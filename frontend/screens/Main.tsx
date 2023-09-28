@@ -3,6 +3,9 @@ import { Map } from '../components/Map'
 import { useState, useEffect } from 'react';
 import { Coordinate, subscribeUserLocation } from '../services/location';
 
+/**
+ * The main screen containing the map and bottom sheet pattern.
+ */
 export function Main() {
   let [location, setLocation] = useState<Coordinate | null>(null)
 
