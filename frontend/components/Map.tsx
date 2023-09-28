@@ -12,8 +12,8 @@ const MAPLE_PLAZA: Coordinate = {
 export function Map(props: MapProps) {
   return (
     <MapView style={styles.map}
-      region={getNearbyRegion(props.currentLocation ? props.currentLocation : MAPLE_PLAZA)}
-      initialRegion={getNearbyRegion(MAPLE_PLAZA)}>
+      initialRegion={getNearbyRegion(MAPLE_PLAZA)}
+      region={getNearbyRegion(props.currentLocation ? props.currentLocation : MAPLE_PLAZA)}>
       {props.currentLocation && <Marker coordinate={asLatLng(props.currentLocation)} />}
     </MapView>
   )
