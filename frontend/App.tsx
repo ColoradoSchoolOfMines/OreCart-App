@@ -1,8 +1,11 @@
 import { StyleSheet, SafeAreaView } from 'react-native'
 import * as NavigationBar from 'expo-navigation-bar'
-import { Main } from './screens/Main'
+import { Main } from './src/Main'
 
-// TODO/Stretch: Implement "true" edge-to-edge functionality (requires native code)
+// -----
+// DO NOT PUT ANY SUBSTANTIAL UI OR LOGIC INTO THIS FILE. ONLY INCLUDE SYSTEM CONFIGURATION.
+// -----
+
 NavigationBar.setBackgroundColorAsync('white').catch(console.error)
 
 export default function App (): any {
