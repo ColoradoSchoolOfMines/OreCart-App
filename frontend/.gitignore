@@ -8,6 +8,15 @@ node_modules/
 dist/
 web-build/
 
+# Yarn
+.yarn/*
+.pnp.
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
 # Native
 *.orig.*
 *.jks
