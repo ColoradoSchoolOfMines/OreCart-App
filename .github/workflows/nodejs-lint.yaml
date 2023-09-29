@@ -17,4 +17,4 @@ jobs:
       - name: run eslint
         working-directory: ./frontend/
         run: |
-          npx eslint *.ts? */*.ts? --debug
+          npx eslint App.tsx `find ./src -type f \( -name "*.ts" -o -name "*.tsx" \)`
