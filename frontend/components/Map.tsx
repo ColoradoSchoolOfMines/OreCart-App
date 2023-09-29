@@ -1,4 +1,4 @@
-import MapView, { Marker, type Region, type LatLng } from 'react-native-maps'
+import MapView, { Marker, type Region } from 'react-native-maps'
 import { StyleSheet, type ViewStyle } from 'react-native'
 import { type Coordinate } from '../services/location'
 
@@ -7,8 +7,8 @@ import { type Coordinate } from '../services/location'
  * the statue. Used by default when the location cannot be obtained yet.
  */
 const MAPLE_PLAZA: Coordinate = {
-  lat: 39.7512546,
-  lon: -105.2195490
+  latitude: 39.7512546,
+  longitude: -105.2195490
 }
 
 /**
@@ -18,9 +18,9 @@ const MAPLE_PLAZA: Coordinate = {
 export function Map (props: MapProps): any {
   return (
     <MapView style={styles.map}
-      initialRegion={getNearbyRegion(MAPLE_PLAZA)}
-      region={getNearbyRegion(props.currentLocation ?? MAPLE_PLAZA)}>
-      {(props.currentLocation !== null) && <Marker coordinate={coordinateToLatLng(props.currentLocation)} />}
+      initialRegion={getNearbyRegion(MAPLE_PLAZA, RANGE_NEARBY)}
+      region={getNearbyRegion(props.currentLocation ?? MAPLE_PLAZA, RANGE_NEARBY)}>
+      {(props.currentLocation !== null) && <Marker coordinate={props.currentLocation} />}
     </MapView>
   )
 }
@@ -43,20 +43,16 @@ const styles = StyleSheet.create({
   }
 })
 
-function getNearbyRegion (coord: Coordinate): Region {
+// Close enough to see nearby roads and OreCarts.
+const RANGE_NEARBY = 0.002
+
+function getNearbyRegion (coord: Coordinate, range: number): Region {
   // +/- 0.001 is generally close enough to see nearby roads but not so far out as to show
   // irrelevant information.
   return {
-    latitude: coord.lat,
-    longitude: coord.lon,
-    latitudeDelta: 0.002,
-    longitudeDelta: 0.002
-  }
-}
-
-function coordinateToLatLng (coord: Coordinate): LatLng {
-  return {
-    latitude: coord.lat,
-    longitude: coord.lon
+    latitude: coord.latitude,
+    longitude: coord.longitude,
+    latitudeDelta: range,
+    longitudeDelta: range
   }
 }

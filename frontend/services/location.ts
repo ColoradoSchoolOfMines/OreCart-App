@@ -5,8 +5,8 @@ import * as Location from 'expo-location'
  * mapping library.
  */
 export interface Coordinate {
-  lat: number
-  lon: number
+  latitude: number
+  longitude: number
 }
 
 /**
@@ -32,19 +32,10 @@ export async function subscribeUserLocation (cb: LocationCallback): Promise<Loca
   // to the handle object Expo returns, hence why we return it.
   return await Location.watchPositionAsync(
     { accuracy: ACCURACY },
-    newLocation => { cb(locationToCoordinate(newLocation)) }
+    newLocation => { cb(newLocation.coords) }
   )
 }
 
 // This seems to be the only accuracy that's at least somewhat reliable for our purposes. Takes a few seconds
 // to initialize and then updates every second or so.
 const ACCURACY = Location.Accuracy.BestForNavigation
-
-// --- Conversions ---
-
-function locationToCoordinate (location: Location.LocationObject): Coordinate {
-  return {
-    lat: location.coords.latitude,
-    lon: location.coords.longitude
-  }
-}
