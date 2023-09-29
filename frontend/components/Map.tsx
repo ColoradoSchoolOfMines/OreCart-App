@@ -6,7 +6,6 @@ import { Coordinate } from '../services/location'
 /**
  * Maple plaza is the circular area near the student center & brown hall that has
  * the statue. Used by default when the location cannot be obtained yet.
- * TODO: Show a loading screen instead of defaulting to a random location.
  */
 const MAPLE_PLAZA: Coordinate = {
   lat: 39.7512546,

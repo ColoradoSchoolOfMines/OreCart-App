@@ -25,7 +25,6 @@ export async function subscribeUserLocation(cb: LocationCallback): Promise<Locat
   const { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== 'granted') {
     // Permission was not granted, we can't do anything.
-    // TODO: Show prompt for locations when not granted.
     cb(null);
   }
 
