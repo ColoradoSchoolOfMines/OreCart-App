@@ -11,6 +11,9 @@ const MAPLE_PLAZA: Coordinate = {
   longitude: -105.2195490
 }
 
+// Close enough to see nearby roads and OreCarts.
+const RANGE_NEARBY = 0.002
+
 /**
  * Wraps the expo {@interface MapView} with additional functionality defined
  * in {@interface MapProps}.
@@ -43,8 +46,6 @@ const styles = StyleSheet.create({
   }
 })
 
-// Close enough to see nearby roads and OreCarts.
-const RANGE_NEARBY = 0.002
 
 function getNearbyRegion (coord: Coordinate, range: number): Region {
   // +/- 0.001 is generally close enough to see nearby roads but not so far out as to show
