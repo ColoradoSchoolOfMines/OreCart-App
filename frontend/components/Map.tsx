@@ -1,6 +1,6 @@
 import MapView from 'react-native-maps';
 import { Marker, Region, LatLng } from 'react-native-maps';
-import { StyleSheet, ViewStyle } from 'react-native';
+import { StyleSheet, type ViewStyle } from 'react-native';
 import { Coordinate } from '../services/location'
 
 /**
@@ -16,7 +16,7 @@ const MAPLE_PLAZA: Coordinate = {
  * Wraps the expo {@interface MapView} with additional functionality defined
  * in {@interface MapProps}.
  */
-export function Map(props: MapProps) {
+export function Map(props: MapProps): any {
   return (
     <MapView style={styles.map}
       initialRegion={getNearbyRegion(MAPLE_PLAZA)}

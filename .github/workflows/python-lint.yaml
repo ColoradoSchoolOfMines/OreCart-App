@@ -1,0 +1,18 @@
+name: Lint-Python
+
+on: [push, pull_request]
+
+jobs:
+  lint-python:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10.13"
+      - run: pip install -r ./backend/requirements.txt
+      - run: black --check --diff ./backend/
+      - run: isort --check --diff ./backend/
+      - run: mypy ./backend/
+      - run: pylint -E ./backend/

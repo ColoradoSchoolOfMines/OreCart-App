@@ -1,14 +1,23 @@
 # Ore Cart Backend
 
-## Development Overview
+## Development Overview 🌟
+
 
 The backend will be used to store locations of the shuttles, serve that data to the frontend, and make statistics about the Ore Cart queryable.
 
-## Development Expectations
+## Development Expectations 📌
 
-### Use a Python Virtual Environment
+### Dependencies 📦
 
-For consistency in our development experience we will be using a python virtual environment (venv). Venv's are useful because python packages have conflicts ocassionally and venvs isolate packages.
+Keeping track of dependencies can be hard and frustrating. As such, we have a `requirements.txt` file that can be used to install the dependencies with `pip install -r requirements.txt`. If you add a dependency and know how to update the `requirements.txt` accordingly please do, if you do not know how to update it, run `pip freeze > requirements.txt`. 
+
+One side note regarding updating the `requirements.txt`, please do not add anything unnecessary to it! We want to minimize bloat for everyone, but also because our CI build needs to install the requirements.txt frequently, so adding unnecessary dependencies will slow down our CI.
+
+---
+
+### Use a Python Virtual Environment 🐍
+
+For consistency in our development experience we will be using a python virtual environment (venv). Venv's are useful because python packages have conflicts ocassionally and venvs isolate packages. 👩‍💻
 
 To create a venv run the following command (this may vary slightly depending on your installation of python):
 
@@ -28,10 +37,23 @@ When you are done working on this project, deactivate the venv. The following co
 deactivate
 ```
 
-### Formatting, Linting, Typing, and More
+---
 
-To keep our code consistent and clean, we will use a variety of python packages to help us. 
+### Formatting, Linting, Typing, and More 🛠️
 
-We will be using `isort` to keep imports nice and wrangled. We will be using `mypy` for type checking. We will be using `black` for formatting. We will be using `Pylint` for linting.
+Our repository has CI running and checking the code passes several checks (black, mypy, isort, and pylint). If you want to know what the checks are and how to check locally read below! 🧹
 
-More details to come on this, but it should be fairly easy.
+One issue in large python projects is inconsistent code formatting. Thankfully we have black! black is code formatter for python that can be run via the command line. In our requirements.txt, which you should keep up to date as it changes, is the correct packages for black (and all the other tools in this section). Our CI runs `black --check` which will cause the CI to fail if the code is not formatted. Conveniently you can format your code with `black filepath`. ✨
+
+Another issue in python is types (or the lack thereof). mypy is a tool that keeps our types in check. Our CI build runs `mypy --check`. While mypy doesn't have an automatic fix, it should be easy to maintain compliant code. 📑
+
+A different issue regarding formatting is import statements. In python they can get messy easily, and black doesn't force them to be in any order. That's where isort comes in. isort forces a specific order for import statements, don't worry though you can automagically sort your imports by running `isort filepath`. Our CI build also runs `isort --check`. 📦
+
+Lastly, we are using pylint to verify that our python doesn't have any obvious errors. Our CI is configured to test with `pylint -E` which will only fail if there are errors detected. 🐞
+
+---
+
+Feel free to reach out if you have any questions or need further clarification on any of these development expectations! 🙌
+
+
+
