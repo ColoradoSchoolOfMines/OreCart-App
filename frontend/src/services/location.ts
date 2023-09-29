@@ -21,7 +21,7 @@ export type LocationCallback = (location: Coordinate | null) => void
  * @returns The {@interface Location.LocationSubscription} object that must be freed with
  * {@function Location.LocationSubscription.remove} when the subscribing component is unmounted.
  */
-export async function subscribeUserLocation (cb: LocationCallback): Promise<Location.LocationSubscription> {
+export async function subscribeUserLocation(cb: LocationCallback): Promise<Location.LocationSubscription> {
   const { status } = await Location.requestForegroundPermissionsAsync()
   if (status !== 'granted') {
     // Permission was not granted, we can't do anything.

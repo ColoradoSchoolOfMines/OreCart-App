@@ -8,7 +8,7 @@ import { Main } from './src/Main'
 
 NavigationBar.setBackgroundColorAsync('white').catch(console.error)
 
-export default function App (): any {
+export default function App(): React.ReactElement<void> {
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
       <Main />

@@ -18,7 +18,7 @@ const RANGE_NEARBY = 0.002
  * Wraps the expo {@interface MapView} with additional functionality defined
  * in {@interface MapProps}.
  */
-export function Map (props: MapProps): any {
+export function Map(props: MapProps): React.ReactElement<MapProps> {
   return (
     <MapView style={styles.map}
       initialRegion={getNearbyRegion(MAPLE_PLAZA, RANGE_NEARBY)}
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
   }
 })
 
-function getNearbyRegion (coord: Coordinate, range: number): Region {
+function getNearbyRegion(coord: Coordinate, range: number): Region {
   // +/- 0.001 is generally close enough to see nearby roads but not so far out as to show
   // irrelevant information.
   return {
