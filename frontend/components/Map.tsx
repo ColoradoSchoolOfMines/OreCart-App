@@ -46,7 +46,6 @@ const styles = StyleSheet.create({
   }
 })
 
-
 function getNearbyRegion (coord: Coordinate, range: number): Region {
   // +/- 0.001 is generally close enough to see nearby roads but not so far out as to show
   // irrelevant information.
