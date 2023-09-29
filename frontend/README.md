@@ -6,7 +6,7 @@ The Ore Cart App's frontend is using react native and typescript.
 
 ## Requirements
 - Node 18.15.0 
-- npm or Yarn
+- npm or yarn
 
 ## Install Dependencies
 - download Expo Go on your mobile device
