@@ -1,12 +1,12 @@
 import { StyleSheet, View } from 'react-native'
-import { Map } from '../components/Map'
+import { Map } from './components/Map'
 import { useState, useEffect } from 'react'
-import { type Coordinate, subscribeUserLocation } from '../services/location'
+import { type Coordinate, subscribeUserLocation } from './services/location'
 
 /**
  * The main screen containing the map and bottom sheet pattern.
  */
-export function Main (): any {
+export function Main(): React.ReactElement<void> {
   const [location, setLocation] = useState<Coordinate | null>(null)
 
   useEffect(() => {
