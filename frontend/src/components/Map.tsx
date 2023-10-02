@@ -1,58 +1,52 @@
-import MapView, { Marker, type Region } from 'react-native-maps'
-import { StyleSheet, type ViewStyle } from 'react-native'
+import MapView, { type Region } from 'react-native-maps'
+import { StyleSheet, type ViewProps, Platform } from 'react-native'
 import { type Coordinate } from '../services/location'
+import { useRef } from 'react'
 
-/**
- * Maple plaza is the circular area near the student center & brown hall that has
- * the statue. Used by default when the location cannot be obtained yet.
- */
-const MAPLE_PLAZA: Coordinate = {
-  latitude: 39.7512546,
-  longitude: -105.2195490
+
+const GOLDEN: Region = {
+  latitude: 39.749675,
+  longitude: -105.222606,
+  latitudeDelta: 0.05,
+  longitudeDelta: 0.05
 }
 
-// Close enough to see nearby roads and OreCarts.
-const RANGE_NEARBY = 0.002
-
 /**
- * Wraps the expo {@interface MapView} with additional functionality defined
- * in {@interface MapProps}.
+ * Wraps the expo {@interface MapView} with additional functionality.
  */
-export function Map(props: MapProps): React.ReactElement<MapProps> {
+export function Map(props: ViewProps): React.ReactElement<ViewProps> {
+  const mapRef = useRef<MapView>(null)
+
+  function followUserLocationAndroid(location: Coordinate | undefined): void {
+    // We want to make sure we won't snap back to the user location if they decide to pan around,
+    // so check if that's the case before panning.
+    if (location !== undefined && mapRef.current != null)  {
+      mapRef.current.animateCamera({
+        center: location,
+        zoom: 17
+      })
+    }
+  }
+
   return (
-    <MapView style={styles.map}
-      initialRegion={getNearbyRegion(MAPLE_PLAZA, RANGE_NEARBY)}
-      region={getNearbyRegion(props.currentLocation ?? MAPLE_PLAZA, RANGE_NEARBY)}>
-      {(props.currentLocation !== null) && <Marker coordinate={props.currentLocation} />}
-    </MapView>
+    <MapView style={styles.innerMap}
+      ref={mapRef}
+      initialRegion={GOLDEN}
+      showsUserLocation={true}
+      // Android only.
+      showsMyLocationButton={false}
+      // followsUserLocation is only available on iOS, so we must reimplement the behavior on Android
+      // with onUserLocationChange.
+      followsUserLocation={true}
+      onUserLocationChange={Platform.select({ 
+        android: event => { followUserLocationAndroid(event.nativeEvent.coordinate) } 
+      })} />
   )
 }
 
-export interface MapProps {
-  /** The style to apply to the view. */
-  style: ViewStyle
-  /**
-   * The current user {@interface Coordinate} to show in the map.
-   * This will both center the region shown to the location, and
-   * also place a pin at the location.
-   */
-  currentLocation: Coordinate | null
-}
-
 const styles = StyleSheet.create({
-  map: {
+  innerMap: {
     width: '100%',
     height: '100%'
   }
 })
-
-function getNearbyRegion(coord: Coordinate, range: number): Region {
-  // +/- 0.001 is generally close enough to see nearby roads but not so far out as to show
-  // irrelevant information.
-  return {
-    latitude: coord.latitude,
-    longitude: coord.longitude,
-    latitudeDelta: range,
-    longitudeDelta: range
-  }
-}

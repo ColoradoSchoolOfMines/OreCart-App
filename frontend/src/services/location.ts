@@ -1,5 +1,8 @@
 import * as Location from 'expo-location'
 
+// NOTE: This is not currently used, but will be in the future so that other components can have location
+// access without hoisting the map location state.
+
 /**
  * Implemenetation of latitude/longitude-based coordinates independent from any particular
  * mapping library.
@@ -28,8 +31,8 @@ export async function subscribeUserLocation(cb: LocationCallback): Promise<Locat
     cb(null)
   }
 
-  // Component need the ability to remove their location subscription once unmounted, which requires access
-  // to the handle object Expo returns, hence why we return it.
+  // Component needs the ability to remove their location subscription once unmounted, which requires access
+  // the subscription object.
   return await Location.watchPositionAsync(
     { accuracy: ACCURACY },
     newLocation => { cb(newLocation.coords) }
