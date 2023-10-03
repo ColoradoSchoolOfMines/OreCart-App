@@ -3,7 +3,6 @@
 ## Hardware->Backend
 
 POST `/location/{van_id}`
-seperate
 
 - `van_id` is an 8-bit integer
 - Message body is `(lat, lon, timestamp)`, where `lat` & `lon` are 64-bit doubles,
