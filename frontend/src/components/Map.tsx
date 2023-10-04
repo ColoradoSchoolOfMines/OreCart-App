@@ -2,12 +2,13 @@ import MapView, { type Region } from 'react-native-maps'
 import { StyleSheet, type ViewProps, Platform } from 'react-native'
 import { type Coordinate } from '../services/location'
 import { useRef, useState } from 'react'
+import { PROVIDER_GOOGLE } from 'react-native-maps'
 
 const GOLDEN: Region = {
   latitude: 39.749675,
   longitude: -105.222606,
-  latitudeDelta: 0.05,
-  longitudeDelta: 0.05
+  latitudeDelta: 0.005,
+  longitudeDelta: 0.005
 }
 
 /**
@@ -31,6 +32,7 @@ export function Map(props: ViewProps): React.ReactElement<ViewProps> {
   return (
     <MapView style={styles.innerMap}
       ref={mapRef}
+      provider={PROVIDER_GOOGLE}
       initialRegion={GOLDEN}
       showsUserLocation={true}
       // Android only.
@@ -41,7 +43,7 @@ export function Map(props: ViewProps): React.ReactElement<ViewProps> {
       onUserLocationChange={Platform.select({ 
         android: event => { followUserLocationAndroid(event.nativeEvent.coordinate) } 
       })}      
-      onRegionChange={(_region, details) => { 
+      onRegionChange={(_region, details) => {
         // If the user is panning around, we don't want to snap back to their location.
         // However, when we automatically pan to the location as part of the followsUserLocation
         // reimplementation on android, this callback would be triggered and disable future pans.
@@ -61,3 +63,4 @@ const styles = StyleSheet.create({
     height: '100%'
   }
 })
+ 
