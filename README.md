@@ -8,5 +8,5 @@ The frontend and backend folders have READMEs with more information about develo
 
 ## General Requirements
 
-Please use feature branches and PRs. Do not commit to Main!
+Please use branches for each new feature and submit a pull request when ready. Do not commit to Main!
 
