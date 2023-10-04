@@ -1,0 +1,10 @@
+# Leads
+* @OreCart/leads
+
+# general
+backend/ @OreCart/backend @OreCart/code-reviewers
+frontend/ @OreCart/frontend @OreCart/code-reviewers
+
+# DevOps Things
+.github/ @tbwrigh
+docker-compose.yml @tbwrigh
