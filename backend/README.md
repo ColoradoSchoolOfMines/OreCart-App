@@ -28,7 +28,7 @@ python3 -m venv venv
 Before you start working on this project, activate the venv. To that run the following command (again this may vary by system):
 
 ```
-./venv/bin/activate
+source venv/bin/activate
 ```
 
 When you are done working on this project, deactivate the venv. The following command deactivate the venv (This should be fairly standardized):
