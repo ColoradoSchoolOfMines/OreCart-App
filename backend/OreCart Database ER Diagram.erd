@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<diagram version="1" name="OreCart Database ER Diagram.erd">
+	<entities>
+		<data-source id="postgres-jdbc-18af8a188e9-15129d006b58dfe2">
+			<entity id="1" name="alerts" fq-name="public.alerts" order="0" font="Segoe UI:9:0" x="1180" y="480">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="2" name="analytics" fq-name="public.analytics" order="1" font="Segoe UI:9:0" x="780" y="180">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="3" name="route_disables" fq-name="public.route_disables" order="2" font="Segoe UI:9:0" x="920" y="560">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="4" name="route_stops" fq-name="public.route_stops" order="3" font="Segoe UI:9:0" x="760" y="720">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="5" name="route_vans" fq-name="public.route_vans" order="4" font="Segoe UI:9:0" x="880" y="420">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="6" name="routes" fq-name="public.routes" order="5" font="Segoe UI:9:0" x="580" y="560">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="7" name="schedules" fq-name="public.schedules" order="6" font="Segoe UI:9:0" x="600" y="760">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="8" name="stops" fq-name="public.stops" order="7" font="Segoe UI:9:0" x="960" y="820">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="9" name="vans" fq-name="public.vans" order="8" font="Segoe UI:9:0" x="1140" y="280">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+			<entity id="10" name="waypoints" fq-name="public.waypoints" order="9" font="Segoe UI:9:0" x="960" y="700">
+				<path name="public"/>
+				<path name="postgres"/>
+			</entity>
+		</data-source>
+	</entities>
+	<relations>
+		<relation name="route_disables_alert_id_fkey" fq-name="public.route_disables.route_disables_alert_id_fkey" type="fk" pk-ref="1" fk-ref="3"/>
+		<relation name="analytics_route_id_fkey" fq-name="public.analytics.analytics_route_id_fkey" type="fk" pk-ref="6" fk-ref="2"/>
+		<relation name="route_disables_route_id_fkey" fq-name="public.route_disables.route_disables_route_id_fkey" type="fk" pk-ref="6" fk-ref="3"/>
+		<relation name="route_stops_route_id_fkey" fq-name="public.route_stops.route_stops_route_id_fkey" type="fk" pk-ref="6" fk-ref="4"/>
+		<relation name="route_vans_route_id_fkey" fq-name="public.route_vans.route_vans_route_id_fkey" type="fk" pk-ref="6" fk-ref="5"/>
+		<relation name="schedules_route_id_fkey" fq-name="public.schedules.schedules_route_id_fkey" type="fk" pk-ref="6" fk-ref="7"/>
+		<relation name="waypoints_route_id_fkey" fq-name="public.waypoints.waypoints_route_id_fkey" type="fk" pk-ref="6" fk-ref="10"/>
+		<relation name="route_stops_stop_id_fkey" fq-name="public.route_stops.route_stops_stop_id_fkey" type="fk" pk-ref="8" fk-ref="4"/>
+		<relation name="analytics_van_id_fkey" fq-name="public.analytics.analytics_van_id_fkey" type="fk" pk-ref="9" fk-ref="2"/>
+		<relation name="route_vans_van_id_fkey" fq-name="public.route_vans.route_vans_van_id_fkey" type="fk" pk-ref="9" fk-ref="5"/>
+	</relations>
+</diagram>
