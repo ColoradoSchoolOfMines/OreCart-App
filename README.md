@@ -10,3 +10,10 @@ The frontend and backend folders have READMEs with more information about develo
 
 Please use branches for each new feature and submit a pull request when ready. Do not commit to Main!
 
+## General Set Up
+
+For this project you will need `docker`, `nodejs`, and `python`.
+
+To start up the postgresql, run `docker-compose up -d`.
+
+To stop the postgresql, run `docker-compose down`.
