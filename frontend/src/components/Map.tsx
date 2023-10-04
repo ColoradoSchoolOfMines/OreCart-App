@@ -3,7 +3,6 @@ import { StyleSheet, type ViewProps, Platform } from 'react-native'
 import { type Coordinate } from '../services/location'
 import { useRef, useState } from 'react'
 
-
 const GOLDEN: Region = {
   latitude: 39.749675,
   longitude: -105.222606,
@@ -34,7 +33,6 @@ export function Map(props: ViewProps): React.ReactElement<ViewProps> {
       ref={mapRef}
       initialRegion={GOLDEN}
       showsUserLocation={true}
-      onRegionChange={() => { setUserRegionChanged(true) }}
       // Android only.
       showsMyLocationButton={false}
       // followsUserLocation is only available on iOS, so we must reimplement the behavior on Android
@@ -42,7 +40,18 @@ export function Map(props: ViewProps): React.ReactElement<ViewProps> {
       followsUserLocation={!userRegionChanged}
       onUserLocationChange={Platform.select({ 
         android: event => { followUserLocationAndroid(event.nativeEvent.coordinate) } 
-      })} />
+      })}      
+      onRegionChange={(_region, details) => { 
+        // If the user is panning around, we don't want to snap back to their location.
+        // However, when we automatically pan to the location as part of the followsUserLocation
+        // reimplementation on android, this callback would be triggered and disable future pans.
+        // To prevent this, we check if the user is panning around by checking if the change was a
+        // gesture. This is not supported on iOS, but since we will only be panning the camera around
+        // on android, this is fine.
+        if (details.isGesture ?? true) {
+          setUserRegionChanged(true) 
+        }
+      }} />
   )
 }
 
