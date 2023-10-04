@@ -1,4 +1,4 @@
-CREATE TABLE public.analytics (
+CREATE TABLE public.ridership (
 	id serial PRIMARY KEY,
 	van_id int NOT NULL,
 	route_id int NOT NULL,
