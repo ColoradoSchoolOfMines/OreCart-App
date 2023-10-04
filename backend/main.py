@@ -1,17 +1,18 @@
 import os
+
 import psycopg2
+from dotenv import load_dotenv
 from fastapi import FastAPI
 from pydantic import BaseModel
-from dotenv import load_dotenv
 
 load_dotenv()
 
 app = FastAPI()
 
+
 @app.on_event("startup")
 def startup_event():
     global conn, cursor
-
 
     conn = psycopg2.connect(
         database=os.getenv("database"),
