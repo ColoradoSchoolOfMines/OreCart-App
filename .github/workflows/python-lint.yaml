@@ -16,4 +16,4 @@ jobs:
       - run: black --check --diff ./backend/
       - run: isort --check --diff ./backend/
       - run: mypy ./backend/
-      - run: pylint -E ./backend/
+      - run: pylint --rcfile ./backend/pylintrc -E ./backend/
