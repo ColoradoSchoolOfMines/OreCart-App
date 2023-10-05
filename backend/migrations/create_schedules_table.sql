@@ -1,4 +1,4 @@
-CREATE TABLE public.schedules (
+CREATE TABLE IF NOT EXISTS public.schedules (
 	id serial PRIMARY KEY,
 	route_id int NOT NULL,
 	dow int NOT NULL CHECK (dow >= 0 AND dow <= 6), -- Sunday is 0 (https://www.postgresql.org/docs/8.1/functions-datetime.html)

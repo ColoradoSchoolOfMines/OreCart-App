@@ -1,4 +1,4 @@
-CREATE TABLE public.route_disables (
+CREATE TABLE IF NOT EXISTS public.route_disables (
 	id serial PRIMARY KEY,
 	alert_id int NOT NULL,
 	route_id int NOT NULL,

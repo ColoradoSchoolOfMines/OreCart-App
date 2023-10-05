@@ -1,4 +1,4 @@
-CREATE TABLE public.waypoints (
+CREATE TABLE IF NOT EXISTS public.waypoints (
 	id serial PRIMARY KEY,
 	route_id int NOT NULL,
 	lat float8 NOT NULL,

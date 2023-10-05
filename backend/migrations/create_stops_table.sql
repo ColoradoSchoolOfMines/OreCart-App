@@ -1,4 +1,4 @@
-CREATE TABLE public.stops (
+CREATE TABLE IF NOT EXISTS public.stops (
 	id serial PRIMARY KEY,
 	name varchar(255) NOT NULL,
 	lat float8 NOT NULL,

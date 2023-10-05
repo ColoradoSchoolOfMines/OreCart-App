@@ -1,4 +1,4 @@
-CREATE TABLE public.ridership (
+CREATE TABLE IF NOT EXISTS public.ridership (
 	id serial PRIMARY KEY,
 	van_id int NOT NULL,
 	route_id int NOT NULL,

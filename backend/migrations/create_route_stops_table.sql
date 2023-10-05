@@ -1,4 +1,4 @@
-CREATE TABLE public.route_stops (
+CREATE TABLE IF NOT EXISTS public.route_stops (
 	id serial PRIMARY KEY,
 	route_id int NOT NULL,
 	stop_id int NOT NULL,

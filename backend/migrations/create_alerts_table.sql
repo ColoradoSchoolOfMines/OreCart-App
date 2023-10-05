@@ -1,4 +1,4 @@
-CREATE TABLE public.alerts (
+CREATE TABLE IF NOT EXISTS IF NOT EXISTS public.alerts (
 	id serial PRIMARY KEY,
 	text VARCHAR(500) NOT NULL,
 	start_datetime timestamp NOT NULL,
