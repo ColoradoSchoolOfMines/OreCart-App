@@ -14,13 +14,7 @@ app = FastAPI()
 def startup_event():
     global conn, cursor
 
-    conn = psycopg2.connect(
-        database=os.getenv("database"),
-        host=os.getenv("db_host"),
-        user=os.getenv("db_user"),
-        password=os.getenv("db_password"),
-        port=os.getenv("db_port"),
-    )
+    conn = psycopg2.connect(url=os.getenv("DATABASE_URL"))
     cursor = conn.cursor()
 
 
