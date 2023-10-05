@@ -11,14 +11,15 @@ from alembic import op
 
 
 # revision identifiers, used by Alembic.
-revision: str = '174e5a759f2d'
-down_revision: Union[str, None] = 'dc6fb3eee9e3'
+revision: str = "174e5a759f2d"
+down_revision: Union[str, None] = "dc6fb3eee9e3"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute("""
+    op.execute(
+        """
         CREATE TABLE IF NOT EXISTS public.stops (
 	        id serial PRIMARY KEY,
 	        name varchar(255) NOT NULL,
@@ -28,10 +29,13 @@ def upgrade() -> None:
 	        UNIQUE (name),
 	        UNIQUE (lat, lon)
         );
-    """);
+    """
+    )
 
 
 def downgrade() -> None:
-    op.execute("""
+    op.execute(
+        """
         DROP TABLE IF EXISTS public.stops;
-    """);
+    """
+    )

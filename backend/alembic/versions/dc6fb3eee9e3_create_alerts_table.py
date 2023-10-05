@@ -10,24 +10,28 @@ from typing import Sequence, Union
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = 'dc6fb3eee9e3'
+revision: str = "dc6fb3eee9e3"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute("""
+    op.execute(
+        """
         CREATE TABLE IF NOT EXISTS public.alerts (
 	        id serial PRIMARY KEY,
 	        text VARCHAR(500) NOT NULL,
 	        start_datetime timestamp NOT NULL,
 	        end_datetime timestamp NOT NULL CHECK (end_datetime > start_datetime)
         );
-    """);
+    """
+    )
 
 
 def downgrade() -> None:
-    op.execute("""
+    op.execute(
+        """
         DROP TABLE IF EXISTS public.alerts;
-    """);
+    """
+    )
