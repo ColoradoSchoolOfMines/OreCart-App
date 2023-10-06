@@ -12,6 +12,7 @@ app = FastAPI()
 
 app.include_router(location.router)
 
+
 @app.on_event("startup")
 def startup_event():
     global conn

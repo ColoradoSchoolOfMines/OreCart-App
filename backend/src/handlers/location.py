@@ -1,10 +1,8 @@
-from pydantic import BaseModel
 from fastapi import APIRouter
+from pydantic import BaseModel
 
-router = APIRouter(
-    prefix="/location",
-    tags=["location"]
-)
+router = APIRouter(prefix="/location", tags=["location"])
+
 
 class VanLocation(BaseModel):
     lat: float
