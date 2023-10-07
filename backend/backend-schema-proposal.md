@@ -89,8 +89,8 @@ GET `/alert`
 ```typescript
 interface Alert {
     body: string,
-    startTimestampMillis: number,
-    endTimestampMillis: number
+    startTimestampSecs: number,
+    endTimestampSecs: number
 }
 ```
 
@@ -106,7 +106,7 @@ POST `/request`
 ```typescript
 interface Request {
     location: Coordinate,
-    timestamp: number
+    timestampSecs: number
 }
 ```
 
@@ -129,8 +129,8 @@ type Outages = Outage[]
 interface Outage {
     id: number,
     body: string,
-    startTimestampMillis: number,
-    endTimestampMillis: number,
+    startTimestampSecs: number,
+    endTimestampSecs: number,
     routesDisabled: number[] // Route ID list
     stopsDisabled: number[] // Stop ID list
 }
@@ -151,8 +151,8 @@ POST `/admin/outage/`
 ```typescript
 interface Outage {
     body: string,
-    startTimestampMillis: number,
-    endTimestampMillis: number,
+    startTimestampSecs: number,
+    endTimestampSecs: number,
     routesDisabled: number[] // Route ID list
     stopsDisabled: number[] // Stop ID list
 }
