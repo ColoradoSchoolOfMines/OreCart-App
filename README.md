@@ -1,19 +1,28 @@
-# Ore Cart App
+# Ore Cart App [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+The master monorepo for all OreCart app software! The OreCart app includes a backend made with [FastAPI](https://fastapi.tiangolo.com) and a crossplatform mobile app made with [React-Native](https://reactnative.dev).
 
-For more details please see the Google Drive.
+For full documentation, please see our Google Drive (contributors can gain access by talking with the leads). The frontend and backend folders have READMEs with more information about developing in each as well.
 
-The frontend and backend folders have READMEs with more information about developing in each as well.
+## General Environment Setup
 
-## General Requirements
+For this project you will need [Docker](https://www.docker.com), [Node.js](https://nodejs.org/en), and [Python 3](https://www.python.org).
 
-Please use branches for each new feature and submit a pull request when ready. Do not commit to Main!
+To start up the PostgreSQL database, run `docker-compose up -d`.
 
-## General Set Up
+To stop the PostgreSQL database, run `docker-compose down`.
 
-For this project you will need `docker`, `nodejs`, and `python`.
+## Contribution Guidelines
 
-To start up the postgresql, run `docker-compose up -d`.
+Contributors (aka "The OreCart Team") must be approved by the current [OreCart/leads](https://github.com/orgs/OreCart/teams/leads) team.
+Outside contributors are not allowed unless explicit approval is granted by leads.
 
-To stop the postgresql, run `docker-compose down`.
+Do not push code directly to main -- the branch is locked for this anyways! Please use branches for each new feature and submit a pull request when ready.
+Branch names should be short but descriptive, and all lowercase.
+
+Each pull request requires a **minimum of two relevant reviewers** (leads or team members) for approval and merging.
+
+## Legal Notices
+
+Any references to Colorado School of Mines (aka "Mines", "CSM"), Innov8x, or official OreCart brand identity are used with
+permission for this project, however, this project is not owned by Mines or Mines ACM itself. See the [LICENSE](https://github.com/OreCart/OreCart-App/blob/main/LICENSE) for more details.
