@@ -1,7 +1,7 @@
 """create route_disables table
 
 Revision ID: e74cdc7a92b6
-Revises: 25aed98a245a
+Revises: 3e3261e602b0
 Create Date: 2023-10-04 17:40:30.795226
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "e74cdc7a92b6"
-down_revision: Union[str, None] = "25aed98a245a"
+down_revision: Union[str, None] = "3e3261e602b0"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

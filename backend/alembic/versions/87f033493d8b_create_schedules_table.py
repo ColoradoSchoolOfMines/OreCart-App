@@ -1,7 +1,7 @@
 """create schedules table
 
 Revision ID: 87f033493d8b
-Revises: 311f80f8b8dd
+Revises: f1a02e4febad
 Create Date: 2023-10-04 17:35:29.449383
 
 """
@@ -11,7 +11,7 @@ from alembic import op
 
 # revision identifiers, used by Alembic.
 revision: str = "87f033493d8b"
-down_revision: Union[str, None] = "311f80f8b8dd"
+down_revision: Union[str, None] = "f1a02e4febad"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
