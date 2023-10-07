@@ -36,6 +36,21 @@ When you are done working on this project, deactivate the venv. The following co
 ```
 deactivate
 ```
+---
+
+### Running the server
+
+To run the backend, ensure your venv is running:
+```
+source venv/bin/activate
+```
+
+Then execute the following command:
+```
+uvicorn main:app --reload
+```
+
+The server will be running on `localhost:8000`!
 
 ---
 
