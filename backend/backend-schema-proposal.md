@@ -53,16 +53,24 @@ interface Location {
 }
 ``
 
-GET `/routes`
+GET `/dashboard`
 
-- Retrieves a predefined list of routes and their waypoints
+- Retrieves all data to show on the main screen of the frontend
 - Coordinates are defined in a config file
+- Alerts with start times in the future or end times in the past are discarded
 - Response body is defined in JSON as per the following typescript spec:
 
 ```typescript
-interface Routes {
+interface Dashboard {
     routes: Route[],
-    stops: Stop[]
+    stops: Stop[],
+    alert: Alert | null
+}
+
+interface Alert {
+    body: string,
+    startTimestampSecs: number,
+    endTimestampSecs: number
 }
 
 interface Route {
@@ -77,20 +85,6 @@ interface Stop {
     name: string,
     active: boolean,
     location: Coordinate
-}
-```
-
-GET `/alert`
-
-- Retrieves the currently active alert that may be disabling a stop or route.
-- Alerts with start times in the future or end times in the past are discarded.
-- Response body is defined in JSON as per the following typescript spec:
-
-```typescript
-interface Alert {
-    body: string,
-    startTimestampSecs: number,
-    endTimestampSecs: number
 }
 ```
 
