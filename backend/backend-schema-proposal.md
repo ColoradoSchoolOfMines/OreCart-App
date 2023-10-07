@@ -6,7 +6,7 @@ POST `/location/{van_id}`
 
 - `van_id` is an 8-bit integer
 - Message body is `(lat, lon, timestamp)`, where `lat` & `lon` are 64-bit doubles,
-  and `timestamp` is a UNIX timestamp
+  and `timestamp` is a UNIX timestamp in milliseconds
   - This minimizes network usage
 - The server should discard any timestamp earlier than the most recent
 - The server should discard any timestamp more than 1 min into the future
@@ -19,7 +19,7 @@ POST `/stats/ridership/{van_id}`
 
 - `van_id` is an 8-bit integer
 - Request body is `(ridership, timestamp)`, where `ridership` is an 8-bit int
-  and `timestamp` is a UNIX timestamp
+  and `timestamp` is a UNIX timestamp in milliseconds
 - The server should discard any timestamp earlier than the most recent
 - The server should discard any timestamp more than 1 min into the future
   (and add admin status message?)
@@ -30,7 +30,7 @@ GET `/request/{van_id}`
 
 - `van_id` is an 8-bit integer
 - Subscribes the hardware to SSE for ADA requests
-- Responses are in the format `(lat, lon)` where `lat` & `lon` are 64-bit doubles
+- Responses are in the format `(lat, lon, timestamp)` where `lat` & `lon` are 64-bit doubles and `timestamp` is a 64-bit unix time value in milliseconds
 - Message authentication header is a bearer token that is unique per van
 - Communication is HTTPS only
 
