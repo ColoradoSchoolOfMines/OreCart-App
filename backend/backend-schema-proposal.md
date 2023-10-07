@@ -101,7 +101,7 @@ POST `/request`
 - Any request with a timestamp more than 10 min out-of-date (or in the future)
   should be discarded
 - Communication is HTTPS only
-- Response body is defined in JSON as per the following typescript spec:
+- Request body is defined in JSON as per the following typescript spec:
 
 ```typescript
 interface Request {
