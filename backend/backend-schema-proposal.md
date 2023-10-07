@@ -162,27 +162,64 @@ DELETE `/admin/outages/{outage_id}`
   allowing admin actions
 - Communication is HTTPS only
 
+## Vans
+
+GET `/admin/vans`
+- Reports current active vans (and assigned route IDs)
+- Message authentication header is a bearer token with specific permissions
+  allowing admin actions
+- Communication is HTTPS only
+- Response body is defined in JSON as per the following typescript spec:
+
+```typescript
+type Vans = Van[]
+
+interface Van {
+    id: number
+    routes: number[] // Route ID list, empty if not running
+}
+```
+
+POST `/admin/vans/{van_id}`
+- Change assigned routes of specified van
+- Message authentication header is a bearer token with specific permissions
+  allowing admin actions
+- Communication is HTTPS only
+- Request body is defined in JSON as per the following typescript spec:
+
+```typescript
+type Van = number[] // Route ID list, empty if not running
+```
+
+GET `/stats/ridership/{van_id}`
+- Gets ridership information from the van with the specified ID
+- This is likely an expensive calculation, hence why it's in it's own route
+- Message authentication header is a bearer token with specific permissions
+  allowing admin actions
+- Communication is HTTPS only
+- Response body is defined in JSON as per the following typescript spec:
+
+```typescript
+// NOTE: Not final format, unsure exactly what we should be calculating or whether we want to directly provide each
+// datapoint to stakeholders
+type Ridership = RidershipLog[]
+
+interface RidershipEntry {
+    timestampMillis: number,
+    location: Coordinate,
+    entered: number,
+    exited: number
+}
+```
+
 ## Status
 
 GET `/admin/status`
 
 - Reports status + server health info
   - Uptime
-  - Current active vans (and IDs)
   - Current number of clients subscribed
-  - Current ridership figures from each van
 - Response body is serialized JSON w/ an array holding data per van
-- Message authentication header is a bearer token with specific permissions
-  allowing admin actions
-- Communication is HTTPS only
-
-GET `/admin/status/{van_id}`
-
-- Reports detailed van status
-  (is the same as `/admin/status`, but only the specified van)
-  - Is van active?
-  - Current ridership figures from the van
-- Response body is serialized JSON
 - Message authentication header is a bearer token with specific permissions
   allowing admin actions
 - Communication is HTTPS only
