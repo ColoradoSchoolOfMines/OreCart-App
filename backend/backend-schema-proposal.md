@@ -40,6 +40,7 @@ GET `/location`
 
 - Subscribes the client to SSE triggered by new coordinates to any van
 - Any response with an earlier timestamp than the most recent should be discarded
+- Excessive time drifting will be detected on backend and reported in admin panel
 - Any timestamp more than 1 min in the future should be discarded
 - Communication can be HTTP or HTTPS, but HTTPS is already being used
 - Response body is defined in JSON as per the following typescript spec:
