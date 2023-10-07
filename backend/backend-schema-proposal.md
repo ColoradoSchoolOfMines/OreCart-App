@@ -69,7 +69,7 @@ interface Route {
     id: number,
     name: string,
     active: boolean,
-    waypoints: Coordinate[] // Implicitly ordered by index in baackend
+    waypoints: Coordinate[] // Already ordered by index in backend
 }
 
 interface Stop {
