@@ -21,8 +21,8 @@ def upgrade() -> None:
         """
         CREATE TABLE IF NOT EXISTS public.vans (
 	        id serial PRIMARY KEY,
-	        wheelchair bool NOT NULL,
 	        route_id int,
+	        wheelchair bool NOT NULL,
 	        FOREIGN KEY (route_id)
 		        REFERENCES routes (id)
 		        ON DELETE SET NULL
