@@ -39,59 +39,128 @@ GET `/request/{van_id}`
 GET `/location`
 
 - Subscribes the client to SSE triggered by new coordinates to any van
-- Responses are in the format `(lat, lon, route_id, van_id, timestamp)` where
-  `van_id` & `route_id` are 8-bit ints, `lat` & `lon` are 64-bit doubles, and
-  `timestamp` is a UNIX timestamp
 - Any response with an earlier timestamp than the most recent should be discarded
 - Any timestamp more than 1 min in the future should be discarded
 - Communication can be HTTP or HTTPS, but HTTPS is already being used
+- Response body is defined in JSON as per the following typescript spec:
+
+``ts
+interface Location {
+    vanId: number,
+    routeId: number,
+    location: Coordinate,
+    timestampMillis: number
+}
+``
 
 GET `/routes`
 
 - Retrieves a predefined list of routes and their waypoints
 - Coordinates are defined in a config file
-- Responses are a JSON array of routes in the following format:
+- Response body is defined in JSON as per the following typescript spec:
 
 ```typescript
-[{
-    name: string
-    waypoints: [{
-        index: int,
-        stop: bool,
-        name: string | undefined,
-        longitude: double,
-        latitude: double,
-    }]
-}]
+interface Routes {
+    routes: Route[],
+    stops: Stop[]
+}
+
+interface Route {
+    id: number,
+    name: string,
+    active: boolean,
+    waypoints: Coordinate[] // Implicitly ordered by index in baackend
+}
+
+interface Stop {
+    id: number,
+    name: string,
+    active: boolean,
+    location: Coordinate
+}
+```
+
+GET `/alert`
+
+- Retrieves the currently active alert that may be disabling a stop or route.
+- Alerts with start times in the future or end times in the past are discarded.
+- Response body is defined in JSON as per the following typescript spec:
+
+```typescript
+interface Alert {
+    body: string,
+    startTimestampMillis: number,
+    endTimestampMillis: number
+}
 ```
 
 POST `/request`
 
 - Makes ADA request for the driver
 - The handler for this will decide which van is most appropriate and send an SSE
-- Request body is in the format `(lat, lon, timestamp)` where `lat` & `lon` are
-  64-bit doubles describing the client's coordinates
 - Any request with a timestamp more than 10 min out-of-date (or in the future)
   should be discarded
 - Communication is HTTPS only
+- Response body is defined in JSON as per the following typescript spec:
+
+```typescript
+interface Request {
+    location: Coordinate,
+    timestamp: number
+}
+```
 
 ## Outages
 
-POST `/admin/outage/{route_id}/{end_datetime}`
+GET `/admin/outage`
 
-- `route_id` is an 8-bit integer
-- `end_datetime` is a UNIX timestamp
-  representing the end of the outage
+- Gets all scheduled route/stop outages to occur at some point in the future
+- Stops reporting the location of all vans registered to a route
+- Requests to a route will override any previous requests
+- Adds message to all status requests
+- Message authentication header is a bearer token with specific permissions
+  allowing admin actions
+- Can schedule an outage into the future, or schedule one now
+- Response body is defined in JSON as per the following typescript spec:
+
+```typescript
+type Outages = Outage[]
+
+interface Outage {
+    id: number,
+    body: string,
+    startTimestampMillis: number,
+    endTimestampMillis: number,
+    routesDisabled: number[] // Route ID list
+    stopsDisabled: number[] // Stop ID list
+}
+```
+
+POST `/admin/outage/`
+
+- Schedules a route/stop outage to occur at some point in the future
 - Stops reporting the location of all vans registered to a route
 - Requests to a route will override any previous requests
 - Adds message to all status requests
 - Message authentication header is a bearer token with specific permissions
   allowing admin actions
 - Communication is HTTPS only
+- Can schedule an outage into the future, or schedule one now
+- Request body is defined in JSON as per the following typescript spec:
 
-DELETE `/admin/outage/{route_id}`
+```typescript
+interface Outage {
+    body: string,
+    startTimestampMillis: number,
+    endTimestampMillis: number,
+    routesDisabled: number[] // Route ID list
+    stopsDisabled: number[] // Stop ID list
+}
+```
 
-- `route_id` is an 8-bit integer
+DELETE `/admin/outage/{outage_id}`
+
+- `outage_id` is an 8-bit integer
 - Stops reporting the location of all vans registered to a route
 - Adds message to all status requests
 - Message authentication header is a bearer token with specific permissions
