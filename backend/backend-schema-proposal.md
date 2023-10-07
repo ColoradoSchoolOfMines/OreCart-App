@@ -134,7 +134,7 @@ interface Outage {
 POST `/admin/outages/`
 
 - Schedules a route/stop outage to occur at some point in the future
-- Stops reporting the location of all vans registered to a route
+- Stops reporting the location of all vans registered to a route or stop
 - Requests to a route will override any previous requests
 - Adds message to all status requests
 - Message authentication header is a bearer token with specific permissions
