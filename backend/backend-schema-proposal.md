@@ -44,7 +44,7 @@ GET `/location`
 - Communication can be HTTP or HTTPS, but HTTPS is already being used
 - Response body is defined in JSON as per the following typescript spec:
 
-``ts
+``typescript
 interface Location {
     vanId: number,
     routeId: number,
