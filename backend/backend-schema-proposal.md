@@ -131,7 +131,7 @@ interface Outage {
 }
 ```
 
-POST `/admin/outage/`
+POST `/admin/outages/`
 
 - Schedules a route/stop outage to occur at some point in the future
 - Stops reporting the location of all vans registered to a route
@@ -153,7 +153,7 @@ interface Outage {
 }
 ```
 
-DELETE `/admin/outage/{outage_id}`
+DELETE `/admin/outages/{outage_id}`
 
 - `outage_id` is an 8-bit integer
 - Stops reporting the location of all vans registered to a route
