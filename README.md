@@ -2,15 +2,15 @@
 
 The master monorepo for all OreCart app software! The OreCart app includes a backend made with [FastAPI](https://fastapi.tiangolo.com) and a crossplatform mobile app made with [React-Native](https://reactnative.dev).
 
-For full documentation, please see our Google Drive (contributors can gain access by talking with the leads). The frontend and backend folders have READMEs with more information about developing in each as well.
+For full documentation and project details, please see our Google Drive (contributors can gain access by talking with the leads). The frontend and backend folders have READMEs with more information about developing in each as well.
 
 ## General Environment Setup
 
 For this project you will need [Docker](https://www.docker.com), [Node.js](https://nodejs.org/en), and [Python 3](https://www.python.org).
 
-To start up the PostgreSQL database, run `docker-compose up -d`.
+To start up the PostgreSQL database, run `docker compose up -d`.
 
-To stop the PostgreSQL database, run `docker-compose down`.
+To stop the PostgreSQL database, run `docker compose down`.
 
 ## Contribution Guidelines
 
