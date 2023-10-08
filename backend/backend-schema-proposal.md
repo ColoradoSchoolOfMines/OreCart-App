@@ -51,7 +51,7 @@ interface Location {
   vanId: number;
   routeId: number;
   location: Coordinate;
-  timestampMillis: number;
+  timestamp: Date;
 }
 ```
 
@@ -71,8 +71,8 @@ interface Dashboard {
 
 interface Alert {
   body: string;
-  startTimestampSecs: number;
-  endTimestampSecs: number;
+  startTimestamp: Date;
+  endTimestamp: Date;
 }
 
 interface Route {
@@ -102,7 +102,7 @@ POST `/request`
 ```typescript
 interface Request {
   location: Coordinate;
-  timestampSecs: number;
+  timestamp: Date;
 }
 ```
 
@@ -125,8 +125,8 @@ type Outages = Outage[];
 interface Outage {
   id: number;
   body: string;
-  startTimestampSecs: number;
-  endTimestampSecs: number;
+  startTimestamp: Date;
+  endTimestamp: Date;
   routesDisabled: number[]; // Route ID list
   stopsDisabled: number[]; // Stop ID list
 }
@@ -147,8 +147,8 @@ POST `/admin/outages/`
 ```typescript
 interface Outage {
   body: string;
-  startTimestampSecs: number;
-  endTimestampSecs: number;
+  startTimestamp: Date;
+  endTimestamp: Date;
   routesDisabled: number[]; // Route ID list
   stopsDisabled: number[]; // Stop ID list
 }
@@ -197,19 +197,19 @@ type Van = number[]; // Route ID list, empty if not running
 GET `/stats/ridership/{van_id}`
 
 - Gets ridership information from the van with the specified ID
-- This is likely an expensive calculation, hence why it's in it's own route
+- This is likely an expensive calculation, hence why it's in its own route
 - Message authentication header is a bearer token with specific permissions
   allowing admin actions
 - Communication is HTTPS only
 - Response body is defined in JSON as per the following typescript spec:
 
 ```typescript
-// NOTE: Not final format, unsure exactly what we should be calculating or whether we want to directly provide each
-// datapoint to stakeholders
+// NOTE: Not final format, unsure exactly what we should be calculating or
+whether we want to directly provide each datapoint to stakeholders
 type Ridership = RidershipLog[];
 
 interface RidershipEntry {
-  timestampMillis: number;
+  timestamp: Date;
   location: Coordinate;
   entered: number;
   exited: number;
