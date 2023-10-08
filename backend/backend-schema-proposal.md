@@ -30,7 +30,8 @@ GET `/request/{van_id}`
 
 - `van_id` is an 8-bit integer
 - Subscribes the hardware to SSE for ADA requests
-- Responses are in the format `(lat, lon, timestamp)` where `lat` & `lon` are 64-bit doubles and `timestamp` is a 64-bit unix time value in milliseconds
+- Responses are in the format `(lat, lon, timestamp)` where `lat` & `lon` are
+  64-bit doubles and `timestamp` is a 64-bit UNIX timestamp in milliseconds
 - Message authentication header is a bearer token that is unique per van
 - Communication is HTTPS only
 
@@ -47,10 +48,10 @@ GET `/location`
 
 ```typescript
 interface Location {
-    vanId: number,
-    routeId: number,
-    location: Coordinate,
-    timestampMillis: number
+  vanId: number;
+  routeId: number;
+  location: Coordinate;
+  timestampMillis: number;
 }
 ```
 
@@ -63,29 +64,29 @@ GET `/dashboard`
 
 ```typescript
 interface Dashboard {
-    routes: Route[],
-    stops: Stop[],
-    alert: Alert | null
+  routes: Route[];
+  stops: Stop[];
+  alert: Alert | null;
 }
 
 interface Alert {
-    body: string,
-    startTimestampSecs: number,
-    endTimestampSecs: number
+  body: string;
+  startTimestampSecs: number;
+  endTimestampSecs: number;
 }
 
 interface Route {
-    id: number,
-    name: string,
-    active: boolean,
-    waypoints: Coordinate[] // Already ordered by index in backend
+  id: number;
+  name: string;
+  active: boolean;
+  waypoints: Coordinate[]; // Already ordered by index in backend
 }
 
 interface Stop {
-    id: number,
-    name: string,
-    active: boolean,
-    location: Coordinate
+  id: number;
+  name: string;
+  active: boolean;
+  location: Coordinate;
 }
 ```
 
@@ -100,8 +101,8 @@ POST `/request`
 
 ```typescript
 interface Request {
-    location: Coordinate,
-    timestampSecs: number
+  location: Coordinate;
+  timestampSecs: number;
 }
 ```
 
@@ -119,15 +120,15 @@ GET `/admin/outage`
 - Response body is defined in JSON as per the following typescript spec:
 
 ```typescript
-type Outages = Outage[]
+type Outages = Outage[];
 
 interface Outage {
-    id: number,
-    body: string,
-    startTimestampSecs: number,
-    endTimestampSecs: number,
-    routesDisabled: number[] // Route ID list
-    stopsDisabled: number[] // Stop ID list
+  id: number;
+  body: string;
+  startTimestampSecs: number;
+  endTimestampSecs: number;
+  routesDisabled: number[]; // Route ID list
+  stopsDisabled: number[]; // Stop ID list
 }
 ```
 
@@ -145,11 +146,11 @@ POST `/admin/outages/`
 
 ```typescript
 interface Outage {
-    body: string,
-    startTimestampSecs: number,
-    endTimestampSecs: number,
-    routesDisabled: number[] // Route ID list
-    stopsDisabled: number[] // Stop ID list
+  body: string;
+  startTimestampSecs: number;
+  endTimestampSecs: number;
+  routesDisabled: number[]; // Route ID list
+  stopsDisabled: number[]; // Stop ID list
 }
 ```
 
@@ -165,6 +166,7 @@ DELETE `/admin/outages/{outage_id}`
 ## Vans
 
 GET `/admin/vans`
+
 - Reports current active vans (and assigned route IDs)
 - Message authentication header is a bearer token with specific permissions
   allowing admin actions
@@ -172,15 +174,16 @@ GET `/admin/vans`
 - Response body is defined in JSON as per the following typescript spec:
 
 ```typescript
-type Vans = Van[]
+type Vans = Van[];
 
 interface Van {
-    id: number
-    routes: number[] // Route ID list, empty if not running
+  id: number;
+  routes: number[]; // Route ID list, empty if not running
 }
 ```
 
 POST `/admin/vans/{van_id}`
+
 - Change assigned routes of specified van
 - Message authentication header is a bearer token with specific permissions
   allowing admin actions
@@ -188,10 +191,11 @@ POST `/admin/vans/{van_id}`
 - Request body is defined in JSON as per the following typescript spec:
 
 ```typescript
-type Van = number[] // Route ID list, empty if not running
+type Van = number[]; // Route ID list, empty if not running
 ```
 
 GET `/stats/ridership/{van_id}`
+
 - Gets ridership information from the van with the specified ID
 - This is likely an expensive calculation, hence why it's in it's own route
 - Message authentication header is a bearer token with specific permissions
@@ -202,13 +206,13 @@ GET `/stats/ridership/{van_id}`
 ```typescript
 // NOTE: Not final format, unsure exactly what we should be calculating or whether we want to directly provide each
 // datapoint to stakeholders
-type Ridership = RidershipLog[]
+type Ridership = RidershipLog[];
 
 interface RidershipEntry {
-    timestampMillis: number,
-    location: Coordinate,
-    entered: number,
-    exited: number
+  timestampMillis: number;
+  location: Coordinate;
+  entered: number;
+  exited: number;
 }
 ```
 
