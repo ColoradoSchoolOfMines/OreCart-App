@@ -87,6 +87,7 @@ interface Stop {
   name: string;
   active: boolean;
   location: Coordinate;
+  routeIds: number[]
 }
 ```
 
@@ -127,8 +128,8 @@ interface Outage {
   body: string;
   startTimestamp: Date;
   endTimestamp: Date;
-  routesDisabled: number[]; // Route ID list
-  stopsDisabled: number[]; // Stop ID list
+  routeIdsDisabled: number[];
+  stopIdsDisabled: number[];
 }
 ```
 
@@ -149,8 +150,8 @@ interface Outage {
   body: string;
   startTimestamp: Date;
   endTimestamp: Date;
-  routesDisabled: number[]; // Route ID list
-  stopsDisabled: number[]; // Stop ID list
+  routeIdsDisabled: number[];
+  stopIdsDisabled: number[];
 }
 ```
 
