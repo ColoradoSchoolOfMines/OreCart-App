@@ -2,14 +2,13 @@
 
 ## Development Overview 🌟
 
-
 The backend will be used to store locations of the shuttles, serve that data to the frontend, and make statistics about the Ore Cart queryable.
 
 ## Development Expectations 📌
 
 ### Dependencies 📦
 
-Keeping track of dependencies can be hard and frustrating. As such, we have a `requirements.txt` file that can be used to install the dependencies with `pip install -r requirements.txt`. If you add a dependency and know how to update the `requirements.txt` accordingly please do, if you do not know how to update it, run `pip freeze > requirements.txt`. 
+Keeping track of dependencies can be hard and frustrating. As such, we have a `requirements.txt` file that can be used to install the dependencies with `pip install -r requirements.txt`. If you add a dependency and know how to update the `requirements.txt` accordingly please do, if you do not know how to update it, run `pip freeze > requirements.txt`.
 
 One side note regarding updating the `requirements.txt`, please do not add anything unnecessary to it! We want to minimize bloat for everyone, but also because our CI build needs to install the requirements.txt frequently, so adding unnecessary dependencies will slow down our CI.
 
@@ -36,18 +35,21 @@ When you are done working on this project, deactivate the venv. The following co
 ```
 deactivate
 ```
+
 ---
 
 ### Running the server
 
 To run the backend, ensure your venv is running:
+
 ```
 source venv/bin/activate
 ```
 
 Then execute the following command:
+
 ```
-uvicorn main:app --reload
+uvicorn src.main:app --reload
 ```
 
 The server will be running on `localhost:8000`!
@@ -69,6 +71,3 @@ Lastly, we are using pylint to verify that our python doesn't have any obvious e
 ---
 
 Feel free to reach out if you have any questions or need further clarification on any of these development expectations! 🙌
-
-
-
