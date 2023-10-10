@@ -15,9 +15,14 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "org.orecart.app",
+      "config": {
+        "googleMapsApiKey": "${process.env.GOOGLE_MAPS_API_KEY_IOS}"
+      }
     },
     "android": {
+      "package": "org.orecart.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
