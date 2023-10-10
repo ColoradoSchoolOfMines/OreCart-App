@@ -66,7 +66,7 @@ GET `/dashboard`
 interface Dashboard {
   routes: Route[];
   stops: Stop[];
-  alert: Alert | null;
+  alert?: Alert;
 }
 
 interface Alert {
