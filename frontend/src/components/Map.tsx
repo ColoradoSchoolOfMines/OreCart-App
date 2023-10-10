@@ -1,5 +1,5 @@
 import MapView, { type Region } from 'react-native-maps'
-import { StyleSheet, type ViewProps, Platform } from 'react-native'
+import { StyleSheet, type ViewProps } from 'react-native'
 import { type Coordinate } from '../services/location'
 import { useRef, useState } from 'react'
 import { PROVIDER_GOOGLE } from 'react-native-maps'
