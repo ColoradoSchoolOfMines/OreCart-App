@@ -1,24 +1,24 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 from pydantic import BaseModel
 
-app = FastAPI()
+router = APIRouter(prefix="/location", tags=["location"])
 
 
 class VanLocation(BaseModel):
     lat: float
-    long: float
+    lon: float
     van_id: int
     timestamp: int
 
 
-@app.get("/location/{van_id}")
+@router.get("/{van_id}")
 def get_van_location(van_id: int) -> VanLocation:
     # get van location and return a proper VanLocation object
 
-    return VanLocation(lat=0.0, long=0.0, van_id=van_id, timestamp=0)
+    return VanLocation(lat=0.0, lon=0.0, van_id=van_id, timestamp=0)
 
 
-@app.post("/location/{van_id}")
+@router.post("/{van_id}")
 def post_van_location(van_id: int, van_location: VanLocation):
     # update van location in database
 
