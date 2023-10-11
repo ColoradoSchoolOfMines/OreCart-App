@@ -10,6 +10,7 @@
     "ts:check": "tsc"
   },
   "dependencies": {
+    "@react-navigation/drawer": "^6.6.4",
     "@react-navigation/native": "^6.1.8",
     "expo": "~49.0.8",
     "expo-location": "~16.1.0",
