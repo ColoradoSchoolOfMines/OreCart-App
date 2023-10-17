@@ -7,13 +7,17 @@ import { Sheet } from './components/Sheet'
  * The main screen containing the map and sheet components.
  */
 export function Main(): React.ReactElement<void> {
+  // The bottom sheet extends halfway across the screen, with the map
+  // being inset accordingly.
+  const halfwayExtent = '50%'
   const halfwayInset = Dimensions.get('window').height / 2
+  const mapInsets = { top: 0, left: 0, bottom: halfwayInset, right: 0 }
 
   return (
     <View>
       <Map style={StyleSheet.absoluteFillObject} 
-        insets={{top: 0, left: 0, bottom: halfwayInset, right: 0}} />
-      <Sheet collapsedExtent='50%'>
+        insets={mapInsets} />
+      <Sheet collapsedExtent={halfwayExtent}>
         <View>
           <Text>Paula</Text>
           <Text>Brilliant</Text>
