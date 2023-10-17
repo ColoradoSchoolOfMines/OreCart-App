@@ -9,8 +9,8 @@ import { Sheet } from './components/Sheet'
 export function Main(): React.ReactElement<void> {
   // The bottom sheet extends halfway across the screen, with the map
   // being inset accordingly.
-  const halfwayExtent = '50%'
-  const halfwayInset = Dimensions.get('window').height / 2
+  const halfwayExtent = 0.5
+  const halfwayInset = Dimensions.get('window').height * halfwayExtent
   const mapInsets = { top: 0, left: 0, bottom: halfwayInset, right: 0 }
 
   return (
