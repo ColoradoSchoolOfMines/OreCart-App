@@ -1,8 +1,7 @@
-import MapView, { type Region } from 'react-native-maps'
-import { StyleSheet, type ViewProps, Dimensions, StatusBar } from 'react-native'
+import MapView, { type Region, PROVIDER_GOOGLE } from 'react-native-maps'
+import { StyleSheet, type ViewProps, StatusBar } from 'react-native'
 import { type Coordinate } from '../services/location'
-import { useRef, useState } from 'react'
-import { PROVIDER_GOOGLE } from 'react-native-maps'
+import { useRef, useState, useMemo } from 'react'
 
 const GOLDEN: Region = {
   latitude: 39.749675,
@@ -14,13 +13,9 @@ const GOLDEN: Region = {
 /**
  * Wraps the expo {@interface MapView} with additional functionality.
  */
-export function Map(props: ViewProps): React.ReactElement<ViewProps> {
+export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> {
   const [userRegionChanged, setUserRegionChanged] = useState(false)
   const mapRef = useRef<MapView>(null)
-
-  const { height } = Dimensions.get('window')
-  const bottomInset = height / 2
-  const topInset = StatusBar.currentHeight ?? 0
 
   function panToLocation(location: Coordinate | undefined): void {
     // We want to make sure we won't snap back to the user location if they decide to pan around,
@@ -33,6 +28,14 @@ export function Map(props: ViewProps): React.ReactElement<ViewProps> {
     }
   }
 
+  const statusBarInset = useMemo(() => StatusBar.currentHeight ?? 0, [])
+  const padding = {
+    top: props.insets?.left ?? 0 + statusBarInset,
+    left: props.insets?.left ?? 0,
+    bottom: props.insets?.bottom ?? 0,
+    right: props.insets?.right ?? 0
+  }
+
   return (
     <MapView style={styles.innerMap}
       ref={mapRef}
@@ -41,7 +44,7 @@ export function Map(props: ViewProps): React.ReactElement<ViewProps> {
       initialRegion={GOLDEN}
       showsUserLocation={true}
       showsMyLocationButton={false}
-      mapPadding={{ top: topInset, left: 0, bottom: bottomInset, right: 0 }}
+      mapPadding={padding}
       // followsUserLocation is only available on iOS maps, and isn't very cooperative anyway.
       // Reimplement it ourselves.
       onUserLocationChange={ event => { panToLocation(event.nativeEvent.coordinate) }}      
@@ -54,6 +57,17 @@ export function Map(props: ViewProps): React.ReactElement<ViewProps> {
         }
       }} />
   )
+}
+
+export interface MapProps {
+  insets?: Insets
+}
+
+export interface Insets {
+  top: number,
+  left: number,
+  bottom: number,
+  right: number
 }
 
 const styles = StyleSheet.create({
