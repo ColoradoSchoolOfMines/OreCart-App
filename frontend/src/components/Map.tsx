@@ -72,8 +72,9 @@ export interface MapProps {
 
 /**
  * The insets to apply to the {@interface Map} component when it will be obscured by
- * other components. Note that the component will already be insetting by the status
- * bar, so you don't need to include that in your insets.
+ * other components. This will shift map components like the google logo, and the way
+ * that the map camera will pan around. Note that the component will already be insetting
+ * by the status bar, so you don't need to include that in your insets.
  */
 export interface Insets {
   /** The amount of space to inset from the top of the map. */

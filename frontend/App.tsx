@@ -1,4 +1,3 @@
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StyleSheet, SafeAreaView } from 'react-native'
 import * as NavigationBar from 'expo-navigation-bar'
 import { Main } from './src/Main'
@@ -12,9 +11,7 @@ NavigationBar.setBackgroundColorAsync('white').catch(console.error)
 export default function App(): React.ReactElement<void> {
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
-      <GestureHandlerRootView style={StyleSheet.absoluteFillObject}>
-        <Main />
-      </GestureHandlerRootView>
+      <Main style={StyleSheet.absoluteFillObject} />
     </SafeAreaView>
   )
 }
