@@ -4,7 +4,7 @@ from src.db import Base
 
 class RidershipModel(Base):
     __tablename__ = "ridership"
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
     van_id = Column(Integer, ForeignKey("vans.id"), nullable=False)
     route_id = Column(Integer, ForeignKey("routes.id"), nullable=False)
     entered = Column(Integer, nullable=False)
