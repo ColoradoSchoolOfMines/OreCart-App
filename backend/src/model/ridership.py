@@ -1,5 +1,4 @@
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer
-
 from src.db import Base
 
 
