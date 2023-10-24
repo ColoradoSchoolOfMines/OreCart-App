@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean, Float
 from src.db import Base
 
 
@@ -6,6 +6,6 @@ class StopModel(Base):
     __tablename__ = "stops"
     id = Column(Integer, primary_key=True, nullable=False)
     name = Column(String, unique=True, nullable=False)
-    lat = Column(Integer, nullable=False)
-    lon = Column(Integer, nullable=False)
-    active = Column(Integer, nullable=False)
+    lat = Column(Float, nullable=False)
+    lon = Column(Float, nullable=False)
+    active = Column(Boolean, nullable=False)
