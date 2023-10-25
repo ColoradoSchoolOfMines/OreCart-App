@@ -2,7 +2,6 @@ import datetime
 
 from sqlalchemy import ForeignKeyConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-
 from src.db import Base
 
 
