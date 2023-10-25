@@ -11,7 +11,7 @@ NavigationBar.setBackgroundColorAsync('white').catch(console.error)
 export default function App(): React.ReactElement<void> {
   return (
     <SafeAreaView style={StyleSheet.absoluteFillObject}>
-      <Main />
+      <Main style={StyleSheet.absoluteFillObject} />
     </SafeAreaView>
   )
 }
