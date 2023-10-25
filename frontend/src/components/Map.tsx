@@ -20,7 +20,7 @@ export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> 
   function panToLocation(location: Coordinate | undefined): void {
     // We want to make sure we won't snap back to the user location if they decide to pan around,
     // so check if that's the case before panning.
-    if (location !== undefined && mapRef.current != null && !userRegionChanged)  {
+    if (location !== undefined && mapRef.current != null && !userRegionChanged) {
       mapRef.current.animateCamera({
         center: location,
         zoom: 17
@@ -32,8 +32,10 @@ export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> 
     // If the user is panning around, we don't want to snap back to their location. Note that we
     // make sure to exclude camera pans from this to avoid disabling location following at soon
     // as it changes.
+    // details.isGesture is only unavailable on apple maps (which we aren't using)
+    // We default to true because we don't want to lock the map if something is broken
     if (details.isGesture ?? true) {
-      setUserRegionChanged(true) 
+      setUserRegionChanged(true)
     }
   }
 
@@ -57,7 +59,7 @@ export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> 
       mapPadding={padding}
       // followsUserLocation is only available on iOS maps, and isn't very cooperative anyway.
       // Reimplement it ourselves.
-      onUserLocationChange={ event => { panToLocation(event.nativeEvent.coordinate) }}      
+      onUserLocationChange={event => { panToLocation(event.nativeEvent.coordinate) }}
       onRegionChange={(_region, details) => { handleRegionChange(details) }} />
   )
 }
