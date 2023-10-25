@@ -1,11 +1,14 @@
-from sqlalchemy import Boolean, Column, Float, Integer, String
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.db import Base
 
 
 class StopModel(Base):
     __tablename__ = "stops"
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    name = Column(String, unique=True, nullable=False)
-    lat = Column(Float, nullable=False)
-    lon = Column(Float, nullable=False)
-    active = Column(Boolean, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
+    name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    lat: Mapped[float] = mapped_column(nullable=False)
+    lon: Mapped[float] = mapped_column(nullable=False)
+    active: Mapped[bool] = mapped_column(nullable=False)

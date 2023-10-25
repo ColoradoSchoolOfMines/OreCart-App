@@ -1,9 +1,17 @@
-from sqlalchemy import Column, ForeignKey, Integer
+from sqlalchemy import ForeignKeyConstraint
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.db import Base
 
 
 class StopDisableModel(Base):
     __tablename__ = "stop_disables"
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    alert_id = Column(Integer, ForeignKey("alerts.id"), nullable=False)
-    stop_id = Column(Integer, ForeignKey("stops.id"), nullable=False)
+    __table_args__ = (
+        ForeignKeyConstraint(["alert_id"], ["alerts.id"]),
+        ForeignKeyConstraint(["stop_id"], ["stops.id"]),
+    )
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
+    alert_id: Mapped[int] = mapped_column(nullable=False)
+    stop_id: Mapped[int] = mapped_column(nullable=False)

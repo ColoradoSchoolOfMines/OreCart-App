@@ -1,14 +1,24 @@
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer
+import datetime
+
+from sqlalchemy import ForeignKeyConstraint
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.db import Base
 
 
 class RidershipModel(Base):
     __tablename__ = "ridership"
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    van_id = Column(Integer, ForeignKey("vans.id"), nullable=False)
-    route_id = Column(Integer, ForeignKey("routes.id"), nullable=False)
-    entered = Column(Integer, nullable=False)
-    exited = Column(Integer, nullable=False)
-    lat = Column(Float, nullable=False)
-    lon = Column(Float, nullable=False)
-    datetime = Column(DateTime, nullable=False)
+    __table_args__ = (
+        ForeignKeyConstraint(["van_id"], ["vans.id"]),
+        ForeignKeyConstraint(["route_id"], ["routes.id"]),
+    )
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
+    van_id: Mapped[int] = mapped_column(nullable=False)
+    route_id: Mapped[int] = mapped_column(nullable=False)
+    entered: Mapped[int] = mapped_column(nullable=False)
+    exited: Mapped[int] = mapped_column(nullable=False)
+    lat: Mapped[float] = mapped_column(nullable=False)
+    lon: Mapped[float] = mapped_column(nullable=False)
+    datetime: Mapped[datetime.datetime] = mapped_column(nullable=False)

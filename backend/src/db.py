@@ -10,5 +10,6 @@ def init():
     global conn
     conn = sqlalchemy.create_engine(os.getenv("DATABASE_URL") or "")
 
+
 class Base(DeclarativeBase):
     pass

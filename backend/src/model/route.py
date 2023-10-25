@@ -1,8 +1,12 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import ForeignKeyConstraint
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.db import Base
 
 
 class RouteModel(Base):
     __tablename__ = "routes"
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    name = Column(String, unique=True)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
+    name: Mapped[str] = mapped_column(unique=True)

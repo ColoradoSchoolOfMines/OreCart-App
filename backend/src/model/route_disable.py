@@ -1,9 +1,17 @@
-from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy import ForeignKeyConstraint
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.db import Base
 
 
 class RouteDisableModel(Base):
     __tablename__ = "route_disables"
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    alert_id = Column(Integer, ForeignKey("alerts.id"), nullable=False)
-    route_id = Column(Integer, ForeignKey("routes.id"), nullable=False)
+    __table_args__ = (
+        ForeignKeyConstraint(["alert_id"], ["alerts.id"]),
+        ForeignKeyConstraint(["route_id"], ["routes.id"]),
+    )
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
+    alert_id: Mapped[int] = mapped_column(nullable=False)
+    route_id: Mapped[int] = mapped_column(nullable=False)

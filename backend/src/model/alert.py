@@ -1,10 +1,15 @@
-from sqlalchemy import Column, DateTime, Integer, String
+import datetime
+
+from sqlalchemy.orm import Mapped, mapped_column
+
 from src.db import Base
 
 
 class AlertModel(Base):
     __tablename__ = "alerts"
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
-    text = Column(String, nullable=False)
-    start_datetime = Column(DateTime, nullable=False)
-    end_datetime = Column(DateTime, nullable=False)
+    id: Mapped[int] = mapped_column(
+        primary_key=True, autoincrement=True, nullable=False
+    )
+    text: Mapped[str] = mapped_column(nullable=False)
+    start_datetime = mapped_column(nullable=False)
+    end_datetime: Mapped[datetime.datetime] = mapped_column(nullable=False)
