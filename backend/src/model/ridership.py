@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import ForeignKeyConstraint
+from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
@@ -10,6 +10,7 @@ class RidershipModel(Base):
     __table_args__ = (
         ForeignKeyConstraint(["van_id"], ["vans.id"]),
         ForeignKeyConstraint(["route_id"], ["routes.id"]),
+        UniqueConstraint("van_id", "datetime"),
     )
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, nullable=False

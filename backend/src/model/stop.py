@@ -1,9 +1,11 @@
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
 
 class StopModel(Base):
     __tablename__ = "stops"
+    __table_args__ = (UniqueConstraint("name"), UniqueConstraint("lat", "lon"))
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, nullable=False
     )
