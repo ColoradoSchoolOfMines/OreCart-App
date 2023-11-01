@@ -1,6 +1,5 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from pydantic import BaseModel
-from fastapi.orm import Request
 
 router = APIRouter(prefix="/location", tags=["location"])
 
