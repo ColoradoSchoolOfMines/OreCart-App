@@ -1,7 +1,7 @@
 import MapView, { type Region, PROVIDER_GOOGLE, type Details } from 'react-native-maps'
 import { StyleSheet, type ViewProps, StatusBar } from 'react-native'
 import { type Coordinate } from '../services/location'
-import { useRef, useState, useMemo } from 'react'
+import { useRef, useMemo } from 'react'
 
 const GOLDEN: Region = {
   latitude: 39.749675,
@@ -14,13 +14,12 @@ const GOLDEN: Region = {
  * Wraps the expo {@interface MapView} with additional functionality.
  */
 export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> {
-  const [userRegionChanged, setUserRegionChanged] = useState(false)
   const mapRef = useRef<MapView>(null)
 
   function panToLocation(location: Coordinate | undefined): void {
     // We want to make sure we won't snap back to the user location if they decide to pan around,
     // so check if that's the case before panning.
-    if (location !== undefined && mapRef.current != null && !userRegionChanged) {
+    if (location !== undefined && mapRef.current != null && props.followingLocation) {
       mapRef.current.animateCamera({
         center: location,
         zoom: 17
@@ -35,7 +34,7 @@ export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> 
     // details.isGesture is only unavailable on apple maps (which we aren't using)
     // We default to true because we don't want to lock the map if something is broken
     if (details.isGesture ?? true) {
-      setUserRegionChanged(true)
+      props.onDisableFollowing()
     }
   }
 
@@ -69,7 +68,9 @@ export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> 
  */
 export interface MapProps {
   /** The {@interface Insets} to apply to the map. */
-  insets?: Insets
+  insets?: Insets,
+  followingLocation: boolean,
+  onDisableFollowing: () => void
 }
 
 /**
