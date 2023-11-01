@@ -1,6 +1,6 @@
-import React, { useState} from 'react'
+import React, { useState, useRef } from 'react'
 import { StyleSheet, View, Text, Dimensions, type ViewProps, type LayoutProps } from 'react-native'
-import { Map } from './components/Map'
+import { Map, MapRef } from './components/Map'
 import { Sheet } from './components/Sheet'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import LocationButton from './components/LocationButton';
@@ -36,17 +36,28 @@ export function Main(_: ViewProps): React.ReactElement<void> {
     alignItems: 'flex-end'
   }
 
+  const mapRef = useRef<MapRef>(null)
+
   const [followingLocation, setFollowingLocation] = useState<boolean>(true)
+
+  function handleLocationPress(): void {
+    const newState = !followingLocation
+    setFollowingLocation(newState)
+    if (newState) {
+      mapRef.current?.poke()
+    }
+  }
 
   return (
     <GestureHandlerRootView>
       <Map style={StyleSheet.absoluteFill} 
+        ref={mapRef}
         insets={mapInsets} 
         followingLocation={followingLocation} 
         onDisableFollowing={() => {setFollowingLocation(false)}} />
       <View style={locationContainerStyle}>
         <LocationButton isActive={followingLocation} 
-          onPress={() => { setFollowingLocation(!followingLocation) }} />
+          onPress={() => { handleLocationPress() }} />
       </View>
       <Sheet collapsedExtent={SHEET_EXTENT}>
         <View>
