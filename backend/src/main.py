@@ -16,4 +16,4 @@ app.include_router(location.router)
 
 @app.on_event("startup")
 def startup_event():
-    db.init()
+    app.state.engine = db.init()
