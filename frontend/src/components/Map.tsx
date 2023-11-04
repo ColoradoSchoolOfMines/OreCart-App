@@ -1,12 +1,8 @@
-import MapView, { type Region, PROVIDER_GOOGLE, type Details } from 'react-native-maps'
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 import { View, StyleSheet, type ViewProps, StatusBar, type LayoutProps } from 'react-native'
 import { type Coordinate } from '../services/location'
 import LocationButton from './LocationButton'
 import React, { useRef, useMemo, useState } from 'react'
-
-export interface MapRef{
-  poke: () => void
-}
 
 export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & ViewProps> {
   const mapRef = useRef<MapView>(null)
