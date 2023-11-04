@@ -8,13 +8,6 @@ export interface MapRef{
   poke: () => void
 }
 
-const GOLDEN: Region = {
-  latitude: 39.749675,
-  longitude: -105.222606,
-  latitudeDelta: 0.005,
-  longitudeDelta: 0.005
-}
-
 export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & ViewProps> {
   const mapRef = useRef<MapView>(null)
   const [followingLocation, setFollowingLocation] = useState<boolean>(true)
@@ -67,7 +60,6 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
       <MapView style={styles.innerMap}
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
-        initialRegion={GOLDEN}
         showsUserLocation={true}
         showsMyLocationButton={false}
         mapPadding={padding}
