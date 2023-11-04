@@ -36,12 +36,6 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
     }
   }
 
-  function handleRegionChange(details: Details): void {
-    if (details.isGesture ?? true) {
-      setFollowingLocation(false)
-    }
-  }
-
   function flipFollowingLocation(): void {
     const newState = !followingLocation
     if (newState) {
@@ -77,8 +71,8 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
         showsUserLocation={true}
         showsMyLocationButton={false}
         mapPadding={padding}
-        onUserLocationChange={event => { updateLocation(event.nativeEvent.coordinate) }}
-        onRegionChange={(_region, details) => { handleRegionChange(details) }} />
+        onPanDrag={() => { setFollowingLocation(false) }}
+        onUserLocationChange={event => { updateLocation(event.nativeEvent.coordinate) }} />
       <View style={locationButtonContainerStyle}>
         <LocationButton isActive={followingLocation} 
           onPress={() => { flipFollowingLocation() }} />
