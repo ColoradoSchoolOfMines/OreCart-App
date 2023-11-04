@@ -15,8 +15,8 @@ export function LocationButton(props: ViewProps & LocationButtonProps): React.Re
           <MaterialIcons name="location-searching" size={24} color="black" /> }
       </View>
     </TouchableHighlight>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   button: {
@@ -35,6 +35,4 @@ const styles = StyleSheet.create({
     shadowRadius: 4.65,
     elevation: 8,
   },
-});
-
-export default LocationButton;
+})

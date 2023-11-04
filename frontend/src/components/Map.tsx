@@ -1,7 +1,7 @@
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
-import { View, StyleSheet, type ViewProps, StatusBar, type LayoutProps } from 'react-native'
+import { View, StyleSheet, type ViewProps, StatusBar, type StyleProp, type ViewStyle } from 'react-native'
 import { type Coordinate } from '../services/location'
-import LocationButton from './LocationButton'
+import { LocationButton } from './LocationButton'
 import React, { useRef, useMemo, useState } from 'react'
 
 export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & ViewProps> {
@@ -41,7 +41,7 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
     right: props.insets?.right ?? 0
   }
 
-  const locationButtonContainerStyle: LayoutProps = {
+  const locationButtonContainerStyle: StyleProp<ViewStyle> = {
     ...StyleSheet.absoluteFillObject,
     paddingTop: padding.top + 16,
     paddingBottom: padding.bottom + 16,
