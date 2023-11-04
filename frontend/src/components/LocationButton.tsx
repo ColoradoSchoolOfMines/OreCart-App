@@ -3,10 +3,15 @@ import { TouchableHighlight, StyleSheet, type ViewProps, View } from 'react-nati
 import { MaterialIcons } from '@expo/vector-icons';
 
 export interface LocationButtonProps {
+  /** Whether the button should display that the user location is actively being followed. */
   isActive: boolean,
+  /** Callback for when the button is pressed by the user. */
   onPress: () => void
 }
 
+/**
+ * A button that toggles whether the user's location is being followed.
+ */
 export function LocationButton(props: ViewProps & LocationButtonProps): React.ReactElement {
   return (
     <TouchableHighlight style={styles.button} underlayColor="#DDDDDD" onPress={props.onPress}>

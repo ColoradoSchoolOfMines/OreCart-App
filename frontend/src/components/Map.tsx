@@ -4,6 +4,9 @@ import { type Coordinate } from '../services/location'
 import { LocationButton } from './LocationButton'
 import React, { useRef, useMemo, useState } from 'react'
 
+/**
+ * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
+ */
 export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & ViewProps> {
   const mapRef = useRef<MapView>(null)
   const [followingLocation, setFollowingLocation] = useState<boolean>(true)
@@ -19,6 +22,9 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
   }
 
   function updateLocation(location: Coordinate | undefined): void {
+    // Required if we need to re-toggle location following later, which requires
+    // us to pan the camera to whatever location we were last given. Always track
+    // this regardless of if following is currently on.
     setLastLocation(location)
     if (followingLocation) {
       panToLocation(location)
@@ -27,12 +33,17 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
 
   function flipFollowingLocation(): void {
     const newState = !followingLocation
+    setFollowingLocation(newState)
+    // There will be some delay between the next location update and when the
+    // location button was toggled, so we need to immediately pan now with the
+    // last location we got.
     if (newState) {
       panToLocation(lastLocation)
     }
-    setFollowingLocation(newState)
   }
 
+  // Combine given insets with the status bar height to ensure that the map
+  // is fully in-bounds.
   const statusBarInset = useMemo(() => StatusBar.currentHeight ?? 0, [])
   const padding = {
     top: props.insets?.left ?? 0 + statusBarInset,
@@ -41,6 +52,7 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
     right: props.insets?.right ?? 0
   }
 
+  // Insets + 16dp padding & Bottom-end alignment
   const locationButtonContainerStyle: StyleProp<ViewStyle> = {
     ...StyleSheet.absoluteFillObject,
     paddingTop: padding.top + 16,
@@ -61,6 +73,7 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
         mapPadding={padding}
         onPanDrag={() => { setFollowingLocation(false) }}
         onUserLocationChange={event => { updateLocation(event.nativeEvent.coordinate) }} />
+      { /* Layer the location button on the map instead of displacing it. */ }
       <View style={locationButtonContainerStyle}>
         <LocationButton isActive={followingLocation} 
           onPress={() => { flipFollowingLocation() }} />
@@ -69,21 +82,33 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
   )
 }
 
+/**
+ * The props for the {@interface Map} component.
+ */
 export interface MapProps {
+  /** 
+   * The {@interface Insets} to pad map information with. Useful if map information will be
+   * obscured. Note that status bar insets will already be applied, so don't include those.
+   */
   insets?: Insets
 }
 
+/**
+ * The insets to apply to the {@interface Map} component when it will be obscured by
+ * other components. {@see MapProps.insets}
+ */
 export interface Insets {
+  /** The amount of space to inset from the top of the map. */
   top: number,
+  /** The amount of space to inset from the left of the map. */
   left: number,
+  /** The amount of space to inset from the bottom of the map. */
   bottom: number,
+  /** The amount of space to inset from the right of the map. */
   right: number
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1
-  },
   innerMap: {
     width: '100%',
     height: '100%'
