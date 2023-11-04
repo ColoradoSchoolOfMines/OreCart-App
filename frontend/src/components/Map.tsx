@@ -1,7 +1,8 @@
 import MapView, { type Region, PROVIDER_GOOGLE, type Details } from 'react-native-maps'
-import { StyleSheet, type ViewProps, StatusBar } from 'react-native'
+import { View, StyleSheet, type ViewProps, StatusBar, type LayoutProps } from 'react-native'
 import { type Coordinate } from '../services/location'
-import React, { useRef, useMemo } from 'react'
+import LocationButton from './LocationButton'
+import React, { useRef, useMemo, useState } from 'react'
 
 export interface MapRef{
   poke: () => void
@@ -14,10 +15,9 @@ const GOLDEN: Region = {
   longitudeDelta: 0.005
 }
 
-// TODO: Move location button into this component
-
-export const Map = React.forwardRef<MapRef, ViewProps & MapProps>((props, ref) => {
+export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & ViewProps> {
   const mapRef = useRef<MapView>(null)
+  const [followingLocation, setFollowingLocation] = useState<boolean>(true)
   const [lastLocation, setLastLocation] = React.useState<Coordinate | undefined>(undefined)
 
   function panToLocation(location: Coordinate | undefined): void {
@@ -31,15 +31,23 @@ export const Map = React.forwardRef<MapRef, ViewProps & MapProps>((props, ref) =
 
   function updateLocation(location: Coordinate | undefined): void {
     setLastLocation(location)
-    if (props.followingLocation) {
+    if (followingLocation) {
       panToLocation(location)
     }
   }
 
   function handleRegionChange(details: Details): void {
     if (details.isGesture ?? true) {
-      props.onDisableFollowing()
+      setFollowingLocation(false)
     }
+  }
+
+  function flipFollowingLocation(): void {
+    const newState = !followingLocation
+    if (newState) {
+      panToLocation(lastLocation)
+    }
+    setFollowingLocation(newState)
   }
 
   const statusBarInset = useMemo(() => StatusBar.currentHeight ?? 0, [])
@@ -50,30 +58,37 @@ export const Map = React.forwardRef<MapRef, ViewProps & MapProps>((props, ref) =
     right: props.insets?.right ?? 0
   }
 
-  React.useImperativeHandle(ref, () => ({
-    poke: () => { 
-      console.log("test2")
-      panToLocation(lastLocation) 
-    }
-  }), [panToLocation])
+  const locationButtonContainerStyle: LayoutProps = {
+    ...StyleSheet.absoluteFillObject,
+    paddingTop: padding.top + 16,
+    paddingBottom: padding.bottom + 16,
+    paddingLeft: padding.left + 16,
+    paddingRight: padding.right + 16,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end'
+  }
 
   return (
-    <MapView style={styles.innerMap}
-      ref={mapRef}
-      provider={PROVIDER_GOOGLE}
-      initialRegion={GOLDEN}
-      showsUserLocation={true}
-      showsMyLocationButton={false}
-      mapPadding={padding}
-      onUserLocationChange={event => { updateLocation(event.nativeEvent.coordinate) }}
-      onRegionChange={(_region, details) => { handleRegionChange(details) }} />
+    <View>
+      <MapView style={styles.innerMap}
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        initialRegion={GOLDEN}
+        showsUserLocation={true}
+        showsMyLocationButton={false}
+        mapPadding={padding}
+        onUserLocationChange={event => { updateLocation(event.nativeEvent.coordinate) }}
+        onRegionChange={(_region, details) => { handleRegionChange(details) }} />
+      <View style={locationButtonContainerStyle}>
+        <LocationButton isActive={followingLocation} 
+          onPress={() => { flipFollowingLocation() }} />
+      </View>
+    </View>
   )
-})
+}
 
 export interface MapProps {
-  insets?: Insets,
-  followingLocation: boolean,
-  onDisableFollowing: () => void
+  insets?: Insets
 }
 
 export interface Insets {
@@ -84,6 +99,9 @@ export interface Insets {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
   innerMap: {
     width: '100%',
     height: '100%'
