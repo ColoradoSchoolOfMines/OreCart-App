@@ -83,7 +83,7 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
 }
 
 /**
- * The props for the {@interface Map} component.
+ * The props for the {@function Map} component.
  */
 export interface MapProps {
   /** 
