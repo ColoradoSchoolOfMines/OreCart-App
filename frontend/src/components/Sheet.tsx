@@ -3,7 +3,7 @@ import { StatusBar, type ViewProps, StyleSheet, Dimensions } from 'react-native'
 import BottomSheet from '@gorhom/bottom-sheet'
 
 /**
- * Wraps the {@class BottomSheet} component with a simplified interface.
+ * Wraps the bottom sheet component with a simplified interface.
  */
 export function Sheet(props: SheetProps & ViewProps): React.ReactElement<SheetProps & ViewProps> {
   // BottomSheet does have a topInset property, but that causes the shadow of the bottom

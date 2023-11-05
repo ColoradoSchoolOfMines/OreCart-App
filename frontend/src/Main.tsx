@@ -13,7 +13,7 @@ const SHEET_EXTENT = 0.5
 /**
  * The main screen containing the map and sheet components.
  */
-export function Main(_: ViewProps): React.ReactElement<ViewProps> {
+export function Main(_: ViewProps): React.ReactElement<void> {
   // The bottom sheet extends halfway across the screen, with the map
   // being inset accordingly.
   const screenHeight = Dimensions.get('window').height
