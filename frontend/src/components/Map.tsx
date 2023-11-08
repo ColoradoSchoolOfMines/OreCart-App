@@ -47,10 +47,10 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
   // is fully in-bounds.
   const statusBarInset = useMemo(() => StatusBar.currentHeight ?? 0, [])
   const padding = {
-    top: props.insets?.left ?? 0 + statusBarInset,
-    left: props.insets?.left ?? 0,
-    bottom: props.insets?.bottom ?? 0,
-    right: props.insets?.right ?? 0
+    top: (props.insets?.top ?? 0) + statusBarInset,
+    left: (props.insets?.left ?? 0),
+    bottom: (props.insets?.bottom ?? 0),
+    right: (props.insets?.right ?? 0)
   }
 
   // Insets + 16dp padding & Bottom-end alignment
