@@ -1,26 +1,19 @@
-import MapView, { type Region, PROVIDER_GOOGLE, type Details } from 'react-native-maps'
-import { StyleSheet, type ViewProps, StatusBar } from 'react-native'
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
+import { View, StyleSheet, type ViewProps, StatusBar, type StyleProp, type ViewStyle } from 'react-native'
 import { type Coordinate } from '../services/location'
-import { useRef, useState, useMemo } from 'react'
-
-const GOLDEN: Region = {
-  latitude: 39.749675,
-  longitude: -105.222606,
-  latitudeDelta: 0.005,
-  longitudeDelta: 0.005
-}
+import { LocationButton } from './LocationButton'
+import React, { useRef, useMemo, useState } from 'react'
 
 /**
- * Wraps the expo {@interface MapView} with additional functionality.
+ * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
  */
-export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> {
-  const [userRegionChanged, setUserRegionChanged] = useState(false)
+export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & ViewProps> {
   const mapRef = useRef<MapView>(null)
+  const [followingLocation, setFollowingLocation] = useState<boolean>(true)
+  const [lastLocation, setLastLocation] = React.useState<Coordinate | undefined>(undefined)
 
   function panToLocation(location: Coordinate | undefined): void {
-    // We want to make sure we won't snap back to the user location if they decide to pan around,
-    // so check if that's the case before panning.
-    if (location !== undefined && mapRef.current != null && !userRegionChanged) {
+    if (location !== undefined && mapRef.current != null) {
       mapRef.current.animateCamera({
         center: location,
         zoom: 17
@@ -28,55 +21,82 @@ export function Map(props: ViewProps & MapProps): React.ReactElement<ViewProps> 
     }
   }
 
-  function handleRegionChange(details: Details): void {
-    // If the user is panning around, we don't want to snap back to their location. Note that we
-    // make sure to exclude camera pans from this to avoid disabling location following at soon
-    // as it changes.
-    // details.isGesture is only unavailable on apple maps (which we aren't using)
-    // We default to true because we don't want to lock the map if something is broken
-    if (details.isGesture ?? true) {
-      setUserRegionChanged(true)
+  function updateLocation(location: Coordinate | undefined): void {
+    // Required if we need to re-toggle location following later, which requires
+    // us to pan the camera to whatever location we were last given. Always track
+    // this regardless of if following is currently on.
+    setLastLocation(location)
+    if (followingLocation) {
+      panToLocation(location)
     }
   }
 
+  function flipFollowingLocation(): void {
+    setFollowingLocation(followingLocation => {
+      // There will be some delay between the next location update and when the
+      // location button was toggled, so we need to immediately pan now with the
+      // last location we got.
+      if (!followingLocation) {
+        panToLocation(lastLocation)
+      }
+      return !followingLocation
+    })
+  }
+
+  // Combine given insets with the status bar height to ensure that the map
+  // is fully in-bounds.
   const statusBarInset = useMemo(() => StatusBar.currentHeight ?? 0, [])
   const padding = {
-    // We always inset by the status bar regardless of the user configuration.
-    top: props.insets?.left ?? 0 + statusBarInset,
-    left: props.insets?.left ?? 0,
-    bottom: props.insets?.bottom ?? 0,
-    right: props.insets?.right ?? 0
+    top: (props.insets?.top ?? 0) + statusBarInset,
+    left: (props.insets?.left ?? 0),
+    bottom: (props.insets?.bottom ?? 0),
+    right: (props.insets?.right ?? 0)
+  }
+
+  // Insets + 16dp padding & Bottom-end alignment
+  const locationButtonContainerStyle: StyleProp<ViewStyle> = {
+    ...StyleSheet.absoluteFillObject,
+    paddingTop: padding.top + 16,
+    paddingBottom: padding.bottom + 16,
+    paddingLeft: padding.left + 16,
+    paddingRight: padding.right + 16,
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end'
   }
 
   return (
-    <MapView style={styles.innerMap}
-      ref={mapRef}
-      // Use Google Maps everywhere.
-      provider={PROVIDER_GOOGLE}
-      initialRegion={GOLDEN}
-      showsUserLocation={true}
-      showsMyLocationButton={false}
-      mapPadding={padding}
-      // followsUserLocation is only available on iOS maps, and isn't very cooperative anyway.
-      // Reimplement it ourselves.
-      onUserLocationChange={event => { panToLocation(event.nativeEvent.coordinate) }}
-      onRegionChange={(_region, details) => { handleRegionChange(details) }} />
+    <View>
+      <MapView style={styles.innerMap}
+        ref={mapRef}
+        provider={PROVIDER_GOOGLE}
+        showsUserLocation={true}
+        showsMyLocationButton={false}
+        mapPadding={padding}
+        onPanDrag={() => { setFollowingLocation(false) }}
+        onUserLocationChange={event => { updateLocation(event.nativeEvent.coordinate) }} />
+      { /* Layer the location button on the map instead of displacing it. */ }
+      <View style={locationButtonContainerStyle}>
+        <LocationButton isActive={followingLocation} 
+          onPress={() => { flipFollowingLocation() }} />
+      </View>
+    </View>
   )
 }
 
 /**
- * The props for the {@interface Map} component.
+ * The props for the {@function Map} component.
  */
 export interface MapProps {
-  /** The {@interface Insets} to apply to the map. */
+  /** 
+   * The {@interface Insets} to pad map information with. Useful if map information will be
+   * obscured. Note that status bar insets will already be applied, so don't include those.
+   */
   insets?: Insets
 }
 
 /**
  * The insets to apply to the {@interface Map} component when it will be obscured by
- * other components. This will shift map components like the google logo, and the way
- * that the map camera will pan around. Note that the component will already be insetting
- * by the status bar, so you don't need to include that in your insets.
+ * other components. {@see MapProps.insets}
  */
 export interface Insets {
   /** The amount of space to inset from the top of the map. */
