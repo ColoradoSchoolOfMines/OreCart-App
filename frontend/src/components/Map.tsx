@@ -32,14 +32,15 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
   }
 
   function flipFollowingLocation(): void {
-    const newState = !followingLocation
-    setFollowingLocation(newState)
-    // There will be some delay between the next location update and when the
-    // location button was toggled, so we need to immediately pan now with the
-    // last location we got.
-    if (newState) {
-      panToLocation(lastLocation)
-    }
+    setFollowingLocation(followingLocation => {
+      // There will be some delay between the next location update and when the
+      // location button was toggled, so we need to immediately pan now with the
+      // last location we got.
+      if (!followingLocation) {
+        panToLocation(lastLocation)
+      }
+      return !followingLocation
+    })
   }
 
   // Combine given insets with the status bar height to ensure that the map
