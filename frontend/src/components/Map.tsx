@@ -1,13 +1,21 @@
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
 import { View, StyleSheet, type ViewProps, StatusBar, type StyleProp, type ViewStyle } from 'react-native'
 import { type Coordinate } from '../services/location'
-import { LocationButton } from './LocationButton'
+import LocationButton from './LocationButton'
 import React, { useRef, useMemo, useState } from 'react'
+
+interface MapProps extends ViewProps {
+  /** 
+   * The {@interface Insets} to pad map information with. Useful if map information will be
+   * obscured. Note that status bar insets will already be applied, so don't include those.
+   */
+  insets?: Insets
+}
 
 /**
  * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
  */
-export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & ViewProps> {
+const Map: React.FC<MapProps> = ({ insets }) => {
   const mapRef = useRef<MapView>(null)
   const [followingLocation, setFollowingLocation] = useState<boolean>(true)
   const [lastLocation, setLastLocation] = React.useState<Coordinate | undefined>(undefined)
@@ -47,10 +55,10 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
   // is fully in-bounds.
   const statusBarInset = useMemo(() => StatusBar.currentHeight ?? 0, [])
   const padding = {
-    top: (props.insets?.top ?? 0) + statusBarInset,
-    left: (props.insets?.left ?? 0),
-    bottom: (props.insets?.bottom ?? 0),
-    right: (props.insets?.right ?? 0)
+    top: (insets?.top ?? 0) + statusBarInset,
+    left: (insets?.left ?? 0),
+    bottom: (insets?.bottom ?? 0),
+    right: (insets?.right ?? 0)
   }
 
   // Insets + 16dp padding & Bottom-end alignment
@@ -83,21 +91,6 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
   )
 }
 
-/**
- * The props for the {@function Map} component.
- */
-export interface MapProps {
-  /** 
-   * The {@interface Insets} to pad map information with. Useful if map information will be
-   * obscured. Note that status bar insets will already be applied, so don't include those.
-   */
-  insets?: Insets
-}
-
-/**
- * The insets to apply to the {@interface Map} component when it will be obscured by
- * other components. {@see MapProps.insets}
- */
 export interface Insets {
   /** The amount of space to inset from the top of the map. */
   top: number,
@@ -115,3 +108,5 @@ const styles = StyleSheet.create({
     height: '100%'
   }
 })
+
+export default Map;
