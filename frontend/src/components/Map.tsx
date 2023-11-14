@@ -10,7 +10,7 @@ import React, { useRef, useMemo, useState } from 'react'
 export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & ViewProps> {
   const mapRef = useRef<MapView>(null)
   const [followingLocation, setFollowingLocation] = useState<boolean>(true)
-  const [lastLocation, setLastLocation] = React.useState<Coordinate | undefined>(undefined)
+  const [lastLocation, setLastLocation] = useState<Coordinate | undefined>(undefined)
 
   function panToLocation(location: Coordinate | undefined): void {
     if (location !== undefined && mapRef.current != null) {
@@ -55,7 +55,9 @@ export function Map(props: MapProps & ViewProps): React.ReactElement<MapProps & 
 
   // Insets + 16dp padding & Bottom-end alignment
   const locationButtonContainerStyle: StyleProp<ViewStyle> = {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    height: '100%',
+    width: '100%',
     paddingTop: padding.top + 16,
     paddingBottom: padding.bottom + 16,
     paddingLeft: padding.left + 16,
