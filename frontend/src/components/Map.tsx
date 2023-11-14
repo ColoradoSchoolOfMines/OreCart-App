@@ -1,8 +1,9 @@
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
-import { View, StyleSheet, type ViewProps, StatusBar, type StyleProp, type ViewStyle } from 'react-native'
+import { View, type ViewProps, StatusBar, type StyleProp, type ViewStyle } from 'react-native'
 import { type Coordinate } from '../services/location'
 import LocationButton from './LocationButton'
 import React, { useRef, useMemo, useState } from 'react'
+import LayoutStyle from '../style/layout'
 
 interface MapProps extends ViewProps {
   /** 
@@ -63,7 +64,6 @@ const Map: React.FC<MapProps> = ({ insets }) => {
 
   // Insets + 16dp padding & Bottom-end alignment
   const locationButtonContainerStyle: StyleProp<ViewStyle> = {
-    ...StyleSheet.absoluteFillObject,
     paddingTop: padding.top + 16,
     paddingBottom: padding.bottom + 16,
     paddingLeft: padding.left + 16,
@@ -74,7 +74,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
 
   return (
     <View>
-      <MapView style={styles.innerMap}
+      <MapView style={LayoutStyle.fill}
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         showsUserLocation={true}
@@ -83,7 +83,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         onPanDrag={() => { setFollowingLocation(false) }}
         onUserLocationChange={event => { updateLocation(event.nativeEvent.coordinate) }} />
       { /* Layer the location button on the map instead of displacing it. */ }
-      <View style={locationButtonContainerStyle}>
+      <View style={[LayoutStyle.overlay, locationButtonContainerStyle]}>
         <LocationButton isActive={followingLocation} 
           onPress={() => { flipFollowingLocation() }} />
       </View>
@@ -101,12 +101,5 @@ export interface Insets {
   /** The amount of space to inset from the right of the map. */
   right: number
 }
-
-const styles = StyleSheet.create({
-  innerMap: {
-    width: '100%',
-    height: '100%'
-  }
-})
 
 export default Map;

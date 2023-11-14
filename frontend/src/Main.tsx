@@ -1,8 +1,9 @@
 import React from 'react'
-import { StyleSheet, View, Text, Dimensions, type ViewProps } from 'react-native'
+import { View, Text, Dimensions, type ViewProps } from 'react-native'
 import Map from './components/Map'
 import Sheet from './components/Sheet'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import LayoutStyle from './style/layout'
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in
@@ -27,7 +28,7 @@ const Main: React.FC<ViewProps> = () => {
 
   return (
     <GestureHandlerRootView>
-      <Map style={StyleSheet.absoluteFill}
+      <Map style={LayoutStyle.fill}
         insets={mapInsets} />
       <Sheet collapsedExtent={SHEET_EXTENT}>
         <View>
