@@ -1,3 +1,4 @@
+import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   TouchableHighlight,
@@ -5,7 +6,6 @@ import {
   type ViewProps,
   View,
 } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 
 /**
  * The props for the {@function LocationButton} component.

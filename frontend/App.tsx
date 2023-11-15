@@ -1,5 +1,6 @@
-import { StyleSheet, SafeAreaView } from "react-native";
 import * as NavigationBar from "expo-navigation-bar";
+import { StyleSheet, SafeAreaView } from "react-native";
+
 import { Main } from "./src/Main";
 
 // -----

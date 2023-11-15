@@ -6,9 +6,10 @@ import {
   Dimensions,
   type ViewProps,
 } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 import { Map } from "./components/Map";
 import { Sheet } from "./components/Sheet";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in

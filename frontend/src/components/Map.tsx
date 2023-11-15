@@ -1,4 +1,4 @@
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import React, { useRef, useMemo, useState } from "react";
 import {
   View,
   StyleSheet,
@@ -7,9 +7,12 @@ import {
   type StyleProp,
   type ViewStyle,
 } from "react-native";
+import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+
 import { type Coordinate } from "../services/location";
+
 import { LocationButton } from "./LocationButton";
-import React, { useRef, useMemo, useState } from "react";
+
 
 /**
  * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.

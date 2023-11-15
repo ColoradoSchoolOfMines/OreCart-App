@@ -1,3 +1,4 @@
+import BottomSheet from "@gorhom/bottom-sheet";
 import React, { useMemo } from "react";
 import {
   StatusBar,
@@ -5,7 +6,6 @@ import {
   StyleSheet,
   Dimensions,
 } from "react-native";
-import BottomSheet from "@gorhom/bottom-sheet";
 
 /**
  * Wraps the bottom sheet component with a simplified interface.
