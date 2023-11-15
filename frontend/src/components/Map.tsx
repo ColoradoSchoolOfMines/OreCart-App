@@ -1,9 +1,10 @@
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps'
-import { View, type ViewProps, StatusBar, type StyleProp, type ViewStyle } from 'react-native'
+import { View, StyleSheet, type ViewProps, StatusBar } from 'react-native'
 import { type Coordinate } from '../services/location'
 import LocationButton from './LocationButton'
 import React, { useRef, useMemo, useState } from 'react'
 import LayoutStyle from '../style/layout'
+import SpacingStyle, { type Insets } from '../style/spacing'
 
 interface MapProps extends ViewProps {
   /** 
@@ -62,16 +63,6 @@ const Map: React.FC<MapProps> = ({ insets }) => {
     right: (insets?.right ?? 0)
   }
 
-  // Insets + 16dp padding & Bottom-end alignment
-  const locationButtonContainerStyle: StyleProp<ViewStyle> = {
-    paddingTop: padding.top + 16,
-    paddingBottom: padding.bottom + 16,
-    paddingLeft: padding.left + 16,
-    paddingRight: padding.right + 16,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-end'
-  }
-
   return (
     <View>
       <MapView style={LayoutStyle.fill}
@@ -83,7 +74,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         onPanDrag={() => { setFollowingLocation(false) }}
         onUserLocationChange={event => { updateLocation(event.nativeEvent.coordinate) }} />
       { /* Layer the location button on the map instead of displacing it. */ }
-      <View style={[LayoutStyle.overlay, locationButtonContainerStyle]}>
+      <View style={[LayoutStyle.overlay, SpacingStyle.pad(padding, 16), styles.locationButtonContainer]}>
         <LocationButton isActive={followingLocation} 
           onPress={() => { flipFollowingLocation() }} />
       </View>
@@ -91,15 +82,11 @@ const Map: React.FC<MapProps> = ({ insets }) => {
   )
 }
 
-export interface Insets {
-  /** The amount of space to inset from the top of the map. */
-  top: number,
-  /** The amount of space to inset from the left of the map. */
-  left: number,
-  /** The amount of space to inset from the bottom of the map. */
-  bottom: number,
-  /** The amount of space to inset from the right of the map. */
-  right: number
-}
+const styles = StyleSheet.create({
+  locationButtonContainer: {
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end'
+  }
+})
 
 export default Map;

@@ -18,13 +18,7 @@ const Main: React.FC<ViewProps> = () => {
   // The bottom sheet extends halfway across the screen, with the map
   // being inset accordingly.
   const screenHeight = Dimensions.get('window').height
-  const mapInsets = {
-    top: 0,
-    left: 0,
-    // Inset the map so that elements are not obscured by the bottom sheet
-    bottom: screenHeight * SHEET_EXTENT,
-    right: 0
-  }
+  const mapInsets = { bottom: screenHeight * SHEET_EXTENT }
 
   return (
     <GestureHandlerRootView>
