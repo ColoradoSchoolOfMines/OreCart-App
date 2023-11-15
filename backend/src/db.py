@@ -1,7 +1,8 @@
 import os
+
 import sqlalchemy
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.engine import Engine
+from sqlalchemy.orm import DeclarativeBase
 
 
 def init() -> Engine:
