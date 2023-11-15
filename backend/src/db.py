@@ -18,7 +18,8 @@ def init() -> Engine:
 class Base(DeclarativeBase):
     """
     This makes an instance of DeclarativeBase which is the inherited model for all models.
-    This is an alternative to using declarative_base from sqlalchemy.orm and making 
+    This is an alternative to using declarative_base from sqlalchemy.orm and making
     a new instance of DeclarativeBase upon the creation of each new model.
     """
+
     pass
