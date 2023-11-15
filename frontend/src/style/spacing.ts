@@ -1,14 +1,14 @@
-import { type ViewStyle } from "react-native"
+import { type ViewStyle } from "react-native";
 
 export interface Insets {
   /** The amount of space to inset from the top of the map. 0 if not specified. */
-  top?: number,
+  top?: number;
   /** The amount of space to inset from the left of the map. 0 if not specified. */
-  left?: number,
+  left?: number;
   /** The amount of space to inset from the bottom of the map. 0 if not specified. */
-  bottom?: number,
+  bottom?: number;
   /** The amount of space to inset from the right of the map. 0 if not specified. */
-  right?: number
+  right?: number;
 }
 
 /**
@@ -23,8 +23,8 @@ function pad(existingPadding: Insets, amount: number): ViewStyle {
     paddingTop: (existingPadding.top ?? 0) + amount,
     paddingLeft: (existingPadding.left ?? 0) + amount,
     paddingBottom: (existingPadding.bottom ?? 0) + amount,
-    paddingRight: (existingPadding.right ?? 0) + amount
-  }
+    paddingRight: (existingPadding.right ?? 0) + amount,
+  };
 }
 
-export default { pad }
+export default { pad };
