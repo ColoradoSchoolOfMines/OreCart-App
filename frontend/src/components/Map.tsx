@@ -13,7 +13,6 @@ import { type Coordinate } from "../services/location";
 
 import { LocationButton } from "./LocationButton";
 
-
 /**
  * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
  */
