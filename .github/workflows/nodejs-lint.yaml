@@ -21,4 +21,8 @@ jobs:
       - name: run eslint
         working-directory: ./frontend/
         run: |
-          npx eslint App.tsx `find ./src -type f \( -name "*.ts" -o -name "*.tsx" \)` --debug
+          npx eslint App.tsx src --debug
+      - name: run prettier
+        working-directory: ./frontend/
+        run: |
+          npx prettier --check App.tsx src --debug
