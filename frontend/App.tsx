@@ -1,7 +1,8 @@
 import * as NavigationBar from "expo-navigation-bar";
-import { StyleSheet, SafeAreaView } from "react-native";
+import { SafeAreaView } from "react-native";
 
-import { Main } from "./src/Main";
+import Main from "./src/Main";
+import LayoutStyle from "./src/style/layout";
 
 // -----
 // DO NOT PUT ANY SUBSTANTIAL UI OR LOGIC INTO THIS FILE. ONLY INCLUDE SYSTEM CONFIGURATION.
@@ -9,10 +10,10 @@ import { Main } from "./src/Main";
 
 NavigationBar.setBackgroundColorAsync("white").catch(console.error);
 
-export default function App(): React.ReactElement<void> {
-  return (
-    <SafeAreaView style={StyleSheet.absoluteFillObject}>
-      <Main style={StyleSheet.absoluteFillObject} />
-    </SafeAreaView>
-  );
-}
+const App: React.FC<void> = () => (
+  <SafeAreaView style={LayoutStyle.fill}>
+    <Main style={LayoutStyle.fill} />
+  </SafeAreaView>
+);
+
+export default App;

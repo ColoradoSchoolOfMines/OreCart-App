@@ -10,7 +10,7 @@ import {
 /**
  * The props for the {@function LocationButton} component.
  */
-export interface LocationButtonProps {
+export interface LocationButtonProps extends ViewProps {
   /** Whether the button should display that the user location is actively being followed. */
   isActive: boolean;
   /** Callback for when the button is pressed by the user. */
@@ -20,9 +20,7 @@ export interface LocationButtonProps {
 /**
  * A button that toggles whether the user's location is being followed.
  */
-export function LocationButton(
-  props: ViewProps & LocationButtonProps,
-): React.ReactElement {
+const LocationButton: React.FC<LocationButtonProps> = (props) => {
   return (
     <TouchableHighlight
       style={styles.button}
@@ -38,7 +36,7 @@ export function LocationButton(
       </View>
     </TouchableHighlight>
   );
-}
+};
 
 const styles = StyleSheet.create({
   button: {
@@ -58,3 +56,5 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 });
+
+export default LocationButton;

@@ -10,9 +10,7 @@ import {
 /**
  * Wraps the bottom sheet component with a simplified interface.
  */
-export function Sheet(
-  props: SheetProps & ViewProps,
-): React.ReactElement<SheetProps & ViewProps> {
+const Sheet: React.FC<SheetProps> = ({ collapsedExtent, children }) => {
   // BottomSheet does have a topInset property, but that causes the shadow of the bottom
   // sheet to become clipped at the top for some reason. Instead, we manually recreate it
   // by adjusting our snap points such that they will cause the sheet to never overlap the
@@ -25,7 +23,7 @@ export function Sheet(
     (100 * screenHeight) / (screenHeight + statusBarHeight);
   // Then we can adjust that calculated value by the specified extent of the collapsed
   // bottom sheet.
-  const collapsedPercent = props.collapsedExtent * expandedPercent;
+  const collapsedPercent = collapsedExtent * expandedPercent;
   const snapPoints = [collapsedPercent + "%", expandedPercent + "%"];
 
   return (
@@ -35,15 +33,15 @@ export function Sheet(
       enableOverDrag={false}
       snapPoints={snapPoints}
     >
-      {props.children}
+      {children}
     </BottomSheet>
   );
-}
+};
 
 /**
  * The props for the {@interface Sheet} component.
  */
-export interface SheetProps {
+export interface SheetProps extends ViewProps {
   /** How much of the bottom sheet to show initially as a fraction of the screen, such as '0.5' for half of the screen */
   collapsedExtent: number;
   /** The child view of the bottom sheet */
@@ -65,3 +63,5 @@ const styles = StyleSheet.create({
     elevation: 24,
   },
 });
+
+export default Sheet;
