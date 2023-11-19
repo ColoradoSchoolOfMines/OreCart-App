@@ -4,7 +4,7 @@ import sqlalchemy
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from . import db
+from . import db, hw
 from .handlers import location
 
 load_dotenv()
