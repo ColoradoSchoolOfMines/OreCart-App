@@ -4,7 +4,8 @@ import sqlalchemy
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session
 
-class DBWrapper():
+
+class DBWrapper:
     def __init__(self):
         self.engine = sqlalchemy.create_engine(
             os.environ["DATABASE_URL"], pool_size=15, max_overflow=5
@@ -12,6 +13,7 @@ class DBWrapper():
 
     def session(self):
         return Session(self.engine)
+
 
 class Base(DeclarativeBase):
     """

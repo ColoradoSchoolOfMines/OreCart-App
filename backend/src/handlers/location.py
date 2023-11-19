@@ -29,5 +29,5 @@ def post_van_location(req: Request, van_id: int, van_location: VanLocation):
     with req.app.state.db.session() as session:
         # update van location in database
         pass
-    
+
     return {"message": "Location updated successfully."}
