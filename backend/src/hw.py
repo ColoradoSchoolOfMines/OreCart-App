@@ -9,6 +9,7 @@ from fastapi import Request
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
+
 class HWOKResponse(Response):
     """
     This is a custom response class used by hardware components to indicate a
@@ -27,10 +28,12 @@ class HWOKResponse(Response):
     def __eq__(self, __value: object) -> bool:
         return isinstance(__value, HWOKResponse) and self.body == __value.body
 
+
 class HWErrorCode(Enum):
     """
     Defines codes for errors returned to the hardware.
     """
+
 
 class HWHTTPException(Exception):
     """
@@ -45,6 +48,7 @@ class HWHTTPException(Exception):
         self.status_code = status_code
         self.error_code = error_code
 
+
 class HWExceptionMiddleware(BaseHTTPMiddleware):
     """
     A middleware mapping HWHTTPException to a response the packed byte it specifies
@@ -58,7 +62,8 @@ class HWExceptionMiddleware(BaseHTTPMiddleware):
             response = Response(
                 content=struct.pack("!b", exc.error_code.value),
                 status_code=exc.status_code,
-                media_type="application/octet-stream")
+                media_type="application/octet-stream",
+            )
         except Exception as exc:
             # Forward exception to base middleware (hopefully the default error handler)
             raise exc
