@@ -10,7 +10,7 @@ from .handlers import location
 load_dotenv()
 
 app = FastAPI()
-
+app.add_middleware(hw.HWExceptionMiddleware)
 app.include_router(location.router)
 
 
