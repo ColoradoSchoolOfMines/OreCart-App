@@ -15,8 +15,9 @@ class VanLocation(BaseModel):
 def get_van_location(req: Request, van_id: int) -> VanLocation:
     # get van location and return a proper VanLocation object
 
-    # get engine from app state
-    engine = req.app.state.engine
+    with req.app.state.db.session() as session:
+        # get van location from database
+        pass
 
     return VanLocation(lat=0.0, lon=0.0, van_id=van_id, timestamp=0)
 
@@ -25,7 +26,8 @@ def get_van_location(req: Request, van_id: int) -> VanLocation:
 def post_van_location(req: Request, van_id: int, van_location: VanLocation):
     # update van location in database
 
-    # get engine from app state
-    engine = req.app.state.engine
-
+    with req.app.state.db.session() as session:
+        # update van location in database
+        pass
+    
     return {"message": "Location updated successfully."}
