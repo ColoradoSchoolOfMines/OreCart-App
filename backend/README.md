@@ -54,6 +54,8 @@ uvicorn src.main:app --reload
 
 The server will be running on `localhost:8000`!
 
+Note: In production, to reduce hardware data use, add the `--no-server-header --no-date-header` flags to remove superfluous header data
+
 ---
 
 ### Formatting, Linting, Typing, and More 🛠️
