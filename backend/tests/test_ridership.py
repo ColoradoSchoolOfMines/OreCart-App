@@ -17,13 +17,11 @@ def mock_session():
     mock.__exit__.return_value = False
     return mock
 
+
 @pytest.fixture
 def mock_van_model():
-    return VanModel(
-        id=1,
-        route_id=1,
-        wheelchair=False
-    )
+    return VanModel(id=1, route_id=1, wheelchair=False)
+
 
 def new_mock_ridership(time: datetime):
     return RidershipModel(
@@ -33,23 +31,26 @@ def new_mock_ridership(time: datetime):
         exited=3,
         lat=37.7749,
         lon=-122.4194,
-        datetime=time
+        datetime=time,
     )
+
 
 def new_mock_req(time: datetime, ridership: MagicMock, session: MagicMock):
     async def mock_body():
         return struct.pack(
-            "!lbbdd", 
+            "!lbbdd",
             int(time.timestamp()),
             ridership.entered,
             ridership.exited,
             ridership.lat,
-            ridership.lon)
+            ridership.lon,
+        )
 
     req = MagicMock()
     req.body = mock_body
     req.app.state.db.session.return_value = session
     return req
+
 
 def new_route_side_effect(van_model, ridership):
     def route_side_effect(*args):
@@ -58,14 +59,18 @@ def new_route_side_effect(van_model, ridership):
             mock_query = MagicMock()
             mock_query.filter_by.return_value.first.return_value = van_model
             return mock_query
-        
+
         if args[0] is RidershipModel:
             mock_query = MagicMock()
-            mock_query.filter_by.return_value.order_by.return_value.first.return_value = ridership
+            mock_query.filter_by.return_value.order_by.return_value.first.return_value = (
+                ridership
+            )
             return mock_query
-        
+
         raise TypeError("Invalid model type")
+
     return route_side_effect
+
 
 @pytest.mark.asyncio
 async def test_post_ridership_stats_with_prior(mock_session, mock_van_model):
@@ -74,7 +79,9 @@ async def test_post_ridership_stats_with_prior(mock_session, mock_van_model):
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     prior_ridership = new_mock_ridership(now - timedelta(minutes=1))
-    mock_session.query.side_effect = new_route_side_effect(mock_van_model, prior_ridership)
+    mock_session.query.side_effect = new_route_side_effect(
+        mock_van_model, prior_ridership
+    )
 
     # Act
     response = await post_ridership_stats(req, mock_van_model.id)
@@ -83,6 +90,7 @@ async def test_post_ridership_stats_with_prior(mock_session, mock_van_model):
     assert response == HardwareOKResponse()
     mock_session.add.assert_called_once_with(new_ridership)
     mock_session.commit.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_post_ridership_stats_without_prior(mock_session, mock_van_model):
@@ -99,6 +107,7 @@ async def test_post_ridership_stats_without_prior(mock_session, mock_van_model):
     assert response == HardwareOKResponse()
     mock_session.add.assert_called_once_with(new_ridership)
     mock_session.commit.assert_called_once()
+
 
 @pytest.mark.asyncio
 async def test_post_ridership_stats_too_far_in_past(mock_session, mock_van_model):
@@ -117,6 +126,7 @@ async def test_post_ridership_stats_too_far_in_past(mock_session, mock_van_model
     assert e.value.error_code == HardwareErrorCode.TIMESTAMP_TOO_FAR_IN_PAST
     mock_session.add.not_assert_called_once_with(new_ridership)
 
+
 @pytest.mark.asyncio
 async def test_post_ridership_stats_in_future(mock_session, mock_van_model):
     # Arrange
@@ -134,8 +144,11 @@ async def test_post_ridership_stats_in_future(mock_session, mock_van_model):
     assert e.value.error_code == HardwareErrorCode.TIMESTAMP_IN_FUTURE
     mock_session.add.not_assert_called_once_with(new_ridership)
 
+
 @pytest.mark.asyncio
-async def test_post_ridership_van_not_active_invalid_param(mock_session, mock_van_model):
+async def test_post_ridership_van_not_active_invalid_param(
+    mock_session, mock_van_model
+):
     # Arrange
     now = datetime.now().replace(microsecond=0)
     new_ridership = new_mock_ridership(now)
@@ -150,6 +163,7 @@ async def test_post_ridership_van_not_active_invalid_param(mock_session, mock_va
     assert e.value.status_code == 404
     assert e.value.error_code == HardwareErrorCode.VAN_NOT_ACTIVE
     mock_session.add.not_assert_called_once_with(new_ridership)
+
 
 @pytest.mark.asyncio
 async def test_post_ridership_van_not_active_valid_param(mock_session):
@@ -168,6 +182,7 @@ async def test_post_ridership_van_not_active_valid_param(mock_session):
     assert e.value.error_code == HardwareErrorCode.VAN_NOT_ACTIVE
     mock_session.add.not_assert_called_once_with(new_ridership)
 
+
 @pytest.mark.asyncio
 async def test_post_ridership_stats_not_most_recent(mock_session, mock_van_model):
     # Arrange
@@ -175,7 +190,9 @@ async def test_post_ridership_stats_not_most_recent(mock_session, mock_van_model
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     prior_ridership = new_mock_ridership(now + timedelta(minutes=1))
-    mock_session.query.side_effect = new_route_side_effect(mock_van_model, prior_ridership)
+    mock_session.query.side_effect = new_route_side_effect(
+        mock_van_model, prior_ridership
+    )
 
     # Act
     with pytest.raises(HardwareHTTPException) as e:
