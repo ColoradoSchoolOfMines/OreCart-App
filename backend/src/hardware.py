@@ -34,6 +34,11 @@ class HardwareErrorCode(Enum):
     Defines codes for errors returned to the hardware.
     """
 
+    TIMESTAMP_TOO_FAR_IN_PAST = 0
+    TIMESTAMP_IN_FUTURE = 1
+    VAN_NOT_ACTIVE = 2
+    TIMESTAMP_NOT_MOST_RECENT = 3
+
 
 class HardwareHTTPException(Exception):
     """

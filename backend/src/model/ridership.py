@@ -1,6 +1,6 @@
-import datetime
+from datetime import datetime
 
-from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
@@ -21,4 +21,17 @@ class RidershipModel(Base):
     exited: Mapped[int] = mapped_column(nullable=False)
     lat: Mapped[float] = mapped_column(nullable=False)
     lon: Mapped[float] = mapped_column(nullable=False)
-    datetime: Mapped[datetime.datetime] = mapped_column(nullable=False)
+    datetime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+
+    def __eq__(self, __value: object) -> bool:
+        return (
+            isinstance(__value, RidershipModel)
+            and self.id == __value.id
+            and self.van_id == __value.van_id
+            and self.route_id == __value.route_id
+            and self.entered == __value.entered
+            and self.exited == __value.exited
+            and self.lat == __value.lat
+            and self.lon == __value.lon
+            and self.datetime == __value.datetime
+        )
