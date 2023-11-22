@@ -7,7 +7,6 @@ from typing import Annotated, Optional
 
 import pytz
 from fastapi import APIRouter, HTTPException, Query, Request
-
 from src.model.alert import AlertModel
 from src.model.route import RouteModel
 from src.model.route_disable import RouteDisableModel
