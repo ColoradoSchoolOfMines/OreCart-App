@@ -68,7 +68,9 @@ Another issue in python is types (or the lack thereof). mypy is a tool that keep
 
 A different issue regarding formatting is import statements. In python they can get messy easily, and black doesn't force them to be in any order. That's where isort comes in. isort forces a specific order for import statements, don't worry though you can automagically sort your imports by running `isort filepath`. Our CI build also runs `isort --check`. 📦
 
-Lastly, we are using pylint to verify that our python doesn't have any obvious errors. Our CI is configured to test with `pylint -E` which will only fail if there are errors detected. 🐞
+We are using pylint to verify that our python doesn't have any obvious errors. Our CI is configured to test with `pylint -E` which will only fail if there are errors detected. 🐞
+
+Lastly, we will be unit testing the backend with `pytest`. This allows us to ensure the routes and other components are working correctly before they are exposed to users. Our CI build runs `pylint`, which should automatically fail as soon as one test fails. 📄
 
 ---
 
