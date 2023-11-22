@@ -40,6 +40,11 @@ deactivate
 
 ### Running the server
 
+Before running the backend, generate the database:
+```
+alembic upgrade head
+```
+
 To run the backend, ensure your venv is running:
 
 ```
