@@ -2,10 +2,9 @@
 Contains routes specific to working with routes.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Annotated, Optional
 
-import pytz
 from fastapi import APIRouter, HTTPException, Query, Request
 from src.model.alert import AlertModel
 from src.model.route import RouteModel
@@ -149,7 +148,7 @@ def is_route_active(route_id: int, session) -> bool:
 
     # Convert to UTC then drop the timezone so we can use it in the DB, which has
     # UTC timestamps without timezone information.
-    now = datetime.now(tz=pytz.utc).replace(tzinfo=None)
+    now = datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
     alert = (
         session.query(AlertModel)
