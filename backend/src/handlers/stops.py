@@ -3,7 +3,7 @@ Contains routes specific to working with stops.
 """
 
 from datetime import datetime
-from typing import Annotated, Optional, Any
+from typing import Annotated, Any, Optional
 
 import pytz
 from fastapi import APIRouter, HTTPException, Query, Request
