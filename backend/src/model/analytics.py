@@ -5,8 +5,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
 
-class Ridership(Base):
-    __tablename__ = "ridership"
+class Analytics(Base):
+    __tablename__ = "analytics"
     __table_args__ = (
         ForeignKeyConstraint(["van_id"], ["vans.id"]),
         ForeignKeyConstraint(["route_id"], ["routes.id"]),
