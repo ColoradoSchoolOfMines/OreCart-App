@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Union
+from typing import Dict, List, Union
 
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
@@ -27,9 +27,9 @@ def get_alerts(
     with req.app.state.db.session() as session:
         alerts: List[Alert] = session.query(Alert).all()
 
-    resp = {"alerts": []}
+    resp: Dict[str, List[Dict[str, Union[str, int]]]] = {"alerts": []}
     for alert in alerts:
-        filtered_alert = {}
+        filtered_alert: Dict[str, Union[str, int]] = {}
 
         filtered_alert["id"] = alert.id
         if include is None or "text" in include:

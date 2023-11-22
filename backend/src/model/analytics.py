@@ -21,7 +21,7 @@ class Analytics(Base):
     exited: Mapped[int] = mapped_column(nullable=False)
     lat: Mapped[float] = mapped_column(nullable=False)
     lon: Mapped[float] = mapped_column(nullable=False)
-    datetime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    datetime: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
 
     def __eq__(self, __value: object) -> bool:
         return (
