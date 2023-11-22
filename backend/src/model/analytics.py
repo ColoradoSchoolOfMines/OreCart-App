@@ -5,8 +5,8 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
 
-class RidershipModel(Base):
-    __tablename__ = "ridership"
+class Analytics(Base):
+    __tablename__ = "analytics"
     __table_args__ = (
         ForeignKeyConstraint(["van_id"], ["vans.id"]),
         ForeignKeyConstraint(["route_id"], ["routes.id"]),
@@ -21,11 +21,11 @@ class RidershipModel(Base):
     exited: Mapped[int] = mapped_column(nullable=False)
     lat: Mapped[float] = mapped_column(nullable=False)
     lon: Mapped[float] = mapped_column(nullable=False)
-    datetime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    datetime: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
 
     def __eq__(self, __value: object) -> bool:
         return (
-            isinstance(__value, RidershipModel)
+            isinstance(__value, Analytics)
             and self.id == __value.id
             and self.van_id == __value.van_id
             and self.route_id == __value.route_id

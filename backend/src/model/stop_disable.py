@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
 
-class StopDisableModel(Base):
+class StopDisable(Base):
     __tablename__ = "stop_disables"
     __table_args__ = (
         ForeignKeyConstraint(["alert_id"], ["alerts.id"]),

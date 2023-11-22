@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
 
-class RouteStopModel(Base):
+class RouteStop(Base):
     __tablename__ = "route_stops"
     __table_args__ = (
         ForeignKeyConstraint(["route_id"], ["routes.id"]),

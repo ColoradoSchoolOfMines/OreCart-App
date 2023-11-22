@@ -1,7 +1,6 @@
 import os
 
 import sqlalchemy
-from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, Session
 
 
@@ -11,7 +10,7 @@ class DBWrapper:
             os.environ["DATABASE_URL"], pool_size=15, max_overflow=5
         )
 
-    def session(self):
+    def session(self) -> Session:
         return Session(self.engine)
 
 
