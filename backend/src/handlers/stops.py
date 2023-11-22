@@ -8,8 +8,8 @@ from typing import Annotated, Optional, Any
 import pytz
 from fastapi import APIRouter, HTTPException, Query, Request
 from src.model.alert import AlertModel
-from src.model.stop import StopModel
 from src.model.route_stop import RouteStopModel
+from src.model.stop import StopModel
 from src.model.stop_disable import StopDisableModel
 from src.request import validate_include
 
