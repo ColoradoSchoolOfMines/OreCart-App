@@ -68,7 +68,7 @@ A different issue regarding formatting is import statements. In python they can 
 
 We are using pylint to verify that our python doesn't have any obvious errors. Our CI is configured to test with `pylint -E` which will only fail if there are errors detected. 🐞
 
-Lastly, we will be unit testing the backend with `pytest`. This allows us to ensure the routes and other components are working correctly before they are exposed to users. Our CI build runs `pylint`, which should automatically fail as soon as one test fails.
+Lastly, we will be unit testing the backend with `pytest`. This allows us to ensure the routes and other components are working correctly before they are exposed to users. Our CI build runs `pylint`, which should automatically fail as soon as one test fails. 📄
 
 ---
 
