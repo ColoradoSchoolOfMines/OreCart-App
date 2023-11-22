@@ -4,10 +4,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.hardware import HardwareOKResponse, HardwareHTTPException, HardwareErrorCode
-from src.model.van import VanModel
-from src.model.ridership import RidershipModel
 from src.handlers.ridership import post_ridership_stats
+from src.hardware import (HardwareErrorCode, HardwareHTTPException,
+                          HardwareOKResponse)
+from src.model.ridership import RidershipModel
+from src.model.van import VanModel
 
 
 @pytest.fixture

@@ -7,7 +7,8 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Request
 
-from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
+from src.hardware import (HardwareErrorCode, HardwareHTTPException,
+                          HardwareOKResponse)
 from src.model.ridership import RidershipModel
 from src.model.van import VanModel
 
