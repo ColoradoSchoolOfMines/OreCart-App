@@ -38,6 +38,9 @@ def get_all_routes(
     req: Request,
     include: Annotated[list[str] | None, Query()] = None,
 ):
+    """
+    Gets all routes.
+    """
     return get_route_impl(req, None, include)
 
 
@@ -47,6 +50,9 @@ def get_route_with_id(
     route_id: int,
     include: Annotated[list[str] | None, Query()] = None,
 ):
+    """
+    Gets the route with the specified ID.
+    """
     return get_route_impl(req, route_id, include)
 
 
@@ -66,7 +72,9 @@ def get_route_impl(
         return query_routes(route_id, include_set, session)
 
 
-def query_routes(route_id: Optional[int], include_set: set[str], session) -> list[dict] | dict:
+def query_routes(
+    route_id: Optional[int], include_set: set[str], session
+) -> list[dict] | dict:
     """
     Gets route information and returns it in the format expected by the client,
     given the specified include parameters.
@@ -102,7 +110,7 @@ def query_routes(route_id: Optional[int], include_set: set[str], session) -> lis
 
         if FIELD_IS_ACTIVE in include_set:
             route[FIELD_IS_ACTIVE] = is_route_active(route[FIELD_ID], session)
-            
+
     return routes
 
 

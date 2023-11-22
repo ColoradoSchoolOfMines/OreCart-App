@@ -37,6 +37,9 @@ def get_all_stops(
     req: Request,
     include: Annotated[list[str] | None, Query()] = None,
 ):
+    """
+    Gets all stops.
+    """
     return get_stop_impl(req, None, include)
 
 
@@ -46,6 +49,9 @@ def get_stop_with_id(
     stop_id: int,
     include: Annotated[list[str] | None, Query()] = None,
 ):
+    """
+    Gets the stop with the specified ID.
+    """
     return get_stop_impl(req, stop_id, include)
 
 
