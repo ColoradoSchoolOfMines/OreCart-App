@@ -10,7 +10,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import Response
 
 
-class HWOKResponse(Response):
+class HardwareOKResponse(Response):
     """
     This is a custom response class used by hardware components to indicate a
     successful completion (200 OK) of the request with an optional body of bytes
@@ -26,16 +26,16 @@ class HWOKResponse(Response):
         )
 
     def __eq__(self, __value: object) -> bool:
-        return isinstance(__value, HWOKResponse) and self.body == __value.body
+        return isinstance(__value, HardwareOKResponse) and self.body == __value.body
 
 
-class HWErrorCode(Enum):
+class HardwareErrorCode(Enum):
     """
     Defines codes for errors returned to the hardware.
     """
 
 
-class HWHTTPException(Exception):
+class HardwareHTTPException(Exception):
     """
     This is a custom exception class raised when an error occurs on a route
     used by hardware components. To make the response as small as possible
@@ -43,13 +43,13 @@ class HWHTTPException(Exception):
     response body rather than JSON.
     """
 
-    def __init__(self, status_code: int, error_code: HWErrorCode):
+    def __init__(self, status_code: int, error_code: HardwareErrorCode):
         super().__init__()
         self.status_code = status_code
         self.error_code = error_code
 
 
-class HWExceptionMiddleware(BaseHTTPMiddleware):
+class HardwareExceptionMiddleware(BaseHTTPMiddleware):
     """
     A middleware mapping HWHTTPException to a response the packed byte it specifies
     """
@@ -57,7 +57,7 @@ class HWExceptionMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         try:
             response = await call_next(request)
-        except HWHTTPException as exc:
+        except HardwareHTTPException as exc:
             # Is a hardware error, respond with a packed error code byte.
             response = Response(
                 content=struct.pack("!b", exc.error_code.value),

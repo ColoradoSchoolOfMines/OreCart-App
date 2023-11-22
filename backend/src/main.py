@@ -4,13 +4,14 @@ import sqlalchemy
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from . import db, hw
+from .hardware import HardwareExceptionMiddleware
+from . import db
 from .handlers import location
 
 load_dotenv()
 
 app = FastAPI()
-app.add_middleware(hw.HWExceptionMiddleware)
+app.add_middleware(HardwareExceptionMiddleware)
 app.include_router(location.router)
 
 
