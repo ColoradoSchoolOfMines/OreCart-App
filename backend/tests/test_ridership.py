@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock
 
 import pytest
-
 from src.handlers.ridership import post_ridership_stats
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.ridership import RidershipModel
