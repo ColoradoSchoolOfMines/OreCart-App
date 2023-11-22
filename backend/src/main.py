@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from .db import DBWrapper
-from .handlers import location, dashboard, routes
+from .handlers import location, routes, stops
 from .hardware import HardwareExceptionMiddleware
 
 load_dotenv()
@@ -10,8 +10,8 @@ load_dotenv()
 app = FastAPI()
 app.add_middleware(HardwareExceptionMiddleware)
 app.include_router(location.router)
-app.include_router(dashboard.router)
 app.include_router(routes.router)
+app.include_router(stops.router)
 
 
 @app.on_event("startup")

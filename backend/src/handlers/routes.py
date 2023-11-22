@@ -15,6 +15,7 @@ from src.model.route_stop import RouteStopModel
 from src.model.waypoint import WaypointModel
 from src.request import validate_include
 
+# JSON field names/include values
 FIELD_ID = "id"
 FIELD_NAME = "name"
 FIELD_STOP_IDS = "stopIds"
@@ -29,10 +30,10 @@ INCLUDES = {
     FIELD_IS_ACTIVE,
 }
 
-router = APIRouter()
+router = APIRouter(prefix="/routes", tags=["routes"])
 
 
-@router.get("/routes")
+@router.get("/")
 def get_all_routes(
     req: Request,
     include: Annotated[list[str] | None, Query()] = None,
@@ -40,7 +41,7 @@ def get_all_routes(
     return get_route_impl(req, None, include)
 
 
-@router.get("/routes/{route_id}")
+@router.get("/{route_id}")
 def get_route_with_id(
     req: Request,
     route_id: int,
@@ -92,12 +93,12 @@ def query_routes(route_id: Optional[int], include_set: set[str], session) -> lis
         raise HTTPException(status_code=404, detail="Route not found")
 
     for route in routes:
-        # Search for and add any desired parameters to be included.
+        # Query for and add any desired optional values to be included.
         if FIELD_STOP_IDS in include_set:
-            route[FIELD_STOP_IDS] = get_route_stop_ids(route[FIELD_ID], session)
+            route[FIELD_STOP_IDS] = query_route_stop_ids(route[FIELD_ID], session)
 
         if FIELD_WAYPOINTS in include_set:
-            route[FIELD_WAYPOINTS] = get_route_waypoints(route[FIELD_ID], session)
+            route[FIELD_WAYPOINTS] = query_route_waypoints(route[FIELD_ID], session)
 
         if FIELD_IS_ACTIVE in include_set:
             route[FIELD_IS_ACTIVE] = is_route_active(route[FIELD_ID], session)
@@ -105,7 +106,7 @@ def query_routes(route_id: Optional[int], include_set: set[str], session) -> lis
     return routes
 
 
-def get_route_stop_ids(route_id: int, session):
+def query_route_stop_ids(route_id: int, session):
     """
     Queries and returns the stop IDs for the given route ID.
     """
@@ -119,7 +120,7 @@ def get_route_stop_ids(route_id: int, session):
     return [stop_id for (stop_id,) in stops]
 
 
-def get_route_waypoints(route_id: int, session):
+def query_route_waypoints(route_id: int, session):
     """
     Queries and returns the JSON representation of the waypoints for the given route ID.
     """
