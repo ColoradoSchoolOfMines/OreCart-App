@@ -6,10 +6,10 @@ from datetime import datetime, timezone
 from typing import Annotated, Any, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
-from src.model.alert import AlertModel
-from src.model.route_stop import RouteStopModel
-from src.model.stop import StopModel
-from src.model.stop_disable import StopDisableModel
+from src.model.alert import Alert
+from src.model.route_stop import RouteStop
+from src.model.stop import Stop
+from src.model.stop_disable import StopDisable
 from src.request import validate_include
 
 # JSON field names/include values
@@ -77,11 +77,11 @@ def query_stop(
     given the specified include parameters.
     """
 
-    stop_query = session.query(StopModel)
+    stop_query = session.query(Stop)
 
     # Filter to the ID if specified, otherwise just query for all stops
     if stop_id is not None:
-        stop_query = stop_query.filter(StopModel.id == stop_id)
+        stop_query = stop_query.filter(Stop.id == stop_id)
 
     # Unlike other routes, several database columns must be read or not depending
     # on the included values. This requires us to do a more unorthodox query where
@@ -89,14 +89,14 @@ def query_stop(
     # result in a duple of anonymous values, we also have to make sure in what
     # exact order we added each entity to the query so we can reconstruct a JSON
     # object from the tuple.
-    entities: dict[str, Any] = {FIELD_ID: StopModel.id}
+    entities: dict[str, Any] = {FIELD_ID: Stop.id}
     if FIELD_NAME in include_set:
-        entities[FIELD_NAME] = StopModel.name
+        entities[FIELD_NAME] = Stop.name
     if FIELD_LOCATION in include_set:
-        entities[FIELD_LATITUDE] = StopModel.lat
-        entities[FIELD_LONGITUDE] = StopModel.lon
+        entities[FIELD_LATITUDE] = Stop.lat
+        entities[FIELD_LONGITUDE] = Stop.lon
     if FIELD_IS_ACTIVE in include_set:
-        entities[FIELD_IS_ACTIVE] = StopModel.active
+        entities[FIELD_IS_ACTIVE] = Stop.active
     stop_query = stop_query.with_entities(*entities.values())
     stops = [
         # If we include the entities foo and bar, that will result in a tuple of
@@ -128,9 +128,9 @@ def query_route_ids(stop_id: int, session) -> list[int]:
     return [
         route_id
         # with_entities returns a tuple we need to unpack for some reason.
-        for (route_id,) in session.query(RouteStopModel)
-        .filter(RouteStopModel.stop_id == stop_id)
-        .with_entities(RouteStopModel.route_id)
+        for (route_id,) in session.query(RouteStop)
+        .filter(RouteStop.stop_id == stop_id)
+        .with_entities(RouteStop.route_id)
         .all()
     ]
 
@@ -146,8 +146,8 @@ def is_stop_active(stop: dict, session) -> bool:
     now = datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
     alert = (
-        session.query(AlertModel)
-        .filter(AlertModel.start_datetime <= now, AlertModel.end_datetime >= now)
+        session.query(Alert)
+        .filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
         .params(now=now)
         .first()
     )
@@ -158,10 +158,10 @@ def is_stop_active(stop: dict, session) -> bool:
 
     # If the stop is disabled by the current alert, then it is not active.
     enabled = (
-        session.query(StopDisableModel)
+        session.query(StopDisable)
         .filter(
-            StopDisableModel.alert_id == alert.id,
-            StopDisableModel.stop_id == stop[FIELD_ID],
+            StopDisable.alert_id == alert.id,
+            StopDisable.stop_id == stop[FIELD_ID],
         )
         .count()
     ) == 0

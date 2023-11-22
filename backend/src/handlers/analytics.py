@@ -7,8 +7,8 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Request
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
-from src.model.ridership import RidershipModel
-from src.model.van import VanModel
+from src.model.analytics import Analytics
+from src.model.van import Van
 
 router = APIRouter(prefix="/stats/ridership", tags=["stats", "ridership"])
 
@@ -50,7 +50,7 @@ async def post_ridership_stats(req: Request, van_id: int):
     with req.app.state.db.session() as session:
         # Find the route that the van is currently on, required by the ridership database.
         # If there is no route, then the van does not exist or is not running.
-        van = session.query(VanModel).filter_by(id=van_id).first()
+        van = session.query(Van).filter_by(id=van_id).first()
         if not van:
             raise HardwareHTTPException(
                 status_code=404, error_code=HardwareErrorCode.VAN_NOT_ACTIVE
@@ -59,9 +59,9 @@ async def post_ridership_stats(req: Request, van_id: int):
         # Check that the timestamp is the most recent one for the van. This prevents
         # updates from being sent out of order, which could mess up the statistics.
         most_recent = (
-            session.query(RidershipModel)
+            session.query(Analytics)
             .filter_by(van_id=van_id)
-            .order_by(RidershipModel.datetime.desc())
+            .order_by(Analytics.datetime.desc())
             .first()
         )
         if most_recent is not None and timestamp <= most_recent.datetime:
@@ -70,7 +70,7 @@ async def post_ridership_stats(req: Request, van_id: int):
             )
 
         # Finally commit the ridership statistics to the database.
-        new_ridership = RidershipModel(
+        new_ridership = Analytics(
             van_id=van_id,
             route_id=van.route_id,
             entered=entered,

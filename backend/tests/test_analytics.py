@@ -3,10 +3,10 @@ from datetime import datetime, timedelta
 from unittest.mock import MagicMock
 
 import pytest
-from src.handlers.ridership import post_ridership_stats
+from src.handlers.analytics import post_ridership_stats
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
-from src.model.ridership import RidershipModel
-from src.model.van import VanModel
+from src.model.analytics import Analytics
+from src.model.van import Van
 
 
 @pytest.fixture
@@ -19,11 +19,11 @@ def mock_session():
 
 @pytest.fixture
 def mock_van_model():
-    return VanModel(id=1, route_id=1, wheelchair=False)
+    return Van(id=1, route_id=1, wheelchair=False)
 
 
 def new_mock_ridership(time: datetime):
-    return RidershipModel(
+    return Analytics(
         van_id=1,
         route_id=1,
         entered=5,
@@ -54,12 +54,12 @@ def new_mock_req(time: datetime, ridership: MagicMock, session: MagicMock):
 def new_route_side_effect(van_model, ridership):
     def route_side_effect(*args):
         # Create different mock query objects for each model
-        if args[0] is VanModel:
+        if args[0] is Van:
             mock_query = MagicMock()
             mock_query.filter_by.return_value.first.return_value = van_model
             return mock_query
 
-        if args[0] is RidershipModel:
+        if args[0] is Analytics:
             mock_query = MagicMock()
             mock_query.filter_by.return_value.order_by.return_value.first.return_value = (
                 ridership

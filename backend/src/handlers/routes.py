@@ -6,11 +6,11 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
-from src.model.alert import AlertModel
-from src.model.route import RouteModel
-from src.model.route_disable import RouteDisableModel
-from src.model.route_stop import RouteStopModel
-from src.model.waypoint import WaypointModel
+from src.model.alert import Alert
+from src.model.route import Route
+from src.model.route_disable import RouteDisable
+from src.model.route_stop import RouteStop
+from src.model.waypoint import Waypoint
 from src.request import validate_include
 
 # JSON field names/include values
@@ -78,11 +78,11 @@ def query_routes(
     given the specified include parameters.
     """
 
-    route_query = session.query(RouteModel)
+    route_query = session.query(Route)
 
     # Filter to the ID if specified, otherwise just query for all routes
     if route_id is not None:
-        route_query = route_query.filter(RouteModel.id == route_id)
+        route_query = route_query.filter(Route.id == route_id)
 
     if FIELD_NAME in include_set:
         # Name desired, just do a normal query.
@@ -92,7 +92,7 @@ def query_routes(
     else:
         # Name not desired, remove it. Note that reducing this to just the ID results
         # in a tuple we need to unpack.
-        route_query = route_query.with_entities(RouteModel.id)
+        route_query = route_query.with_entities(Route.id)
         routes = [{FIELD_ID: route_id} for (route_id,) in route_query.all()]
 
     if len(routes) == 0:
@@ -118,9 +118,9 @@ def query_route_stop_ids(route_id: int, session):
     """
 
     stops = (
-        session.query(RouteStopModel)
-        .filter(route_id == RouteModel.id)
-        .with_entities(RouteStopModel.stop_id)
+        session.query(RouteStop)
+        .filter(route_id == Route.id)
+        .with_entities(RouteStop.stop_id)
         .all()
     )
     return [stop_id for (stop_id,) in stops]
@@ -132,7 +132,7 @@ def query_route_waypoints(route_id: int, session):
     """
 
     waypoints = (
-        session.query(WaypointModel).filter(route_id == WaypointModel.route_id).all()
+        session.query(Waypoint).filter(route_id == Waypoint.route_id).all()
     )
     return [
         {FIELD_LATITUDE: waypoint.lat, FIELD_LONGITUDE: waypoint.lon}
@@ -151,8 +151,8 @@ def is_route_active(route_id: int, session) -> bool:
     now = datetime.now(tz=timezone.utc).replace(tzinfo=None)
 
     alert = (
-        session.query(AlertModel)
-        .filter(AlertModel.start_datetime <= now, AlertModel.end_datetime >= now)
+        session.query(Alert)
+        .filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
         .params(now=now)
         .first()
     )
@@ -163,10 +163,10 @@ def is_route_active(route_id: int, session) -> bool:
 
     # If the route is disabled by the current alert, then it is not active.
     enabled = (
-        session.query(RouteDisableModel)
+        session.query(RouteDisable)
         .filter(
-            RouteDisableModel.alert_id == alert.id,
-            RouteDisableModel.route_id == route_id,
+            RouteDisable.alert_id == alert.id,
+            RouteDisable.route_id == route_id,
         )
         .count()
     ) == 0

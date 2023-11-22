@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
 
-class WaypointModel(Base):
+class Waypoint(Base):
     __tablename__ = "waypoints"
     __table_args__ = (
         ForeignKeyConstraint(["route_id"], ["routes.id"]),
