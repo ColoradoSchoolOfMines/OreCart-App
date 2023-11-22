@@ -25,7 +25,7 @@ class Analytics(Base):
 
     def __eq__(self, __value: object) -> bool:
         return (
-            isinstance(__value, RidershipModel)
+            isinstance(__value, Analytics)
             and self.id == __value.id
             and self.van_id == __value.van_id
             and self.route_id == __value.route_id
