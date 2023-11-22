@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 
+
 def validate_include(include: list[str], allowed: set[str]):
     include_set = set(include)
     if len(include_set) != len(include):

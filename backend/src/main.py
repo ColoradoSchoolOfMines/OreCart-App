@@ -2,7 +2,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 
 from .db import DBWrapper
-from .handlers import location, routes, stops,  ridership
+from .handlers import location, routes, stops, ridership
 from .hardware import HardwareExceptionMiddleware
 
 load_dotenv()
