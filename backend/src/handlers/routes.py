@@ -131,9 +131,7 @@ def query_route_waypoints(route_id: int, session):
     Queries and returns the JSON representation of the waypoints for the given route ID.
     """
 
-    waypoints = (
-        session.query(Waypoint).filter(route_id == Waypoint.route_id).all()
-    )
+    waypoints = session.query(Waypoint).filter(route_id == Waypoint.route_id).all()
     return [
         {FIELD_LATITUDE: waypoint.lat, FIELD_LONGITUDE: waypoint.lon}
         for waypoint in waypoints
