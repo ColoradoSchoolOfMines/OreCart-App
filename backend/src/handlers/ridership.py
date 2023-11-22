@@ -10,10 +10,10 @@ from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKRes
 from src.model.ridership import RidershipModel
 from src.model.van import VanModel
 
-router = APIRouter()
+router = APIRouter(prefix="/stats/ridership", tags=["stats", "ridership"])
 
 
-@router.post("/stats/ridership/{van_id}")
+@router.post("/{van_id}")
 async def post_ridership_stats(req: Request, van_id: int):
     """
     This route is used by the hardware components to send ridership statistics to be
