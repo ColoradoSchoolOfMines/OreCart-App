@@ -194,7 +194,6 @@ def create_stops_json(
     """
     Converts the stop model from the database into it's JSON representation.
     This will query other database elements in order to find information that
-    is tied to the stop that the frontend also needs (e.g. route ids).
     """
 
     return [
