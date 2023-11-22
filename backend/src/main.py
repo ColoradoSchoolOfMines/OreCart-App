@@ -1,9 +1,9 @@
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from .hardware import HardwareExceptionMiddleware
 from .db import DBWrapper
 from .handlers import location
+from .hardware import HardwareExceptionMiddleware
 
 load_dotenv()
 
