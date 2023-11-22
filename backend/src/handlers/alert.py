@@ -2,7 +2,6 @@ import datetime
 
 from fastapi import APIRouter, Form, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
 from src.model.alert import Alert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
