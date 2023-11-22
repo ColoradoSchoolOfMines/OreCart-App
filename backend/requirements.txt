@@ -36,3 +36,4 @@ uvicorn==0.23.2
 wrapt==1.15.0
 pytest==7.4.3
 pytest-asyncio==0.21.0
+pytz==2023.3.post1
