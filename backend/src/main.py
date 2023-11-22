@@ -1,10 +1,8 @@
-import os
-
-import sqlalchemy
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
-from . import db, hw
+from . import hw
+from .db import DBWrapper
 from .handlers import location
 
 load_dotenv()
@@ -16,4 +14,4 @@ app.include_router(location.router)
 
 @app.on_event("startup")
 def startup_event():
-    app.state.engine = db.init()
+    app.state.db = DBWrapper()
