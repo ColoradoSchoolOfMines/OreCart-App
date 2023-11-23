@@ -11,7 +11,7 @@ from src.model.route import Route
 from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
 from src.model.waypoint import Waypoint
-from src.request import validate_include
+from src.request import process_include
 
 # JSON field names/include values
 FIELD_ID = "id"
@@ -32,18 +32,20 @@ router = APIRouter(prefix="/routes", tags=["routes"])
 
 
 @router.get("/")
-def get_all_routes(
+def get_routes(
     req: Request,
     include: Annotated[list[str] | None, Query()] = None,
 ):
     """
     Gets all routes.
     """
-    return get_route_impl(req, None, include)
+    include_set = process_include(include, INCLUDES)
+    with req.app.state.db.session() as session:
+        return route_query_impl(session.query(Route), include_set, session)
 
 
 @router.get("/{route_id}")
-def get_route_with_id(
+def get_route(
     req: Request,
     route_id: int,
     include: Annotated[list[str] | None, Query()] = None,
@@ -51,38 +53,18 @@ def get_route_with_id(
     """
     Gets the route with the specified ID.
     """
-    return get_route_impl(req, route_id, include)
-
-
-def get_route_impl(
-    req: Request,
-    route_id: Optional[int],
-    include: Annotated[list[str] | None, Query()] = None,
-):
-    """
-    Shared implemntation of the GET /routes endpoints.
-    """
-    include_set = INCLUDES
-    if include:
-        include_set = validate_include(include, INCLUDES)
-
+    include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        return query_routes(route_id, include_set, session)
+        return route_query_impl(
+            session.query(Route).filter(Route.id == route_id), include_set, session
+        )[0]
 
 
-def query_routes(
-    route_id: Optional[int], include_set: set[str], session
-) -> list[dict] | dict:
+def route_query_impl(route_query, include_set: set[str], session) -> list[dict] | dict:
     """
     Gets route information and returns it in the format expected by the client,
     given the specified include parameters.
     """
-
-    route_query = session.query(Route)
-
-    # Filter to the ID if specified, otherwise just query for all routes
-    if route_id is not None:
-        route_query = route_query.filter(Route.id == route_id)
 
     if FIELD_NAME in include_set:
         # Name desired, just do a normal query.

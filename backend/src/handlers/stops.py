@@ -10,7 +10,7 @@ from src.model.alert import Alert
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.stop_disable import StopDisable
-from src.request import validate_include
+from src.request import process_include
 
 # JSON field names/include values
 FIELD_ID = "id"
@@ -31,57 +31,39 @@ router = APIRouter(prefix="/stops", tags=["stops"])
 
 
 @router.get("/")
-def get_all_stops(
+def get_stops(
     req: Request,
     include: Annotated[list[str] | None, Query()] = None,
 ):
     """
     Gets all stops.
     """
-    return get_stop_impl(req, None, include)
+    include_set = process_include(include, INCLUDES)
+    with req.app.state.db.session() as session:
+        return stop_query_impl(session.query(Stop), include_set, session)
 
 
 @router.get("/{stop_id}")
-def get_stop_with_id(
+def get_stop(
     req: Request,
     stop_id: int,
     include: Annotated[list[str] | None, Query()] = None,
 ):
     """
-    Gets the stop with the specified ID.
-    """
-    return get_stop_impl(req, stop_id, include)
-
-
-def get_stop_impl(
-    req: Request,
-    stop_id: Optional[int],
-    include: Annotated[list[str] | None, Query()] = None,
-):
-    """
     Shared implemntation of the GET /stops endpoints.
     """
-    include_set = INCLUDES
-    if include:
-        include_set = validate_include(include, INCLUDES)
-
+    include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        return query_stop(stop_id, include_set, session)
+        return stop_query_impl(
+            session.query(Stop).filter(Stop.id == stop_id), include_set, session
+        )[0]
 
 
-def query_stop(
-    stop_id: Optional[int], include_set: set[str], session
-) -> list[dict] | dict:
+def stop_query_impl(stop_query, include_set: set[str], session) -> list[dict] | dict:
     """
     Gets stop information and returns it in the format expected by the client,
     given the specified include parameters.
     """
-
-    stop_query = session.query(Stop)
-
-    # Filter to the ID if specified, otherwise just query for all stops
-    if stop_id is not None:
-        stop_query = stop_query.filter(Stop.id == stop_id)
 
     # Unlike other routes, several database columns must be read or not depending
     # on the included values. This requires us to do a more unorthodox query where
@@ -98,6 +80,7 @@ def query_stop(
     if FIELD_IS_ACTIVE in include_set:
         entities[FIELD_IS_ACTIVE] = Stop.active
     stop_query = stop_query.with_entities(*entities.values())
+
     stops = [
         # If we include the entities foo and bar, that will result in a tuple of
         # (foo, bar). By having the dict mapping "foo", "bar" earlier, we can
@@ -106,7 +89,7 @@ def query_stop(
         for stop in stop_query.all()
     ]
 
-    if len(stops) == 0:
+    if not stops:
         raise HTTPException(status_code=404, detail="Stop not found")
 
     for stop in stops:
