@@ -3,7 +3,7 @@ Contains routes specific to working with stops.
 """
 
 from datetime import datetime, timezone
-from typing import Annotated, Any, Optional, Iterator
+from typing import Annotated, Any, Iterator, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from src.model.alert import Alert
