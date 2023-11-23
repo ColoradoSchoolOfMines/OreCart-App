@@ -1,10 +1,7 @@
 import React from 'react';
+import './ridership-page.scss';
 
-interface RidershipPageProps {
-}
-
-const RidershipPage: React.FC<RidershipPageProps> = () => {
-
+const RidershipPage: React.FC = () => {
   return (
     <main className='p-ridership-page'>
       <h1>Ridership</h1>

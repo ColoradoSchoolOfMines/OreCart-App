@@ -16,7 +16,7 @@ const NavBar: React.FC<NavBarProps> = () => {
           <li><Link to="/alerts">Alerts</Link></li>
           <li><Link to="/routes">Routes</Link></li>
           <li><Link to="/ridership">Ridership</Link></li>
-          <li><Link to="/accomodations">Accomodations</Link></li>
+          <li><Link to="/accommodations">Accommodations</Link></li>
         </ul>
       </nav>
       <div className='divider'></div>

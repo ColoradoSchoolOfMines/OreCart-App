@@ -6,8 +6,12 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import "./index.css";
+import AccommodationsPage from './pages/accommodations/accommodations-page';
+import AlertsPage from './pages/alerts/alerts-page';
+import RidershipPage from './pages/ridership/ridership-page';
+import RoutesPage from './pages/routes/routes-page';
 import VanPage from './pages/vans/vans-page';
-import Root from './routes/root';
+import Root from './templates/root';
 
 const router = createBrowserRouter([
   {
@@ -17,6 +21,23 @@ const router = createBrowserRouter([
       {
         path: "/vans",
         element: <VanPage />
+      },
+      // Add more pages here
+      {
+        path: "/ridership",
+        element: <RidershipPage />
+      },
+      {
+        path: "/routes",
+        element: <RoutesPage />
+      },
+      {
+        path: "/accommodations",
+        element: <AccommodationsPage />
+      },
+      {
+        path: "alerts",
+        element: <AlertsPage />
       }
     ]
   },

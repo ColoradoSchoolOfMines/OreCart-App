@@ -1,11 +1,8 @@
 import React from 'react';
 import Card from '../../components/card/card';
+import './alerts-page.scss';
 
-interface AlertsPageProps {
-}
-
-const AlertsPage: React.FC<AlertsPageProps> = () => {
-
+const AlertsPage: React.FC = () => {
   return (
     <main className='p-alerts-page'>
       <h1>Alerts</h1>

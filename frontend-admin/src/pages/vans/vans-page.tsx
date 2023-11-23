@@ -1,11 +1,8 @@
 import React from 'react';
 import Card from '../../components/card/card';
+import './vans-page.scss';
 
-interface VanPageProps {
-}
-
-const VanPage: React.FC<VanPageProps> = () => {
-
+const VanPage: React.FC = () => {
   return (
     <main className='p-van-page'>
       <h1>Vans</h1>

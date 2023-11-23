@@ -1,11 +1,8 @@
 import React from 'react';
 import Card from '../../components/card/card';
+import './routes-page.scss';
 
-interface RoutesPageProps {
-}
-
-const RoutesPage: React.FC<RoutesPageProps> = () => {
-
+const RoutesPage: React.FC = () => {
   return (
     <main className='p-routes-page'>
       <h1>Routes</h1>

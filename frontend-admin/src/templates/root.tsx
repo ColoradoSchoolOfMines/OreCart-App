@@ -1,12 +1,14 @@
 // import Card from "../components/card/card.tsx";
 import { Outlet } from "react-router-dom";
 import Navbar from "../components/navbar/navbar.tsx";
-
+import "./root.scss";
 export default function Root() {
   return (
     <>
       <Navbar></Navbar>
-      <Outlet />
+      <div className="page-container">
+        <Outlet />
+      </div>
     </>
   );
 }
