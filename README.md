@@ -2,7 +2,7 @@
 
 The master monorepo for all OreCart app software! The OreCart app includes a backend made with [FastAPI](https://fastapi.tiangolo.com) and a crossplatform mobile app made with [React-Native](https://reactnative.dev).
 
-For full documentation and project details, please see our Google Drive (contributors can gain access by talking with the leads). The frontend and backend folders have READMEs with more information about developing in each as well.
+For full documentation and project details, please see the Google Drive (ask leads for access) and [orecart.github.io](https://orecart.github.io). The frontend and backend folders have READMEs with more information about developing in each as well.
 
 ## General Environment Setup
 
