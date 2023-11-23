@@ -1,0 +1,7 @@
+.p-routes-page {
+  > .cards-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+  }
+}
