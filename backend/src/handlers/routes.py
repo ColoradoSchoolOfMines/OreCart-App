@@ -3,7 +3,7 @@ Contains routes specific to working with routes.
 """
 
 from datetime import datetime, timezone
-from typing import Annotated, Optional
+from typing import Annotated, Optional, Any, Iterator
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from src.model.alert import Alert
@@ -41,7 +41,33 @@ def get_routes(
     """
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        return route_query_impl(session.query(Route), include_set, session)
+        query = session.query(Route)
+        query, entities = apply_includes_to_query(query, include_set)
+
+        alert = None
+        if FIELD_IS_ACTIVE in include_set:
+            alert = get_current_alert(
+                datetime.now(timezone.utc).replace(tzinfo=None), session
+            )
+
+        routes = []
+        for route in query.all():
+            route = unpack_entity_tuple(route, entities)
+
+            if FIELD_STOP_IDS in include_set:
+                route[FIELD_STOP_IDS] = query_route_stop_ids(route[FIELD_ID], session)
+
+            if FIELD_WAYPOINTS in include_set:
+                route[FIELD_WAYPOINTS] = query_route_waypoints(route[FIELD_ID], session)
+
+            if alert:
+                route[FIELD_IS_ACTIVE] = is_route_active(
+                    route[FIELD_ID], alert, session
+                )
+
+            routes.append(route)
+
+        return routes
 
 
 @router.get("/{route_id}")
@@ -55,33 +81,13 @@ def get_route(
     """
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        return route_query_impl(
-            session.query(Route).filter(Route.id == route_id), include_set, session
-        )[0]
+        query = session.query(Route).filter(Route.id == route_id)
+        query, entities = apply_includes_to_query(query, include_set)
+        route = query.first()
+        if not route:
+            raise HTTPException(status_code=404, detail="Route not found")
 
-
-def route_query_impl(route_query, include_set: set[str], session) -> list[dict] | dict:
-    """
-    Gets route information and returns it in the format expected by the client,
-    given the specified include parameters.
-    """
-
-    if FIELD_NAME in include_set:
-        # Name desired, just do a normal query.
-        routes = [
-            {FIELD_ID: route.id, FIELD_NAME: route.name} for route in route_query.all()
-        ]
-    else:
-        # Name not desired, remove it. Note that reducing this to just the ID results
-        # in a tuple we need to unpack.
-        route_query = route_query.with_entities(Route.id)
-        routes = [{FIELD_ID: route_id} for (route_id,) in route_query.all()]
-
-    if len(routes) == 0:
-        raise HTTPException(status_code=404, detail="Route not found")
-
-    for route in routes:
-        # Query for and add any desired optional values to be included.
+        route = unpack_entity_tuple(route, entities)
         if FIELD_STOP_IDS in include_set:
             route[FIELD_STOP_IDS] = query_route_stop_ids(route[FIELD_ID], session)
 
@@ -89,9 +95,36 @@ def route_query_impl(route_query, include_set: set[str], session) -> list[dict] 
             route[FIELD_WAYPOINTS] = query_route_waypoints(route[FIELD_ID], session)
 
         if FIELD_IS_ACTIVE in include_set:
-            route[FIELD_IS_ACTIVE] = is_route_active(route[FIELD_ID], session)
+            alert = get_current_alert(
+                datetime.now(timezone.utc).replace(tzinfo=None), session
+            )
+            route[FIELD_IS_ACTIVE] = is_route_active(route[FIELD_ID], alert, session)
 
-    return routes
+        return route
+
+
+def apply_includes_to_query(query, include_set) -> tuple[Any, Iterator[str]]:
+    """
+    Applies the given include parameters to the given query, reducing the query to only
+    the fields that are desired. Since this will cause the query to return a tuple, a
+    dictionary is also provided of the names for each value that will appear in the tuple
+    in-order. This can be used with unpack_stop_values can be used to turn the tuple into
+    a JSON structure.
+    """
+
+    entities: dict[str, Any] = {FIELD_ID: Route.id}
+    if FIELD_NAME in include_set:
+        entities[FIELD_NAME] = Route.name
+
+    return (query.with_entities(*entities.values()), iter(entities.keys()))
+
+
+def unpack_entity_tuple(result: tuple, entities: Iterator[str]) -> dict:
+    """
+    Given a tuple of values and a list of the names for each value, returns a dictionary
+    mapping each name to its corresponding value.
+    """
+    return {key: value for key, value in zip(entities, result)}
 
 
 def query_route_stop_ids(route_id: int, session):
@@ -120,21 +153,23 @@ def query_route_waypoints(route_id: int, session):
     ]
 
 
-def is_route_active(route_id: int, session) -> bool:
+def get_current_alert(now: datetime, session) -> Optional[Alert]:
     """
-    Queries and returns whether the frontend is currently active, i.e
-    not disabled by the current alert.
+    Queries and returns the current alert, if any, that is active at the given time.
     """
 
-    # Convert to UTC then drop the timezone so we can use it in the DB, which has
-    # UTC timestamps without timezone information.
-    now = datetime.now(tz=timezone.utc).replace(tzinfo=None)
-
-    alert = (
+    return (
         session.query(Alert)
         .filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
         .first()
     )
+
+
+def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
+    """
+    Queries and returns whether the frontend is currently active, i.e
+    not disabled by the current alert.
+    """
 
     if not alert:
         # No alert, should be active

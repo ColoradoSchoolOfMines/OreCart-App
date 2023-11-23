@@ -3,7 +3,7 @@ Contains routes specific to working with stops.
 """
 
 from datetime import datetime, timezone
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any, Optional, Iterator
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from src.model.alert import Alert
@@ -38,9 +38,29 @@ def get_stops(
     """
     Gets all stops.
     """
+
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        return stop_query_impl(session.query(Stop), include_set, session)
+        query = session.query(Stop)
+        query, entities = apply_includes_to_query(query, include_set)
+        stops = []
+
+        alert = None
+        if FIELD_IS_ACTIVE in include_set:
+            alert = get_current_alert(datetime.now(timezone.utc).replace(tzinfo=None), session)
+
+        for stop in query.all():
+            stop = unpack_entity_tuple(stop, entities)
+
+            if alert:
+                stop[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
+
+            if FIELD_ROUTE_IDS in include_set:
+                stop[FIELD_ROUTE_IDS] = query_route_ids(stop[FIELD_ID], session)
+
+            stops.append(stop)
+
+        return stops
 
 
 @router.get("/{stop_id}")
@@ -52,55 +72,57 @@ def get_stop(
     """
     Shared implemntation of the GET /stops endpoints.
     """
+
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        return stop_query_impl(
-            session.query(Stop).filter(Stop.id == stop_id), include_set, session
-        )[0]
+        query = session.query(Stop).filter(Stop.id == stop_id)
+        query, entities = apply_includes_to_query(query, include_set)
 
+        stop = query.first()
+        if not stop:
+            raise HTTPException(status_code=404, detail="Stop not found")
 
-def stop_query_impl(stop_query, include_set: set[str], session) -> list[dict] | dict:
-    """
-    Gets stop information and returns it in the format expected by the client,
-    given the specified include parameters.
-    """
+        stop = unpack_entity_tuple(stop, entities)
 
-    # Unlike other routes, several database columns must be read or not depending
-    # on the included values. This requires us to do a more unorthodox query where
-    # we selectively include entities to query. However, since such a query will
-    # result in a duple of anonymous values, we also have to make sure in what
-    # exact order we added each entity to the query so we can reconstruct a JSON
-    # object from the tuple.
-    entities: dict[str, Any] = {FIELD_ID: Stop.id}
-    if FIELD_NAME in include_set:
-        entities[FIELD_NAME] = Stop.name
-    if FIELD_LOCATION in include_set:
-        entities[FIELD_LATITUDE] = Stop.lat
-        entities[FIELD_LONGITUDE] = Stop.lon
-    if FIELD_IS_ACTIVE in include_set:
-        entities[FIELD_IS_ACTIVE] = Stop.active
-    stop_query = stop_query.with_entities(*entities.values())
+        if FIELD_IS_ACTIVE in include_set:
+            alert = get_current_alert(datetime.now(timezone.utc), session)
+            stop[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
-    stops = [
-        # If we include the entities foo and bar, that will result in a tuple of
-        # (foo, bar). By having the dict mapping "foo", "bar" earlier, we can
-        # zip them together to yield {"foo": foo, "bar": bar}.
-        {key: value for key, value in zip(entities.keys(), stop)}
-        for stop in stop_query.all()
-    ]
-
-    if not stops:
-        raise HTTPException(status_code=404, detail="Stop not found")
-
-    for stop in stops:
-        # Query for and add any desired optional values to be included.
         if FIELD_ROUTE_IDS in include_set:
             stop[FIELD_ROUTE_IDS] = query_route_ids(stop[FIELD_ID], session)
 
-        if FIELD_IS_ACTIVE in include_set:
-            stop[FIELD_IS_ACTIVE] = is_stop_active(stop, session)
+        return stop
 
-    return stops
+
+def apply_includes_to_query(query, include_set) -> tuple[Any, Iterator[str]]:
+    """
+    Applies the given include parameters to the given query, reducing the query to only
+    the fields that are desired. Since this will cause the query to return a tuple, a
+    dictionary is also provided of the names for each value that will appear in the tuple
+    in-order. This can be used with unpack_stop_values can be used to turn the tuple into
+    a JSON structure.
+    """
+
+    entities: dict[str, Any] = {FIELD_ID: Stop.id}
+    if FIELD_NAME in include_set:
+        entities[FIELD_NAME] = Stop.name
+
+    if FIELD_LOCATION in include_set:
+        entities[FIELD_LATITUDE] = Stop.lat
+        entities[FIELD_LONGITUDE] = Stop.lon
+
+    if FIELD_IS_ACTIVE in include_set:
+        entities[FIELD_IS_ACTIVE] = Stop.active
+
+    return (query.with_entities(*entities.values()), iter(entities.keys()))
+
+
+def unpack_entity_tuple(result: tuple, entities: Iterator[str]) -> dict:
+    """
+    Given a tuple of values and a list of the names for each value, returns a dictionary
+    mapping each name to its corresponding value.
+    """
+    return {key: value for key, value in zip(entities, result)}
 
 
 def query_route_ids(stop_id: int, session) -> list[int]:
@@ -118,21 +140,23 @@ def query_route_ids(stop_id: int, session) -> list[int]:
     ]
 
 
-def is_stop_active(stop: dict, session) -> bool:
+def get_current_alert(now: datetime, session) -> Optional[Alert]:
     """
-    Queries and returns whether the given stop is currently active, i.e it's marked as
-    active in the database and there is no alert that is disabling it.
+    Queries and returns the current alert, if any, that is active at the given time.
     """
 
-    # Convert to UTC then drop the timezone so we can use it in the DB, which has
-    # UTC timestamps without timezone information.
-    now = datetime.now(tz=timezone.utc).replace(tzinfo=None)
-
-    alert = (
+    return (
         session.query(Alert)
         .filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
         .first()
     )
+
+
+def is_stop_active(stop: dict, alert: Optional[Alert], session) -> bool:
+    """
+    Queries and returns whether the given stop is currently active, i.e it's marked as
+    active in the database and there is no alert that is disabling it.
+    """
 
     if not alert:
         # No alert, fall back to if the current stop is marked as active.

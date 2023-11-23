@@ -1,5 +1,6 @@
-from fastapi import HTTPException
 from typing import Optional
+
+from fastapi import HTTPException
 
 
 def process_include(include: Optional[list[str]], allowed: set[str]):
