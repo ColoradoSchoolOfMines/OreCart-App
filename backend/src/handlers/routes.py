@@ -151,7 +151,6 @@ def is_route_active(route_id: int, session) -> bool:
     alert = (
         session.query(Alert)
         .filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
-        .params(now=now)
         .first()
     )
 

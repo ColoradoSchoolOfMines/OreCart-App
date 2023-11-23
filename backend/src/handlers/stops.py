@@ -148,7 +148,6 @@ def is_stop_active(stop: dict, session) -> bool:
     alert = (
         session.query(Alert)
         .filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
-        .params(now=now)
         .first()
     )
 
