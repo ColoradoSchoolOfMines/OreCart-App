@@ -47,7 +47,9 @@ def get_stops(
 
         alert = None
         if FIELD_IS_ACTIVE in include_set:
-            alert = get_current_alert(datetime.now(timezone.utc).replace(tzinfo=None), session)
+            alert = get_current_alert(
+                datetime.now(timezone.utc).replace(tzinfo=None), session
+            )
 
         for stop in query.all():
             stop = unpack_entity_tuple(stop, entities)
