@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import logo from '../../assets/logo.png';
 import './Navbar.scss';
 interface NavBarProps { }
@@ -12,11 +12,11 @@ const NavBar: React.FC<NavBarProps> = () => {
           <img src={logo} />
         </div>
         <ul className="nav-links">
-          <li><Link to="/vans">Vans</Link></li>
-          <li><Link to="/alerts">Alerts</Link></li>
-          <li><Link to="/routes">Routes</Link></li>
-          <li><Link to="/ridership">Ridership</Link></li>
-          <li><Link to="/accommodations">Accommodations</Link></li>
+          <li><NavLink to="/vans">Vans</NavLink></li>
+          <li><NavLink to="/alerts">Alerts</NavLink></li>
+          <li><NavLink to="/routes">Routes</NavLink></li>
+          <li><NavLink to="/ridership">Ridership</NavLink></li>
+          <li><NavLink to="/accommodations">Accommodations</NavLink></li>
         </ul>
       </nav>
       <div className='divider'></div>
