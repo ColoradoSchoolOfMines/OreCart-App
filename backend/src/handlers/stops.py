@@ -45,6 +45,8 @@ def get_stops(
         query, entities = apply_includes_to_query(query, include_set)
         stops = []
 
+        # Be more efficient and load the current alert only once if
+        # we need it for the isActive field.
         alert = None
         if FIELD_IS_ACTIVE in include_set:
             alert = get_current_alert(
@@ -54,11 +56,14 @@ def get_stops(
         for stop in query.all():
             stop = unpack_entity_tuple(stop, entities)
 
-            if alert:
-                stop[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
-
+            # Add related values to the route if included
             if FIELD_ROUTE_IDS in include_set:
                 stop[FIELD_ROUTE_IDS] = query_route_ids(stop[FIELD_ID], session)
+
+            # Already checked if included later when we fetched the alert, check for it's
+            # presence.
+            if alert:
+                stop[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
             stops.append(stop)
 
@@ -72,7 +77,7 @@ def get_stop(
     include: Annotated[list[str] | None, Query()] = None,
 ):
     """
-    Shared implemntation of the GET /stops endpoints.
+    Gets the stop with the specified id.
     """
 
     include_set = process_include(include, INCLUDES)
@@ -86,8 +91,11 @@ def get_stop(
 
         stop = unpack_entity_tuple(stop, entities)
 
+        # Add related values to the route if included
         if FIELD_IS_ACTIVE in include_set:
-            alert = get_current_alert(datetime.now(timezone.utc), session)
+            alert = get_current_alert(
+                datetime.now(timezone.utc).replace(tzinfo=None), session
+            )
             stop[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
         if FIELD_ROUTE_IDS in include_set:
@@ -109,6 +117,7 @@ def apply_includes_to_query(query, include_set) -> tuple[Any, Iterator[str]]:
     if FIELD_NAME in include_set:
         entities[FIELD_NAME] = Stop.name
 
+    # Location corresponds to latitude and longitude fields
     if FIELD_LOCATION in include_set:
         entities[FIELD_LATITUDE] = Stop.lat
         entities[FIELD_LONGITUDE] = Stop.lon
@@ -174,4 +183,5 @@ def is_stop_active(stop: dict, alert: Optional[Alert], session) -> bool:
         .count()
     ) == 0
 
+    # Might still be disabled even if the current alert does not disable the stop.
     return stop[FIELD_IS_ACTIVE] and enabled

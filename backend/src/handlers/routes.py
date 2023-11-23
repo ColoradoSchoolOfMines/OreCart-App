@@ -39,11 +39,14 @@ def get_routes(
     """
     Gets all routes.
     """
+
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
         query = session.query(Route)
         query, entities = apply_includes_to_query(query, include_set)
 
+        # Be more efficient and load the current alert only once if
+        # we need it for the isActive field.
         alert = None
         if FIELD_IS_ACTIVE in include_set:
             alert = get_current_alert(
@@ -54,12 +57,15 @@ def get_routes(
         for route in query.all():
             route = unpack_entity_tuple(route, entities)
 
+            # Add related values to the route if included
             if FIELD_STOP_IDS in include_set:
                 route[FIELD_STOP_IDS] = query_route_stop_ids(route[FIELD_ID], session)
 
             if FIELD_WAYPOINTS in include_set:
                 route[FIELD_WAYPOINTS] = query_route_waypoints(route[FIELD_ID], session)
 
+            # Already checked if included later when we fetched the alert, check for it's
+            # presence.
             if alert:
                 route[FIELD_IS_ACTIVE] = is_route_active(
                     route[FIELD_ID], alert, session
@@ -79,6 +85,7 @@ def get_route(
     """
     Gets the route with the specified ID.
     """
+
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
         query = session.query(Route).filter(Route.id == route_id)
@@ -88,6 +95,8 @@ def get_route(
             raise HTTPException(status_code=404, detail="Route not found")
 
         route = unpack_entity_tuple(route, entities)
+
+        # Add related values to the route if included
         if FIELD_STOP_IDS in include_set:
             route[FIELD_STOP_IDS] = query_route_stop_ids(route[FIELD_ID], session)
 
