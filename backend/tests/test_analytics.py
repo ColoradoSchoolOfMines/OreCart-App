@@ -1,5 +1,5 @@
 import struct
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import pytest
@@ -74,7 +74,7 @@ def new_route_side_effect(van_model, ridership):
 @pytest.mark.asyncio
 async def test_post_ridership_stats_with_prior(mock_session, mock_van_model):
     # Arrange
-    now = datetime.now().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(microsecond=0)
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     prior_ridership = new_mock_ridership(now - timedelta(minutes=1))
@@ -94,7 +94,7 @@ async def test_post_ridership_stats_with_prior(mock_session, mock_van_model):
 @pytest.mark.asyncio
 async def test_post_ridership_stats_without_prior(mock_session, mock_van_model):
     # Arrange
-    now = datetime.now().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(microsecond=0)
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     mock_session.query.side_effect = new_route_side_effect(mock_van_model, None)
@@ -111,7 +111,7 @@ async def test_post_ridership_stats_without_prior(mock_session, mock_van_model):
 @pytest.mark.asyncio
 async def test_post_ridership_stats_too_far_in_past(mock_session, mock_van_model):
     # Arrange
-    now = datetime.now().replace(microsecond=0) - timedelta(minutes=2)
+    now = datetime.now(timezone.utc).replace(microsecond=0) - timedelta(minutes=2)
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     mock_session.query.side_effect = new_route_side_effect(mock_van_model, None)
@@ -129,7 +129,7 @@ async def test_post_ridership_stats_too_far_in_past(mock_session, mock_van_model
 @pytest.mark.asyncio
 async def test_post_ridership_stats_in_future(mock_session, mock_van_model):
     # Arrange
-    now = datetime.now().replace(microsecond=0) + timedelta(minutes=2)
+    now = datetime.now(timezone.utc).replace(microsecond=0) + timedelta(minutes=2)
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     mock_session.query.side_effect = new_route_side_effect(mock_van_model, None)
@@ -149,7 +149,7 @@ async def test_post_ridership_van_not_active_invalid_param(
     mock_session, mock_van_model
 ):
     # Arrange
-    now = datetime.now().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(microsecond=0)
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     mock_session.query.side_effect = new_route_side_effect(None, mock_van_model)
@@ -167,7 +167,7 @@ async def test_post_ridership_van_not_active_invalid_param(
 @pytest.mark.asyncio
 async def test_post_ridership_van_not_active_valid_param(mock_session):
     # Arrange
-    now = datetime.now().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(microsecond=0)
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     mock_session.query.side_effect = new_route_side_effect(None, None)
@@ -185,7 +185,7 @@ async def test_post_ridership_van_not_active_valid_param(mock_session):
 @pytest.mark.asyncio
 async def test_post_ridership_stats_not_most_recent(mock_session, mock_van_model):
     # Arrange
-    now = datetime.now().replace(microsecond=0)
+    now = datetime.now(timezone.utc).replace(microsecond=0)
     new_ridership = new_mock_ridership(now)
     req = new_mock_req(now, new_ridership, mock_session)
     prior_ridership = new_mock_ridership(now + timedelta(minutes=1))
