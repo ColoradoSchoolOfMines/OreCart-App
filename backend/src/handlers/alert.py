@@ -21,9 +21,7 @@ class AlertModel(BaseModel):
 
 
 @router.get("/")
-def get_alerts(
-    req: Request, include: Union[List[str], None] = Query(default=None)
-) -> JSONResponse:
+def get_alerts(req: Request) -> JSONResponse:
     with req.app.state.db.session() as session:
         alerts: List[Alert] = session.query(Alert).all()
 
@@ -31,7 +29,7 @@ def get_alerts(
         {
             "text": alert.text,
             "startDateTime": str(alert.start_datetime),
-            "endDateTime": str(alert.end_datetime)
+            "endDateTime": str(alert.end_datetime),
         }
         for alert in alerts
     ]
@@ -40,18 +38,16 @@ def get_alerts(
 
 
 @router.get("/{alert_id}")
-def get_alert(
-    req: Request, alert_id: int, include: Union[List[str], None] = Query(default=None)
-) -> JSONResponse:
+def get_alert(req: Request, alert_id: int) -> JSONResponse:
     with req.app.state.db.session() as session:
         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
         if alert is None:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
-    
+
     alert_json = {
         "text": alert.text,
         "startDateTime": str(alert.start_datetime),
-        "endDateTime": str(alert.end_datetime)
+        "endDateTime": str(alert.end_datetime),
     }
 
     return JSONResponse(content=alert_json)
