@@ -27,23 +27,16 @@ def get_alerts(
     with req.app.state.db.session() as session:
         alerts: List[Alert] = session.query(Alert).all()
 
-    resp: Dict[str, List[Dict[str, Union[str, int]]]] = {"alerts": []}
-    for alert in alerts:
-        filtered_alert: Dict[str, Union[str, int]] = {}
+    alerts_json: List[Dict[str, Union[str, int]]] = [
+        {
+            "text": alert.text,
+            "startDateTime": str(alert.start_datetime),
+            "endDateTime": str(alert.end_datetime)
+        }
+        for alert in alerts
+    ]
 
-        filtered_alert["id"] = alert.id
-        if include is None or "text" in include:
-            filtered_alert["text"] = alert.text
-
-        if include is None or "start" in include:
-            filtered_alert["start"] = str(alert.start_datetime)
-
-        if include is None or "end" in include:
-            filtered_alert["end"] = str(alert.end_datetime)
-
-        resp["alerts"].append(filtered_alert)
-
-    return JSONResponse(content=resp)
+    return JSONResponse(content=alerts_json)
 
 
 @router.get("/{alert_id}")
@@ -54,19 +47,14 @@ def get_alert(
         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
         if alert is None:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
+    
+    alert_json = {
+        "text": alert.text,
+        "startDateTime": str(alert.start_datetime),
+        "endDateTime": str(alert.end_datetime)
+    }
 
-    filtered_alert = {}
-
-    if include is None or "text" in include:
-        filtered_alert["text"] = alert.text
-
-    if include is None or "start" in include:
-        filtered_alert["start"] = str(alert.start_datetime)
-
-    if include is None or "end" in include:
-        filtered_alert["end"] = str(alert.end_datetime)
-
-    return JSONResponse(content=filtered_alert)
+    return JSONResponse(content=alert_json)
 
 
 @router.post("/")
