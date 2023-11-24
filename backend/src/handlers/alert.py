@@ -36,10 +36,10 @@ def get_alerts(
             filtered_alert["text"] = alert.text
 
         if include is None or "start" in include:
-            filtered_alert["start"] = str(alert.start_datetime)
+            filtered_alert["start"] = int(alert.start_datetime.timestamp())
 
         if include is None or "end" in include:
-            filtered_alert["end"] = str(alert.end_datetime)
+            filtered_alert["end"] = int(alert.end_datetime.timestamp())
 
         resp["alerts"].append(filtered_alert)
 
@@ -55,16 +55,16 @@ def get_alert(
         if alert is None:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
 
-    filtered_alert = {}
+    filtered_alert: Dict[str, Union[str, int]] = {}
 
     if include is None or "text" in include:
         filtered_alert["text"] = alert.text
 
     if include is None or "start" in include:
-        filtered_alert["start"] = str(alert.start_datetime)
+        filtered_alert["start"] = int(alert.start_datetime.timestamp())
 
     if include is None or "end" in include:
-        filtered_alert["end"] = str(alert.end_datetime)
+        filtered_alert["end"] = int(alert.end_datetime.timestamp())
 
     return JSONResponse(content=filtered_alert)
 
