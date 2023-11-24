@@ -1,5 +1,4 @@
 import datetime
-from typing import Dict, List, Union
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -21,18 +20,22 @@ class AlertModel(BaseModel):
 
 
 @router.get("/")
-def get_alerts(req: Request) -> JSONResponse:
+def get_alerts(req: Request, active: bool = False) -> JSONResponse:
     with req.app.state.db.session() as session:
-        alerts: List[Alert] = session.query(Alert).all()
+        query = session.query(Alert)
+        if active:
+            now = datetime.datetime.now()
+            query = query.filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
+        alerts = query.all()
 
-    alerts_json: List[Dict[str, Union[str, int]]] = [
-        {
+    alerts_json = []
+    for alert in alerts:
+        alert_json = {
             "text": alert.text,
             "startDateTime": str(alert.start_datetime),
             "endDateTime": str(alert.end_datetime),
         }
-        for alert in alerts
-    ]
+        alerts_json.append(alert_json)
 
     return JSONResponse(content=alerts_json)
 
