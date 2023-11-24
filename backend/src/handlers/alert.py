@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Union
 
 from fastapi import APIRouter, Query, Request
@@ -72,8 +72,8 @@ def get_alert(
 @router.post("/")
 def post_alert(req: Request, alert_model: AlertModel) -> JSONResponse:
     with req.app.state.db.session() as session:
-        dt_start_time = datetime.datetime.fromtimestamp(alert_model.start_time)
-        dt_end_time = datetime.datetime.fromtimestamp(alert_model.end_time)
+        dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
+        dt_end_time = datetime.fromtimestamp(alert_model.end_time, timezone.utc)
 
         alert = Alert(
             text=alert_model.text,
@@ -93,8 +93,10 @@ def update_alert(req: Request, alert_id: int, alert_model: AlertModel) -> JSONRe
         if alert is None:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
 
-        dt_start_time = datetime.datetime.fromtimestamp(alert_model.start_time)
-        dt_end_time = datetime.datetime.fromtimestamp(alert_model.end_time)
+        dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
+        dt_end_time = datetime.fromtimestamp(
+            alert_model.end_time,
+        )
 
         alert = Alert(
             text=alert_model.text,

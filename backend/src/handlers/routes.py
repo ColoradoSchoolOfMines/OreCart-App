@@ -49,9 +49,7 @@ def get_routes(
         # we need it for the isActive field.
         alert = None
         if FIELD_IS_ACTIVE in include_set:
-            alert = get_current_alert(
-                datetime.now(timezone.utc).replace(tzinfo=None), session
-            )
+            alert = get_current_alert(datetime.now(timezone.utc), session)
 
         routes = []
         for route in query.all():
@@ -104,9 +102,7 @@ def get_route(
             route[FIELD_WAYPOINTS] = query_route_waypoints(route[FIELD_ID], session)
 
         if FIELD_IS_ACTIVE in include_set:
-            alert = get_current_alert(
-                datetime.now(timezone.utc).replace(tzinfo=None), session
-            )
+            alert = get_current_alert(datetime.now(timezone.utc), session)
             route[FIELD_IS_ACTIVE] = is_route_active(route[FIELD_ID], alert, session)
 
         return route
