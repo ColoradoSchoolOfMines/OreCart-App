@@ -3,7 +3,7 @@ Contains routes specific to working with stops.
 """
 
 from datetime import datetime, timezone
-from typing import Annotated, Any, Iterator, Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from src.model.alert import Alert
@@ -86,7 +86,7 @@ def get_stop(
         stop = session.query(Stop).filter(Stop.id == stop_id).first()
         if not stop:
             raise HTTPException(status_code=404, detail="Stop not found")
-        
+
         stop_json = {
             FIELD_ID: stop.id,
             FIELD_NAME: stop.name,
@@ -102,7 +102,7 @@ def get_stop(
             stop_json[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
         if FIELD_ROUTE_IDS in include_set:
-            stop_json[FIELD_ROUTE_IDS] = query_route_ids(stop[FIELD_ID], session)
+            stop_json[FIELD_ROUTE_IDS] = query_route_ids(stop.id, session)
 
         return stop_json
 

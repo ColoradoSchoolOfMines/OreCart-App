@@ -3,7 +3,7 @@ Contains routes specific to working with routes.
 """
 
 from datetime import datetime, timezone
-from typing import Annotated, Any, Iterator, Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from src.model.alert import Alert
@@ -52,11 +52,8 @@ def get_routes(
             )
 
         routes_json = []
-        for route in routes:  
-            route_json = {
-                FIELD_ID: route.id,
-                FIELD_NAME: route.name
-            }
+        for route in routes:
+            route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
 
             # Add related values to the route if included
             if FIELD_STOP_IDS in include_set:
@@ -68,9 +65,7 @@ def get_routes(
             # Already checked if included later when we fetched the alert, check for it's
             # presence.
             if alert:
-                route_json[FIELD_IS_ACTIVE] = is_route_active(
-                    route.id, alert, session
-                )
+                route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
 
             routes_json.append(route_json)
 
@@ -92,11 +87,8 @@ def get_route(
         route = session.query(Route).filter(Route.id == route_id).first()
         if not route:
             raise HTTPException(status_code=404, detail="Route not found")
-        
-        route_json = {
-            FIELD_ID: route.id,
-            FIELD_NAME: route.name
-        }
+
+        route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
 
         # Add related values to the route if included
         if FIELD_STOP_IDS in include_set:
@@ -112,6 +104,7 @@ def get_route(
             route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
 
         return route_json
+
 
 def query_route_stop_ids(route_id: int, session):
     """
