@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from sqlalchemy import DateTime
 from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
@@ -9,5 +11,5 @@ class Alert(Base):
         primary_key=True, autoincrement=True, nullable=False
     )
     text: Mapped[str] = mapped_column(nullable=False)
-    start_datetime: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
-    end_datetime: Mapped[DateTime] = mapped_column(DateTime, nullable=False)
+    start_datetime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_datetime: Mapped[datetime] = mapped_column(DateTime, nullable=False)
