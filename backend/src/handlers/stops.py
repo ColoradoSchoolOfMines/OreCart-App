@@ -15,15 +15,12 @@ from src.request import process_include
 # JSON field names/include values
 FIELD_ID = "id"
 FIELD_NAME = "name"
+FIELD_LATITUDE = "latitude"
+FIELD_LONGITUDE = "longitude"
 FIELD_ROUTE_IDS = "routeIds"
-FIELD_LOCATION = "location"
 FIELD_IS_ACTIVE = "isActive"
-FIELD_LATITUDE = "latitude"  # Location is includable
-FIELD_LONGITUDE = "longitude"  # Location is includable
 INCLUDES = {
-    FIELD_NAME,
     FIELD_ROUTE_IDS,
-    FIELD_LOCATION,
     FIELD_IS_ACTIVE,
 }
 
@@ -41,9 +38,7 @@ def get_stops(
 
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        query = session.query(Stop)
-        query, entities = apply_includes_to_query(query, include_set)
-        stops = []
+        stops = session.query(Stop).all()
 
         # Be more efficient and load the current alert only once if
         # we need it for the isActive field.
@@ -53,21 +48,27 @@ def get_stops(
                 datetime.now(timezone.utc).replace(tzinfo=None), session
             )
 
-        for stop in query.all():
-            stop = unpack_entity_tuple(stop, entities)
+        stops_json = []
+        for stop in stops:
+            stop_json = {
+                FIELD_ID: stop.id,
+                FIELD_NAME: stop.name,
+                FIELD_LATITUDE: stop.lat,
+                FIELD_LONGITUDE: stop.lon,
+            }
 
             # Add related values to the route if included
             if FIELD_ROUTE_IDS in include_set:
-                stop[FIELD_ROUTE_IDS] = query_route_ids(stop[FIELD_ID], session)
+                stop_json[FIELD_ROUTE_IDS] = query_route_ids(stop.id, session)
 
             # Already checked if included later when we fetched the alert, check for it's
             # presence.
             if alert:
-                stop[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
+                stop_json[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
-            stops.append(stop)
+            stops_json.append(stop_json)
 
-        return stops
+        return stops_json
 
 
 @router.get("/{stop_id}")
@@ -82,58 +83,28 @@ def get_stop(
 
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        query = session.query(Stop).filter(Stop.id == stop_id)
-        query, entities = apply_includes_to_query(query, include_set)
-
-        stop = query.first()
+        stop = session.query(Stop).filter(Stop.id == stop_id).first()
         if not stop:
             raise HTTPException(status_code=404, detail="Stop not found")
-
-        stop = unpack_entity_tuple(stop, entities)
+        
+        stop_json = {
+            FIELD_ID: stop.id,
+            FIELD_NAME: stop.name,
+            FIELD_LATITUDE: stop.lat,
+            FIELD_LONGITUDE: stop.lon,
+        }
 
         # Add related values to the route if included
         if FIELD_IS_ACTIVE in include_set:
             alert = get_current_alert(
                 datetime.now(timezone.utc).replace(tzinfo=None), session
             )
-            stop[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
+            stop_json[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
         if FIELD_ROUTE_IDS in include_set:
-            stop[FIELD_ROUTE_IDS] = query_route_ids(stop[FIELD_ID], session)
+            stop_json[FIELD_ROUTE_IDS] = query_route_ids(stop[FIELD_ID], session)
 
-        return stop
-
-
-def apply_includes_to_query(query, include_set) -> tuple[Any, Iterator[str]]:
-    """
-    Applies the given include parameters to the given query, reducing the query to only
-    the fields that are desired. Since this will cause the query to return a tuple, a
-    dictionary is also provided of the names for each value that will appear in the tuple
-    in-order. This can be used with unpack_stop_values can be used to turn the tuple into
-    a JSON structure.
-    """
-
-    entities: dict[str, Any] = {FIELD_ID: Stop.id}
-    if FIELD_NAME in include_set:
-        entities[FIELD_NAME] = Stop.name
-
-    # Location corresponds to latitude and longitude fields
-    if FIELD_LOCATION in include_set:
-        entities[FIELD_LATITUDE] = Stop.lat
-        entities[FIELD_LONGITUDE] = Stop.lon
-
-    if FIELD_IS_ACTIVE in include_set:
-        entities[FIELD_IS_ACTIVE] = Stop.active
-
-    return (query.with_entities(*entities.values()), iter(entities.keys()))
-
-
-def unpack_entity_tuple(result: tuple, entities: Iterator[str]) -> dict:
-    """
-    Given a tuple of values and a list of the names for each value, returns a dictionary
-    mapping each name to its corresponding value.
-    """
-    return {key: value for key, value in zip(entities, result)}
+        return stop_json
 
 
 def query_route_ids(stop_id: int, session) -> list[int]:
@@ -163,7 +134,7 @@ def get_current_alert(now: datetime, session) -> Optional[Alert]:
     )
 
 
-def is_stop_active(stop: dict, alert: Optional[Alert], session) -> bool:
+def is_stop_active(stop: Stop, alert: Optional[Alert], session) -> bool:
     """
     Queries and returns whether the given stop is currently active, i.e it's marked as
     active in the database and there is no alert that is disabling it.
@@ -171,17 +142,17 @@ def is_stop_active(stop: dict, alert: Optional[Alert], session) -> bool:
 
     if not alert:
         # No alert, fall back to if the current stop is marked as active.
-        return stop[FIELD_IS_ACTIVE]
+        return stop.active
 
     # If the stop is disabled by the current alert, then it is not active.
     enabled = (
         session.query(StopDisable)
         .filter(
             StopDisable.alert_id == alert.id,
-            StopDisable.stop_id == stop[FIELD_ID],
+            StopDisable.stop_id == stop.id,
         )
         .count()
     ) == 0
 
     # Might still be disabled even if the current alert does not disable the stop.
-    return stop[FIELD_IS_ACTIVE] and enabled
+    return stop.active and enabled
