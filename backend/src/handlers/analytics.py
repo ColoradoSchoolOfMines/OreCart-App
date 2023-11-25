@@ -3,7 +3,7 @@ Routes for tracking ridership statistics.
 """
 
 import struct
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Request
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
@@ -29,9 +29,9 @@ async def post_ridership_stats(req: Request, van_id: int):
     # Unpack the byte body sent by the hardware into their corresponding values
     body = await req.body()
     timestamp, entered, exited, lat, lon = struct.unpack("!lbbdd", body)
-    timestamp = datetime.fromtimestamp(timestamp)
+    timestamp = datetime.fromtimestamp(timestamp, timezone.utc)
 
-    current_time = datetime.now()
+    current_time = datetime.now(timezone.utc)
 
     # Check that the timestamp is not too far in the past. This implies a statistics
     # update that was delayed in transit and may be irrelevant now.

@@ -27,7 +27,7 @@ def upgrade() -> None:
 	        exited int NOT NULL,
 	        lat float8 NOT NULL,
 	        lon float8 NOT NULL,
-	        datetime timestamp NOT NULL,
+	        datetime timestamptz NOT NULL,
 	        UNIQUE (van_id, datetime),
 	        FOREIGN KEY (van_id)
 		        REFERENCES vans (id)

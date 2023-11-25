@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Union
 
 from fastapi import APIRouter, Request
@@ -25,7 +25,7 @@ def get_alerts(req: Request, active: bool = False) -> JSONResponse:
     with req.app.state.db.session() as session:
         query = session.query(Alert)
         if active:
-            now = datetime.datetime.now()
+            now = datetime.now(timezone.utc)
             query = query.filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
         alerts = query.all()
 
@@ -33,8 +33,8 @@ def get_alerts(req: Request, active: bool = False) -> JSONResponse:
     for alert in alerts:
         alert_json = {
             "text": alert.text,
-            "startDateTime": str(alert.start_datetime),
-            "endDateTime": str(alert.end_datetime),
+            "startDateTime": int(alert.start_datetime.timestamp()),
+            "endDateTime": int(alert.end_datetime.timestamp()),
         }
         alerts_json.append(alert_json)
 
@@ -50,8 +50,8 @@ def get_alert(req: Request, alert_id: int) -> JSONResponse:
 
     alert_json = {
         "text": alert.text,
-        "startDateTime": str(alert.start_datetime),
-        "endDateTime": str(alert.end_datetime),
+        "startDateTime": int(alert.start_datetime.timestamp()),
+        "endDateTime": int(alert.end_datetime.timestamp()),
     }
 
     return JSONResponse(content=alert_json)
@@ -60,8 +60,8 @@ def get_alert(req: Request, alert_id: int) -> JSONResponse:
 @router.post("/")
 def post_alert(req: Request, alert_model: AlertModel) -> JSONResponse:
     with req.app.state.db.session() as session:
-        dt_start_time = datetime.datetime.fromtimestamp(alert_model.start_time)
-        dt_end_time = datetime.datetime.fromtimestamp(alert_model.end_time)
+        dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
+        dt_end_time = datetime.fromtimestamp(alert_model.end_time, timezone.utc)
 
         alert = Alert(
             text=alert_model.text,
@@ -81,8 +81,10 @@ def update_alert(req: Request, alert_id: int, alert_model: AlertModel) -> JSONRe
         if alert is None:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
 
-        dt_start_time = datetime.datetime.fromtimestamp(alert_model.start_time)
-        dt_end_time = datetime.datetime.fromtimestamp(alert_model.end_time)
+        dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
+        dt_end_time = datetime.fromtimestamp(
+            alert_model.end_time,
+        )
 
         alert = Alert(
             text=alert_model.text,

@@ -1,6 +1,6 @@
-import datetime
+from datetime import datetime
 
-from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
+from sqlalchemy import DateTime, ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
@@ -16,5 +16,5 @@ class Schedule(Base):
     )
     route_id: Mapped[int] = mapped_column(nullable=False)
     dow: Mapped[int] = mapped_column(nullable=False)
-    start_time: Mapped[datetime.datetime] = mapped_column(nullable=False)
-    end_time: Mapped[datetime.datetime] = mapped_column(nullable=False)
+    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)

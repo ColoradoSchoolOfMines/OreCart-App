@@ -44,9 +44,7 @@ def get_stops(
         # we need it for the isActive field.
         alert = None
         if FIELD_IS_ACTIVE in include_set:
-            alert = get_current_alert(
-                datetime.now(timezone.utc).replace(tzinfo=None), session
-            )
+            alert = get_current_alert(datetime.now(timezone.utc), session)
 
         stops_json = []
         for stop in stops:
@@ -96,9 +94,7 @@ def get_stop(
 
         # Add related values to the route if included
         if FIELD_IS_ACTIVE in include_set:
-            alert = get_current_alert(
-                datetime.now(timezone.utc).replace(tzinfo=None), session
-            )
+            alert = get_current_alert(datetime.now(timezone.utc), session)
             stop_json[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
         if FIELD_ROUTE_IDS in include_set:
