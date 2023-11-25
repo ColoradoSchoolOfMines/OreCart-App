@@ -1,7 +1,7 @@
 import datetime
 from typing import Dict, List, Union
 
-from fastapi import APIRouter, Query, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from src.model.alert import Alert
@@ -21,52 +21,40 @@ class AlertModel(BaseModel):
 
 
 @router.get("/")
-def get_alerts(
-    req: Request, include: Union[List[str], None] = Query(default=None)
-) -> JSONResponse:
+def get_alerts(req: Request, active: bool = False) -> JSONResponse:
     with req.app.state.db.session() as session:
-        alerts: List[Alert] = session.query(Alert).all()
+        query = session.query(Alert)
+        if active:
+            now = datetime.datetime.now()
+            query = query.filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
+        alerts = query.all()
 
-    resp: Dict[str, List[Dict[str, Union[str, int]]]] = {"alerts": []}
+    alerts_json: List[Dict[str, Union[str, int]]] = []
     for alert in alerts:
-        filtered_alert: Dict[str, Union[str, int]] = {}
+        alert_json = {
+            "text": alert.text,
+            "startDateTime": str(alert.start_datetime),
+            "endDateTime": str(alert.end_datetime),
+        }
+        alerts_json.append(alert_json)
 
-        filtered_alert["id"] = alert.id
-        if include is None or "text" in include:
-            filtered_alert["text"] = alert.text
-
-        if include is None or "start" in include:
-            filtered_alert["start"] = str(alert.start_datetime)
-
-        if include is None or "end" in include:
-            filtered_alert["end"] = str(alert.end_datetime)
-
-        resp["alerts"].append(filtered_alert)
-
-    return JSONResponse(content=resp)
+    return JSONResponse(content=alerts_json)
 
 
 @router.get("/{alert_id}")
-def get_alert(
-    req: Request, alert_id: int, include: Union[List[str], None] = Query(default=None)
-) -> JSONResponse:
+def get_alert(req: Request, alert_id: int) -> JSONResponse:
     with req.app.state.db.session() as session:
         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
         if alert is None:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
 
-    filtered_alert = {}
+    alert_json = {
+        "text": alert.text,
+        "startDateTime": str(alert.start_datetime),
+        "endDateTime": str(alert.end_datetime),
+    }
 
-    if include is None or "text" in include:
-        filtered_alert["text"] = alert.text
-
-    if include is None or "start" in include:
-        filtered_alert["start"] = str(alert.start_datetime)
-
-    if include is None or "end" in include:
-        filtered_alert["end"] = str(alert.end_datetime)
-
-    return JSONResponse(content=filtered_alert)
+    return JSONResponse(content=alert_json)
 
 
 @router.post("/")

@@ -10,7 +10,7 @@ def process_include(include: Optional[list[str]], allowed: set[str]):
     """
     if include is None:
         # Nothing specified, implied to include all fields
-        return allowed
+        return {}
 
     include_set = set(include)
     if len(include_set) != len(include):

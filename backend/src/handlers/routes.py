@@ -3,7 +3,7 @@ Contains routes specific to working with routes.
 """
 
 from datetime import datetime, timezone
-from typing import Annotated, Any, Iterator, Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from src.model.alert import Alert
@@ -22,7 +22,6 @@ FIELD_IS_ACTIVE = "isActive"
 FIELD_LATITUDE = "latitude"
 FIELD_LONGITUDE = "longitude"
 INCLUDES = {
-    FIELD_NAME,
     FIELD_STOP_IDS,
     FIELD_WAYPOINTS,
     FIELD_IS_ACTIVE,
@@ -42,8 +41,7 @@ def get_routes(
 
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        query = session.query(Route)
-        query, entities = apply_includes_to_query(query, include_set)
+        routes = session.query(Route).all()
 
         # Be more efficient and load the current alert only once if
         # we need it for the isActive field.
@@ -53,27 +51,25 @@ def get_routes(
                 datetime.now(timezone.utc).replace(tzinfo=None), session
             )
 
-        routes = []
-        for route in query.all():
-            route = unpack_entity_tuple(route, entities)
+        routes_json = []
+        for route in routes:
+            route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
 
             # Add related values to the route if included
             if FIELD_STOP_IDS in include_set:
-                route[FIELD_STOP_IDS] = query_route_stop_ids(route[FIELD_ID], session)
+                route_json[FIELD_STOP_IDS] = query_route_stop_ids(route.id, session)
 
             if FIELD_WAYPOINTS in include_set:
-                route[FIELD_WAYPOINTS] = query_route_waypoints(route[FIELD_ID], session)
+                route_json[FIELD_WAYPOINTS] = query_route_waypoints(route.id, session)
 
             # Already checked if included later when we fetched the alert, check for it's
             # presence.
             if alert:
-                route[FIELD_IS_ACTIVE] = is_route_active(
-                    route[FIELD_ID], alert, session
-                )
+                route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
 
-            routes.append(route)
+            routes_json.append(route_json)
 
-        return routes
+        return routes_json
 
 
 @router.get("/{route_id}")
@@ -88,52 +84,26 @@ def get_route(
 
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
-        query = session.query(Route).filter(Route.id == route_id)
-        query, entities = apply_includes_to_query(query, include_set)
-        route = query.first()
+        route = session.query(Route).filter(Route.id == route_id).first()
         if not route:
             raise HTTPException(status_code=404, detail="Route not found")
 
-        route = unpack_entity_tuple(route, entities)
+        route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
 
         # Add related values to the route if included
         if FIELD_STOP_IDS in include_set:
-            route[FIELD_STOP_IDS] = query_route_stop_ids(route[FIELD_ID], session)
+            route_json[FIELD_STOP_IDS] = query_route_stop_ids(route.id, session)
 
         if FIELD_WAYPOINTS in include_set:
-            route[FIELD_WAYPOINTS] = query_route_waypoints(route[FIELD_ID], session)
+            route_json[FIELD_WAYPOINTS] = query_route_waypoints(route.id, session)
 
         if FIELD_IS_ACTIVE in include_set:
             alert = get_current_alert(
                 datetime.now(timezone.utc).replace(tzinfo=None), session
             )
-            route[FIELD_IS_ACTIVE] = is_route_active(route[FIELD_ID], alert, session)
+            route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
 
-        return route
-
-
-def apply_includes_to_query(query, include_set) -> tuple[Any, Iterator[str]]:
-    """
-    Applies the given include parameters to the given query, reducing the query to only
-    the fields that are desired. Since this will cause the query to return a tuple, a
-    dictionary is also provided of the names for each value that will appear in the tuple
-    in-order. This can be used with unpack_stop_values can be used to turn the tuple into
-    a JSON structure.
-    """
-
-    entities: dict[str, Any] = {FIELD_ID: Route.id}
-    if FIELD_NAME in include_set:
-        entities[FIELD_NAME] = Route.name
-
-    return (query.with_entities(*entities.values()), iter(entities.keys()))
-
-
-def unpack_entity_tuple(result: tuple, entities: Iterator[str]) -> dict:
-    """
-    Given a tuple of values and a list of the names for each value, returns a dictionary
-    mapping each name to its corresponding value.
-    """
-    return {key: value for key, value in zip(entities, result)}
+        return route_json
 
 
 def query_route_stop_ids(route_id: int, session):
