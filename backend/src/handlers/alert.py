@@ -1,4 +1,5 @@
 import datetime
+from typing import Dict, List, Union
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
@@ -28,7 +29,7 @@ def get_alerts(req: Request, active: bool = False) -> JSONResponse:
             query = query.filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
         alerts = query.all()
 
-    alerts_json = []
+    alerts_json: List[Dict[str, Union[str, int]]] = []
     for alert in alerts:
         alert_json = {
             "text": alert.text,
