@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
+
 from src.model.alert import Alert
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop

@@ -16,6 +16,7 @@ app.include_router(alert.router)
 app.include_router(analytics.router)
 app.include_router(vans.router)
 
+
 @app.on_event("startup")
 def startup_event():
     app.state.db = DBWrapper()
