@@ -47,7 +47,7 @@ def get_alert(req: Request, alert_id: int) -> JSONResponse:
         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
         if alert is None:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
-          
+
     alert_json = {
         "text": alert.text,
         "startDateTime": int(alert.start_datetime),
