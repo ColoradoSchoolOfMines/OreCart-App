@@ -5,7 +5,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
 
-class ScheduleModel(Base):
+class Schedule(Base):
     __tablename__ = "schedules"
     __table_args__ = (
         ForeignKeyConstraint(["route_id"], ["routes.id"]),

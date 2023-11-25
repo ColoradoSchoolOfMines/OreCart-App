@@ -1,36 +1,37 @@
 import React from "react";
 import {
-  TouchableHighlight,
   StyleSheet,
-  type ViewProps,
+  TouchableHighlight,
   View,
+  type ViewProps,
 } from "react-native";
 
 /**
- * The props for the {@function IconButton} component.
+ * The props for the {@function FloatingButton} component.
  */
-export interface IconButtonProps {
+export interface FloatingButtonProps extends ViewProps {
+  /** The child icons of the FloatingButton */
   children: React.ReactNode;
   /** Callback for when the button is pressed by the user. */
   onPress: () => void;
 }
 
 /**
- * A button that toggles whether the user's location is being followed.
+ * A general floating button component.
  */
-export function IconButton(
-  props: ViewProps & IconButtonProps,
-): React.ReactElement {
+const FloatingButton: React.FC<FloatingButtonProps> = ({ children, onPress }) => {
   return (
     <TouchableHighlight
       style={styles.button}
       underlayColor="#DDDDDD"
-      onPress={props.onPress}
+      onPress={onPress}
     >
-      <View>{props.children}</View>
+      <View>
+        {children}
+      </View>
     </TouchableHighlight>
   );
-}
+};
 
 const styles = StyleSheet.create({
   button: {
@@ -50,3 +51,5 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 });
+
+export default FloatingButton;

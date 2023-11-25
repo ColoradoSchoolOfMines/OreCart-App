@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.db import Base
 
 
-class StopModel(Base):
+class Stop(Base):
     __tablename__ = "stops"
     __table_args__ = (UniqueConstraint("name"), UniqueConstraint("lat", "lon"))
     id: Mapped[int] = mapped_column(

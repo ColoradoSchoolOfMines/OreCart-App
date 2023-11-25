@@ -1,27 +1,31 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import React, { useMemo, useRef, useState } from "react";
+import { StatusBar, StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
-import {
-  View,
-  StyleSheet,
-  type ViewProps,
-  StatusBar,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native";
+
 import { type Coordinate } from "../services/location";
-import { LocationButton } from "./LocationButton";
-import React, { useRef, useMemo, useState } from "react";
+import LayoutStyle from "../style/layout";
+import SpacingStyle, { type Insets } from "../style/spacing";
+
+import FloatingButton from "./FloatingButton";
+
+interface MapProps extends ViewProps {
+  /**
+   * The {@interface Insets} to pad map information with. Useful if map information will be
+   * obscured. Note that status bar insets will already be applied, so don't include those.
+   */
+  insets?: Insets;
+}
 
 /**
  * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
  */
-export function Map(
-  props: MapProps & ViewProps,
-): React.ReactElement<MapProps & ViewProps> {
+const Map: React.FC<MapProps> = ({ insets }) => {
   const mapRef = useRef<MapView>(null);
   const [followingLocation, setFollowingLocation] = useState<boolean>(true);
-  const [lastLocation, setLastLocation] = useState<Coordinate | undefined>(
-    undefined,
-  );
+  const [lastLocation, setLastLocation] = React.useState<
+    Coordinate | undefined
+  >(undefined);
 
   function panToLocation(location: Coordinate | undefined): void {
     if (location !== undefined && mapRef.current != null) {
@@ -58,29 +62,16 @@ export function Map(
   // is fully in-bounds.
   const statusBarInset = useMemo(() => StatusBar.currentHeight ?? 0, []);
   const padding = {
-    top: (props.insets?.top ?? 0) + statusBarInset,
-    left: props.insets?.left ?? 0,
-    bottom: props.insets?.bottom ?? 0,
-    right: props.insets?.right ?? 0,
-  };
-
-  // Insets + 16dp padding & Bottom-end alignment
-  const locationButtonContainerStyle: StyleProp<ViewStyle> = {
-    position: "absolute",
-    height: "100%",
-    width: "100%",
-    paddingTop: padding.top + 16,
-    paddingBottom: padding.bottom + 16,
-    paddingLeft: padding.left + 16,
-    paddingRight: padding.right + 16,
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
+    top: (insets?.top ?? 0) + statusBarInset,
+    left: insets?.left ?? 0,
+    bottom: insets?.bottom ?? 0,
+    right: insets?.right ?? 0,
   };
 
   return (
     <View>
       <MapView
-        style={styles.innerMap}
+        style={LayoutStyle.fill}
         ref={mapRef}
         provider={PROVIDER_GOOGLE}
         showsUserLocation={true}
@@ -94,47 +85,34 @@ export function Map(
         }}
       />
       {/* Layer the location button on the map instead of displacing it. */}
-      <View style={locationButtonContainerStyle}>
-        <LocationButton
-          isActive={followingLocation}
+      <View
+        style={[
+          LayoutStyle.overlay,
+          SpacingStyle.pad(padding, 16),
+          styles.locationButtonContainer,
+        ]}
+      >
+        <FloatingButton
           onPress={() => {
             flipFollowingLocation();
           }}
-        />
+        >
+          {followingLocation ? (
+            <MaterialIcons name="my-location" size={24} color="green" />
+          ) : (
+            <MaterialIcons name="location-searching" size={24} color="black" />
+          )}
+        </FloatingButton>
       </View>
     </View>
   );
-}
-
-/**
- * The props for the {@function Map} component.
- */
-export interface MapProps {
-  /**
-   * The {@interface Insets} to pad map information with. Useful if map information will be
-   * obscured. Note that status bar insets will already be applied, so don't include those.
-   */
-  insets?: Insets;
-}
-
-/**
- * The insets to apply to the {@interface Map} component when it will be obscured by
- * other components. {@see MapProps.insets}
- */
-export interface Insets {
-  /** The amount of space to inset from the top of the map. */
-  top: number;
-  /** The amount of space to inset from the left of the map. */
-  left: number;
-  /** The amount of space to inset from the bottom of the map. */
-  bottom: number;
-  /** The amount of space to inset from the right of the map. */
-  right: number;
-}
+};
 
 const styles = StyleSheet.create({
-  innerMap: {
-    width: "100%",
-    height: "100%",
+  locationButtonContainer: {
+    justifyContent: "flex-end",
+    alignItems: "flex-end",
   },
 });
+
+export default Map;

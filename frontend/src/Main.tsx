@@ -1,11 +1,13 @@
-import React from "react";
-import { View, Text, Dimensions, type ViewProps } from "react-native";
-import { Map } from "./components/Map";
-import { Sheet } from "./components/Sheet";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
-import { IconButton } from "./components/IconButton";
+import React from "react";
+import { View, Text, Dimensions, type ViewProps, StyleSheet } from "react-native";
 import { Drawer } from "react-native-drawer-layout";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import FloatingButton from "./components/FloatingButton";
+import Map from "./components/Map";
+import Sheet from "./components/Sheet";
+import LayoutStyle from "./style/layout";
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in
@@ -16,18 +18,12 @@ const SHEET_EXTENT = 0.5;
 /**
  * The main screen containing the map and sheet components.
  */
-export function Main(_: ViewProps): React.ReactElement<void> {
+const Main: React.FC<ViewProps> = () => {
   // The bottom sheet extends halfway across the screen, with the map
   // being inset accordingly.
   const screenHeight = Dimensions.get("window").height;
   const [open, setOpen] = React.useState(false);
-  const mapInsets = {
-    top: 0,
-    left: 0,
-    // Inset the map so that elements are not obscured by the bottom sheet
-    bottom: screenHeight * SHEET_EXTENT,
-    right: 0,
-  };
+  const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
 
   return (
     <Drawer
@@ -43,14 +39,16 @@ export function Main(_: ViewProps): React.ReactElement<void> {
       }}
     >
       <GestureHandlerRootView>
-        <IconButton
-          onPress={() => {
-            setOpen((prevOpen: boolean) => !prevOpen);
-          }}
-        >
-          <MaterialIcons name="menu" size={35} color="black" />
-        </IconButton>
-        <Map insets={mapInsets} />
+        <Map style={LayoutStyle.fill} insets={mapInsets} />
+        <View style={[LayoutStyle.overlay, styles.drawerButtonContainer]}>
+          <FloatingButton
+            onPress={() => {
+              setOpen((prevOpen: boolean) => !prevOpen);
+            }}
+          >
+            <MaterialIcons name="menu" size={24} color="black" />
+          </FloatingButton>
+        </View>
         <Sheet collapsedExtent={SHEET_EXTENT}>
           <View>
             <Text>Hello World</Text>
@@ -60,3 +58,9 @@ export function Main(_: ViewProps): React.ReactElement<void> {
     </Drawer>
   );
 }
+
+const styles = StyleSheet.create({
+  drawerButtonContainer: { padding: 16 }
+});
+
+export default Main;

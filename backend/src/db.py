@@ -4,12 +4,21 @@ import sqlalchemy
 from sqlalchemy.orm import DeclarativeBase, Session
 
 
-def init():
-    engine = sqlalchemy.create_engine(
-        os.getenv("DATABASE_URL") or "", pool_size=15, max_overflow=5
-    )
-    return engine
+class DBWrapper:
+    def __init__(self):
+        self.engine = sqlalchemy.create_engine(
+            os.environ["DATABASE_URL"], pool_size=15, max_overflow=5
+        )
+
+    def session(self) -> Session:
+        return Session(self.engine)
 
 
 class Base(DeclarativeBase):
+    """
+    This makes an instance of DeclarativeBase which is the inherited model for all models.
+    This is an alternative to using declarative_base from sqlalchemy.orm and making
+    a new instance of DeclarativeBase upon the creation of each new model.
+    """
+
     pass
