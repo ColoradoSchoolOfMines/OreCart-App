@@ -25,7 +25,7 @@ def get_alerts(req: Request, active: bool = False) -> JSONResponse:
     with req.app.state.db.session() as session:
         query = session.query(Alert)
         if active:
-            now = datetime.datetime.now()
+            now = datetime.now(timezone.utc)
             query = query.filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
         alerts = query.all()
 
@@ -33,8 +33,8 @@ def get_alerts(req: Request, active: bool = False) -> JSONResponse:
     for alert in alerts:
         alert_json = {
             "text": alert.text,
-            "startDateTime": int(alert.start_datetime),
-            "endDateTime": int(alert.end_datetime),
+            "startDateTime": int(alert.start_datetime.timestamp()),
+            "endDateTime": int(alert.end_datetime.timestamp()),
         }
         alerts_json.append(alert_json)
 
@@ -50,8 +50,8 @@ def get_alert(req: Request, alert_id: int) -> JSONResponse:
 
     alert_json = {
         "text": alert.text,
-        "startDateTime": int(alert.start_datetime),
-        "endDateTime": int(alert.end_datetime),
+        "startDateTime": int(alert.start_datetime.timestamp()),
+        "endDateTime": int(alert.end_datetime.timestamp()),
     }
 
     return JSONResponse(content=alert_json)
