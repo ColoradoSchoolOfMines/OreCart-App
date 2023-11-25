@@ -1,12 +1,13 @@
-import React, { useRef, useMemo, useState } from "react";
-import { View, StyleSheet, type ViewProps, StatusBar } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import React, { useMemo, useRef, useState } from "react";
+import { StatusBar, StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 
 import { type Coordinate } from "../services/location";
 import LayoutStyle from "../style/layout";
 import SpacingStyle, { type Insets } from "../style/spacing";
 
-import LocationButton from "./LocationButton";
+import FloatingButton from "./FloatingButton";
 
 interface MapProps extends ViewProps {
   /**
@@ -91,12 +92,17 @@ const Map: React.FC<MapProps> = ({ insets }) => {
           styles.locationButtonContainer,
         ]}
       >
-        <LocationButton
-          isActive={followingLocation}
+        <FloatingButton
           onPress={() => {
             flipFollowingLocation();
           }}
-        />
+        >
+          {followingLocation ? (
+            <MaterialIcons name="my-location" size={24} color="green" />
+          ) : (
+            <MaterialIcons name="location-searching" size={24} color="black" />
+          )}
+        </FloatingButton>
       </View>
     </View>
   );
