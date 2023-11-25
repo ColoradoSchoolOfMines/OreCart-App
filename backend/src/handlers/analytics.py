@@ -6,7 +6,6 @@ import struct
 from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Request
-
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
 from src.model.van import Van
