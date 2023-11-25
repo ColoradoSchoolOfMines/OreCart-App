@@ -1,6 +1,12 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
-import { View, Text, Dimensions, type ViewProps, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Dimensions,
+  type ViewProps,
+  StyleSheet,
+} from "react-native";
 import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
@@ -57,10 +63,10 @@ const Main: React.FC<ViewProps> = () => {
       </GestureHandlerRootView>
     </Drawer>
   );
-}
+};
 
 const styles = StyleSheet.create({
-  drawerButtonContainer: { padding: 16 }
+  drawerButtonContainer: { padding: 16 },
 });
 
 export default Main;

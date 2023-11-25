@@ -19,16 +19,17 @@ export interface FloatingButtonProps extends ViewProps {
 /**
  * A general floating button component.
  */
-const FloatingButton: React.FC<FloatingButtonProps> = ({ children, onPress }) => {
+const FloatingButton: React.FC<FloatingButtonProps> = ({
+  children,
+  onPress,
+}) => {
   return (
     <TouchableHighlight
       style={styles.button}
       underlayColor="#DDDDDD"
       onPress={onPress}
     >
-      <View>
-        {children}
-      </View>
+      <View>{children}</View>
     </TouchableHighlight>
   );
 };
