@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Set, List, Union
 
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
@@ -19,8 +19,7 @@ class VanModel(BaseModel):
 
 router = APIRouter(prefix="/vans", tags=["vans"])
 
-ANALYTICS_RIDERSHIP = "analytics-ridership"
-INCLUDES = {ANALYTICS_RIDERSHIP}
+INCLUDES: Set[str] = set()
 
 
 @router.get("/")
@@ -42,28 +41,6 @@ def get_vans(
             ]
         }
 
-        if ANALYTICS_RIDERSHIP in include_set:
-            analytics: List[Analytics] = session.query(Analytics).all()
-            analytics = list(
-                map(
-                    lambda analytic: {
-                        "id": analytic.id,
-                        "van_id": analytic.van_id,
-                        "route_id": analytic.route_id,
-                        "entered": analytic.entered,
-                        "exited": analytic.exited,
-                        "lat": analytic.lat,
-                        "lon": analytic.lon,
-                        "datetime": str(analytic.datetime),
-                    },
-                    analytics,
-                )
-            )
-            for van in resp["vans"]:
-                van["analytics-ridership"] = list(
-                    filter(analytics, lambda analytic: analytic.van_id == van.id)
-                )
-
     return JSONResponse(content=resp)
 
 
@@ -82,27 +59,6 @@ def get_van(
             "route_id": van.route_id,
             "wheelchair": van.wheelchair,
         }
-
-        if ANALYTICS_RIDERSHIP in include_set:
-            analytics: List[Analytics] = (
-                session.query(Analytics).filter_by(van_id=van.id).all()
-            )
-            analytics = list(
-                map(
-                    lambda analytic: {
-                        "id": analytic.id,
-                        "van_id": analytic.van_id,
-                        "route_id": analytic.route_id,
-                        "entered": analytic.entered,
-                        "exited": analytic.exited,
-                        "lat": analytic.lat,
-                        "lon": analytic.lon,
-                        "datetime": str(analytic.datetime),
-                    },
-                    analytics,
-                )
-            )
-            resp["analytics"] = analytics
 
     return JSONResponse(content=resp)
 
