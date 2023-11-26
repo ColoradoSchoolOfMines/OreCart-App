@@ -8,7 +8,7 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, model_validator
 from sqlalchemy.sql import ColumnElement
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
@@ -23,12 +23,12 @@ class RidershipFilterModel(BaseModel):
     route_id: Optional[int]
     van_id: Optional[int]
 
-    @validator("end_timestamp")
-    def check_dates(cls, end_timestamp, values, **kwargs):
-        if end_timestamp is not None and values.get("start_timestamp") is not None:
-            if end_timestamp <= values["start_timestamp"]:
+    @model_validator(mode="after")
+    def check_dates(self):
+        if self.end_timestamp is not None and self.start_timestamp is not None:
+            if self.end_timestamp <= self.start_timestamp:
                 raise ValueError("End timestamp must be after start timestamp")
-        return end_timestamp
+        return self
 
     @property
     def start_date(self) -> Optional[datetime]:
