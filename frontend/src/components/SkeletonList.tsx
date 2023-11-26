@@ -1,12 +1,12 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, type ViewProps } from 'react-native';
 
 import Divider from './Divider';
 
 /**
  * The props for the {@interface SkeletonList} component.
  */
-interface SkeletonProps {
+interface SkeletonProps extends ViewProps {
   /** Returns the skeleton item to render. */
   generator: () => React.ReactNode
 }

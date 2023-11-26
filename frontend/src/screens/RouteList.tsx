@@ -16,6 +16,9 @@ import { getRoutes, type Routes } from "../services/routes";
 import Color from "../style/color";
 import LayoutStyle from "../style/layout";
 
+/**
+ * Screen that displays a list of routes.
+ */
 const RouteList: React.FC<ViewProps> = () => {
   const [routeState, setRouteState] = useState<RequestState<Routes>>({
     type: "loading",
@@ -43,9 +46,8 @@ const RouteList: React.FC<ViewProps> = () => {
   return (
     <View style={[LayoutStyle.fill]}>
       {routeState.type === "loading" ? (
-        <View style={styles.routeContainer}>
-          <SkeletonList generator={() => <RouteItemSkeleton />} />
-        </View>
+        // Loading, display skeleton list
+        <SkeletonList style={styles.routeContainer} generator={() => <RouteItemSkeleton />} />
       ) : routeState.type === "ok" ? (
         <FlatList
           style={styles.routeContainer}
@@ -64,9 +66,7 @@ const RouteList: React.FC<ViewProps> = () => {
             onPress={retryFetchRoutes}
             underlayColor={Color.csm.primary.ext.blaster_blue_highlight}
           >
-            <View>
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </View>
+            <Text style={styles.retryButtonText}>Retry</Text>
           </TouchableHighlight>
         </View>
       ) : null}

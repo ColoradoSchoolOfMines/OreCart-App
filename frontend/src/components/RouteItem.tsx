@@ -1,6 +1,13 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
-import { Text, View, StyleSheet, TouchableHighlight, type ViewProps } from "react-native";
+import {
+  Text,
+  View,
+  StyleSheet,
+  TouchableHighlight,
+  type ViewProps,
+  Dimensions,
+} from "react-native";
 
 import { type Route } from "../services/routes";
 import Color from "../style/color";
@@ -43,16 +50,17 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
           <Text style={[styles.routeName, routeNameColorStyle]}>
             {route.name}
           </Text>
-          {route.isActive ? 
-          <>
-            <Text style={styles.routeStatus}>
-              Next OreCart in <Text style={styles.routeStatusEmphasis}>5 min</Text>
-            </Text>
-            <Text style={styles.routeContext}>
-              At Jackston Street (1 mi)
-            </Text>
-          </>
-          : <Text style={styles.routeStatus}>Not running</Text> }
+          {route.isActive ? (
+            <>
+              <Text style={styles.routeStatus}>
+                Next OreCart in{" "}
+                <Text style={styles.routeStatusEmphasis}>5 min</Text>
+              </Text>
+              <Text style={styles.routeContext}>At Jackston Street (1 mi)</Text>
+            </>
+          ) : (
+            <Text style={styles.routeStatus}>Not running</Text>
+          )}
         </View>
         <MaterialIcons
           name="arrow-forward"
@@ -67,17 +75,45 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
 /**
  * A skeleton component that mimics the {@interface RouteItem} component.
  */
-export const RouteItemSkeleton: React.FC<ViewProps> = ({style}) => {
+export const RouteItemSkeleton: React.FC<ViewProps> = ({ style }) => {
+  const routeNameWidthStyle = {
+    width: Dimensions.get("window").width * 0.3,
+  };
+  const routeStatusWidthStyle = {
+    width: Dimensions.get("window").width * 0.6,
+  };
+  const routeContextWidthStyle = {
+    width: Dimensions.get("window").width * 0.4,
+  };
+
   return (
     <View style={[styles.innerContainer, style]}>
+      {/* We want to make sure the placeholders have the same height as real text elements, so we simply
+      add empty text elements set to the same configuration as the normal text elements. By some quirk of
+      RN, this results in a text element that takes up the height needed without having to put any
+      placeholder text content. */}
       <View style={styles.routeInfoContainer}>
-        <Text style={[styles.routeName, styles.textSkeleton]}>Tungsten</Text>
-        <Text style={[styles.routeStatus, styles.textSkeleton]}>Next OreCart in 5 min</Text>
-        <Text style={[styles.routeContext, styles.textSkeleton]}>At Jackson Street (1 mi)</Text>
+        <Text
+          style={[styles.routeName, styles.textSkeleton, routeNameWidthStyle]}
+        />
+        <Text
+          style={[
+            styles.routeStatus,
+            styles.textSkeleton,
+            routeStatusWidthStyle,
+          ]}
+        />
+        <Text
+          style={[
+            styles.routeContext,
+            styles.textSkeleton,
+            routeContextWidthStyle,
+          ]}
+        />
       </View>
     </View>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   touchableContainer: {
@@ -103,13 +139,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   routeContext: {
-    fontSize: 12
+    fontSize: 12,
   },
   textSkeleton: {
     backgroundColor: Color.generic.skeleton,
     borderRadius: 32,
     color: "transparent",
-    alignSelf: "flex-start",
-  }
+  },
 });
-
