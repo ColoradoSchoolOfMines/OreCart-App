@@ -33,8 +33,8 @@ def get_vans(
         resp = {
             "vans": [
                 {
-                    "van_id": van.id,
-                    "route_id": van.route_id,
+                    "vanId": van.id,
+                    "routeId": van.route_id,
                     "wheelchair": van.wheelchair,
                 }
                 for van in vans
@@ -55,8 +55,8 @@ def get_van(
             return JSONResponse(content={"message": "Van not found"}, status_code=404)
 
         resp = {
-            "van_id": van_id,
-            "route_id": van.route_id,
+            "vanId": van_id,
+            "routeId": van.route_id,
             "wheelchair": van.wheelchair,
         }
 
