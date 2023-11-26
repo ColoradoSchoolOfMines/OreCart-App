@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -13,13 +14,17 @@ import { Drawer } from "react-native-drawer-layout";
 import React, { useEffect, useState } from "react";
 import { View, Text, Dimensions, type ViewProps } from "react-native";
 >>>>>>> 6280e4c (frontend: add route query scaffold)
+=======
+import React from "react";
+import { View, Dimensions, type ViewProps } from "react-native";
+>>>>>>> 75a3c12 (frontend/screens: add route list screen)
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import FloatingButton from "./components/FloatingButton";
 import Map from "./components/Map";
 import Sheet from "./components/Sheet";
+import RouteList from "./screens/RouteList";
 import LayoutStyle from "./style/layout";
-import { Routes, getRoutes } from "./services/routes"
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in
@@ -37,16 +42,8 @@ const Main: React.FC<ViewProps> = () => {
   const [open, setOpen] = React.useState(false);
   const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
 
-  const [routes, setRoutes] = useState<Routes | null>(null)
-  useEffect(() => {
-    getRoutes().then(setRoutes).catch(console.error)
-
-    return () => {
-      console.log("Main unmounted");
-    };
-  }, []);
-
   return (
+<<<<<<< HEAD
     <Drawer
       open={open}
       onOpen={() => {
@@ -70,10 +67,6 @@ const Main: React.FC<ViewProps> = () => {
             <MaterialIcons name="menu" size={24} color="black" />
           </FloatingButton>
         </View>
-        <Sheet collapsedExtent={SHEET_EXTENT}>
-          <View>
-            <Text>{JSON.stringify(routes)}</Text>
-          </View>
           <Sheet collapsedExtent={SHEET_EXTENT}>
             <View>
               <Text>Hello World</Text>
