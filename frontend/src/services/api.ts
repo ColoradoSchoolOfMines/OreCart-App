@@ -23,7 +23,7 @@ function getApiUrl(): string {
 }
 
 export async function apiGet<T>(route: string): Promise<T> {
-  const url = getApiUrl() + route
+  const url = getApiUrl() + route;
   return await fetch(url, {
     method: "GET",
     headers: {

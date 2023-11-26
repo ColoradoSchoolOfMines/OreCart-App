@@ -12,20 +12,20 @@ export default {
       colorado_red: "#CC4628",
       pale_blue: "#CFDCE9",
       ext: {
-        blaster_blue_highlight: "#235D99"
-      }
+        blaster_blue_highlight: "#235D99",
+      },
     },
     neutral: {
       white: "white",
       light_gray: "#AEB3B8",
-      silver: "#AEB3B8"
-    }
+      silver: "#AEB3B8",
+    },
   },
   generic: {
     white: "white",
     black: "black",
     selection: "#EEEEEE",
     skeleton: "#DDDDDD",
-    location: "#148D00"
-  }
-}
+    location: "#148D00",
+  },
+};

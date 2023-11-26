@@ -12,5 +12,7 @@ export interface Route {
 }
 
 export async function getRoutes(): Promise<Routes> {
-  return await apiGet<Routes>("/routes/?include=stopIds&include=waypoints&include=isActive");
+  return await apiGet<Routes>(
+    "/routes/?include=stopIds&include=waypoints&include=isActive",
+  );
 }

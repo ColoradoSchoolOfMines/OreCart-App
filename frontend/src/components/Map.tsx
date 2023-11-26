@@ -4,6 +4,7 @@ import { StatusBar, StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
 
 import { type Coordinate } from "../services/location";
+import Color from "../style/color";
 import LayoutStyle from "../style/layout";
 import SpacingStyle, { type Insets } from "../style/spacing";
 
@@ -98,9 +99,17 @@ const Map: React.FC<MapProps> = ({ insets }) => {
           }}
         >
           {followingLocation ? (
-            <MaterialIcons name="my-location" size={24} color="green" />
+            <MaterialIcons
+              name="my-location"
+              size={24}
+              color={Color.generic.location}
+            />
           ) : (
-            <MaterialIcons name="location-searching" size={24} color="black" />
+            <MaterialIcons
+              name="location-searching"
+              size={24}
+              color={Color.generic.black}
+            />
           )}
         </FloatingButton>
       </View>

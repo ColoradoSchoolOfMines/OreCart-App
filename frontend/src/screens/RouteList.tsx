@@ -31,7 +31,7 @@ const RouteList: React.FC<ViewProps> = () => {
       })
       .catch((e) => {
         setRouteState({ type: "error", message: e.toString() });
-      })
+      });
   }
 
   useEffect(() => {
@@ -47,7 +47,10 @@ const RouteList: React.FC<ViewProps> = () => {
     <View style={[LayoutStyle.fill]}>
       {routeState.type === "loading" ? (
         // Loading, display skeleton list
-        <SkeletonList style={styles.routeContainer} generator={() => <RouteItemSkeleton />} />
+        <SkeletonList
+          style={styles.routeContainer}
+          generator={() => <RouteItemSkeleton />}
+        />
       ) : routeState.type === "ok" ? (
         <FlatList
           style={styles.routeContainer}

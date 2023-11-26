@@ -67,12 +67,10 @@ const Main: React.FC<ViewProps> = () => {
             <MaterialIcons name="menu" size={24} color="black" />
           </FloatingButton>
         </View>
-          <Sheet collapsedExtent={SHEET_EXTENT}>
-            <View>
-              <Text>Hello World</Text>
-            </View>
-          </Sheet>
-        </GestureHandlerRootView>
+        <Sheet collapsedExtent={SHEET_EXTENT}>
+          <RouteList />
+        </Sheet>
+      </GestureHandlerRootView>
     </Drawer>
   );
 };
