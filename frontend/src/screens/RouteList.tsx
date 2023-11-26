@@ -3,14 +3,14 @@ import {
   FlatList,
   Text,
   View,
-  ActivityIndicator,
   type ViewProps,
   StyleSheet,
   TouchableHighlight,
 } from "react-native";
 
 import Divider from "../components/Divider";
-import RouteItem from "../components/RouteItem";
+import { RouteItem, RouteItemSkeleton } from "../components/RouteItem";
+import SkeletonList from "../components/SkeletonList";
 import { type RequestState } from "../services/api";
 import { getRoutes, type Routes } from "../services/routes";
 import Color from "../style/color";
@@ -28,7 +28,7 @@ const RouteList: React.FC<ViewProps> = () => {
       })
       .catch((e) => {
         setRouteState({ type: "error", message: e.toString() });
-      });
+      })
   }
 
   useEffect(() => {
@@ -43,10 +43,16 @@ const RouteList: React.FC<ViewProps> = () => {
   return (
     <View style={[LayoutStyle.fill]}>
       {routeState.type === "loading" ? (
-        <ActivityIndicator
-          style={styles.loadingContainer}
-          size="large"
-          color={Color.csm.primary.light_blue}
+        <View style={styles.routeContainer}>
+          <SkeletonList generator={() => <RouteItemSkeleton />} />
+        </View>
+      ) : routeState.type === "ok" ? (
+        <FlatList
+          style={styles.routeContainer}
+          data={routeState.routes}
+          renderItem={({ item }) => <RouteItem route={item} />}
+          keyExtractor={(item) => item.id.toString()}
+          ItemSeparatorComponent={Divider}
         />
       ) : routeState.type === "error" ? (
         <View style={styles.loadingContainer}>
@@ -63,15 +69,7 @@ const RouteList: React.FC<ViewProps> = () => {
             </View>
           </TouchableHighlight>
         </View>
-      ) : (
-        <FlatList
-          style={styles.routeContainer}
-          data={routeState.routes}
-          renderItem={({ item }) => <RouteItem route={item} />}
-          keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={Divider}
-        />
-      )}
+      ) : null}
     </View>
   );
 };

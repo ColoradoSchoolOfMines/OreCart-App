@@ -24,7 +24,8 @@ export default {
   generic: {
     white: "white",
     black: "black",
-    selection: "#DDDDDD",
+    selection: "#EEEEEE",
+    skeleton: "#DDDDDD",
     location: "#148D00"
   }
 }
