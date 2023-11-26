@@ -1,4 +1,4 @@
-from typing import Set, List, Union
+from typing import List, Set, Union
 
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import JSONResponse
