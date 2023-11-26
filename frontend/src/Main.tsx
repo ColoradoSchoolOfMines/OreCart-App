@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< HEAD
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
@@ -10,14 +8,6 @@ import {
   StyleSheet,
 } from "react-native";
 import { Drawer } from "react-native-drawer-layout";
-=======
-import React, { useEffect, useState } from "react";
-import { View, Text, Dimensions, type ViewProps } from "react-native";
->>>>>>> 6280e4c (frontend: add route query scaffold)
-=======
-import React from "react";
-import { View, Dimensions, type ViewProps } from "react-native";
->>>>>>> 75a3c12 (frontend/screens: add route list screen)
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import FloatingButton from "./components/FloatingButton";
@@ -43,7 +33,6 @@ const Main: React.FC<ViewProps> = () => {
   const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
 
   return (
-<<<<<<< HEAD
     <Drawer
       open={open}
       onOpen={() => {
