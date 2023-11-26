@@ -5,35 +5,21 @@ import {
   View,
   ActivityIndicator,
   type ViewProps,
-  type ListRenderItem,
   StyleSheet,
   TouchableHighlight,
 } from "react-native";
 
 import Divider from "../components/Divider";
 import RouteItem from "../components/RouteItem";
-import { getRoutes, type Routes, type Route } from "../services/routes";
-import LayoutStyle from "../style/layout";
+import { type RequestState } from "../services/api";
+import { getRoutes, type Routes } from "../services/routes";
 import Color from "../style/color";
-
-type RouteState = Ok | Error | Loading;
-
-interface Ok {
-  type: "ok";
-  routes: Routes;
-}
-
-interface Error {
-  type: "error";
-  message: string;
-}
-
-interface Loading {
-  type: "loading";
-}
+import LayoutStyle from "../style/layout";
 
 const RouteList: React.FC<ViewProps> = () => {
-  const [routeState, setRouteState] = useState<RouteState>({ type: "loading" });
+  const [routeState, setRouteState] = useState<RequestState<Routes>>({
+    type: "loading",
+  });
 
   function loadRoutes(): void {
     getRoutes()
@@ -48,12 +34,6 @@ const RouteList: React.FC<ViewProps> = () => {
   useEffect(() => {
     loadRoutes();
   }, []);
-
-  const renderRouteItem: ListRenderItem<Route> = ({ item }) => (
-    <RouteItem route={item} />
-  );
-
-  const renderSeparator: React.FC<ViewProps> = () => <Divider />;
 
   const retryFetchRoutes = (): void => {
     setRouteState({ type: "loading" });
@@ -87,9 +67,9 @@ const RouteList: React.FC<ViewProps> = () => {
         <FlatList
           style={styles.routeContainer}
           data={routeState.routes}
-          renderItem={renderRouteItem}
+          renderItem={({ item }) => <RouteItem route={item} />}
           keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={renderSeparator}
+          ItemSeparatorComponent={Divider}
         />
       )}
     </View>
@@ -98,7 +78,7 @@ const RouteList: React.FC<ViewProps> = () => {
 
 const styles = StyleSheet.create({
   routeContainer: {
-    paddingHorizontal: 8
+    paddingHorizontal: 8,
   },
   loadingContainer: {
     padding: 16,
@@ -115,7 +95,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: Color.generic.white,
-    fontWeight: "500"
+    fontWeight: "500",
   },
 });
 

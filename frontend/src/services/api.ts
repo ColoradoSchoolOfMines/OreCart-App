@@ -1,3 +1,19 @@
+export type RequestState<T> = Ok<T> | Error | Loading;
+
+interface Ok<T> {
+  type: "ok";
+  routes: T;
+}
+
+interface Error {
+  type: "error";
+  message: string;
+}
+
+interface Loading {
+  type: "loading";
+}
+
 function getApiUrl(): string {
   if (process.env.NODE_ENV === "development") {
     return "http://" + process.env.EXPO_PUBLIC_DEV_API_URL;
