@@ -33,13 +33,13 @@ class RidershipFilterModel(BaseModel):
     @property
     def start_date(self) -> Optional[datetime]:
         if self.start_timestamp is not None:
-            return datetime.fromtimestamp(self.start_timestamp)
+            return datetime.fromtimestamp(self.start_timestamp, timezone.utc)
         return None
 
     @property
     def end_date(self) -> Optional[datetime]:
         if self.end_timestamp is not None:
-            return datetime.fromtimestamp(self.end_timestamp)
+            return datetime.fromtimestamp(self.end_timestamp, timezone.utc)
         return None
 
     @property
@@ -147,13 +147,13 @@ def get_ridership(
     for analytic in analytics:
         analytics_json.append(
             {
-                "van_id": analytic.van_id,
-                "route_id": analytic.route_id,
+                "vanId": analytic.van_id,
+                "routeId": analytic.route_id,
                 "entered": analytic.entered,
                 "exited": analytic.exited,
                 "lat": analytic.lat,
                 "lon": analytic.lon,
-                "datetime": analytic.datetime.timestamp(),
+                "datetime": int(analytic.datetime.timestamp()),
             }
         )
 
