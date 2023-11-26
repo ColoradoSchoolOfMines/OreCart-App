@@ -9,7 +9,7 @@ from typing import List, Optional
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, validator
-from sqlalchemy.sql import expression
+from sqlalchemy.sql import ColumnElement
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
 from src.model.van import Van
@@ -43,7 +43,7 @@ class RidershipFilterModel(BaseModel):
         return None
 
     @property
-    def filters(self) -> Optional[List[expression.BinaryExpression]]:
+    def filters(self) -> Optional[List[ColumnElement[bool]]]:
         t_filters = []
         if self.start_date is not None:
             t_filters.append(Analytics.datetime >= self.start_date)
@@ -135,10 +135,11 @@ def get_ridership(
     req: Request, filters: Optional[RidershipFilterModel]
 ) -> JSONResponse:
     with req.app.state.db.session() as session:
+        analytics: List[Analytics] = []
         if filters is None or filters.filters is None:
-            analytics: List[Analytics] = session.query(Analytics).all()
+            analytics = session.query(Analytics).all()
         else:
-            analytics: List[Analytics] = (
+            analytics = (
                 session.query(Analytics).filter(*filters.filters).all()
             )
 
