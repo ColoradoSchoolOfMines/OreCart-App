@@ -139,9 +139,7 @@ def get_ridership(
         if filters is None or filters.filters is None:
             analytics = session.query(Analytics).all()
         else:
-            analytics = (
-                session.query(Analytics).filter(*filters.filters).all()
-            )
+            analytics = session.query(Analytics).filter(*filters.filters).all()
 
     # convert analytics to json
     analytics_json = []
