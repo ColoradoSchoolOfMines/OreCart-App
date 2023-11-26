@@ -40,9 +40,11 @@ const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
           <Text style={[styles.routeName, routeNameColorStyle]}>
             {route.name}
           </Text>
+          {route.isActive ? 
           <Text>
             Next OreCart in <Text style={styles.boldText}>5 min</Text>
           </Text>
+          : <Text>Not running</Text> }
         </View>
         <MaterialIcons
           name="arrow-forward"
