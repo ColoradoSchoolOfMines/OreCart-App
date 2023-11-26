@@ -30,7 +30,7 @@ to start a local server and then configure the app to access it.
     it is your IP address on the local network.
 2. Start the backend server. You can find instructions for that in th `/backend/` README.
 3. Create a `.env` file, if you haven't already. This contains information required for the app to build properly.
-4. Add the following line: `EXPO_PUBLIC_API_URL=<**Your IP from Step 1**>:8000. ***NEVER COMMIT THIS!*** Your IP is
+4. Add the following line: `EXPO_PUBLIC_API_URL=<Your IP from Step 1>:8000.` ***NEVER COMMIT THIS!*** Your IP is
 private information and cannot be used by anyone else!
 
 ## Development Overview
