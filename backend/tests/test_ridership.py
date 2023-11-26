@@ -3,11 +3,10 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import pytest
+from src.handlers.ridership import post_ridership_stats
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
 from src.model.van import Van
-
-from backend.src.handlers.ridership import post_ridership_stats
 
 
 @pytest.fixture
