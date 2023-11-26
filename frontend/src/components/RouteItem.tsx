@@ -76,14 +76,16 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
  * A skeleton component that mimics the {@interface RouteItem} component.
  */
 export const RouteItemSkeleton: React.FC<ViewProps> = ({ style }) => {
+  const width = Dimensions.get("window").width;
+
   const routeNameWidthStyle = {
-    width: Dimensions.get("window").width * 0.3,
+    width: width * 0.4,
   };
   const routeStatusWidthStyle = {
-    width: Dimensions.get("window").width * 0.6,
+    width: width * 0.6,
   };
   const routeContextWidthStyle = {
-    width: Dimensions.get("window").width * 0.4,
+    width: width * 0.5,
   };
 
   return (
