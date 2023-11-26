@@ -25,6 +25,7 @@ const RouteList: React.FC<ViewProps> = () => {
   });
 
   function loadRoutes(): void {
+    // None of the callers are in async contexts, use callbacks instead
     getRoutes()
       .then((routes) => {
         setRouteState({ type: "ok", routes });
@@ -39,6 +40,8 @@ const RouteList: React.FC<ViewProps> = () => {
   }, []);
 
   const retryFetchRoutes = (): void => {
+    // Need to remove whatever prior state there was and go back to the initial
+    // loading state.
     setRouteState({ type: "loading" });
     loadRoutes();
   };
@@ -46,7 +49,6 @@ const RouteList: React.FC<ViewProps> = () => {
   return (
     <View style={[LayoutStyle.fill]}>
       {routeState.type === "loading" ? (
-        // Loading, display skeleton list
         <SkeletonList
           style={styles.routeContainer}
           generator={() => <RouteItemSkeleton />}
