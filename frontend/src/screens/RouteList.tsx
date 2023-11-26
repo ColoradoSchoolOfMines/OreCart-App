@@ -14,6 +14,7 @@ import Divider from "../components/Divider";
 import RouteItem from "../components/RouteItem";
 import { getRoutes, type Routes, type Route } from "../services/routes";
 import LayoutStyle from "../style/layout";
+import Color from "../style/color";
 
 type RouteState = Ok | Error | Loading;
 
@@ -65,7 +66,7 @@ const RouteList: React.FC<ViewProps> = () => {
         <ActivityIndicator
           style={styles.loadingContainer}
           size="large"
-          color="#0000ff"
+          color={Color.csm.primary.light_blue}
         />
       ) : routeState.type === "error" ? (
         <View style={styles.loadingContainer}>
@@ -75,7 +76,7 @@ const RouteList: React.FC<ViewProps> = () => {
           <TouchableHighlight
             style={styles.retryButton}
             onPress={retryFetchRoutes}
-            underlayColor="#6060ff"
+            underlayColor={Color.csm.primary.ext.blaster_blue_highlight}
           >
             <View>
               <Text style={styles.retryButtonText}>Retry</Text>
@@ -108,12 +109,13 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     borderRadius: 100,
-    backgroundColor: "#0000ff",
+    backgroundColor: Color.csm.primary.blaster_blue,
     padding: 10,
     alignItems: "center",
   },
   retryButtonText: {
-    color: "#ffffff",
+    color: Color.generic.white,
+    fontWeight: "500"
   },
 });
 

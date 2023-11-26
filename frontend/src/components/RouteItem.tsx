@@ -3,6 +3,7 @@ import React from "react";
 import { Text, View, StyleSheet, TouchableHighlight } from "react-native";
 
 import { type Route } from "../services/routes";
+import Color from "../style/color";
 
 interface RouteItemProps {
   route: Route;
@@ -13,20 +14,41 @@ const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
     // TODO: Stub
   };
 
+  const routeNameColorStyle = { color: Color.generic.black };
+
+  // TODO: Idiotic temporary hack, remove immediately
+  switch (route.name) {
+    case "Tungsten":
+      routeNameColorStyle.color = Color.orecart.tungsten;
+      break;
+    case "Silver":
+      routeNameColorStyle.color = Color.orecart.silver;
+      break;
+    case "Gold":
+      routeNameColorStyle.color = Color.orecart.gold;
+      break;
+  }
+
   return (
     <TouchableHighlight
       onPress={handlePress}
-      underlayColor="#DDDDDD"
+      underlayColor={Color.generic.selection}
       style={styles.touchable}
     >
       <View style={styles.container}>
         <View style={styles.routeInfo}>
-          <Text style={styles.routeName}>{route.name}</Text>
+          <Text style={[styles.routeName, routeNameColorStyle]}>
+            {route.name}
+          </Text>
           <Text>
             Next OreCart in <Text style={styles.boldText}>5 min</Text>
           </Text>
         </View>
-        <MaterialIcons name="arrow-forward" size={24} color="black" />
+        <MaterialIcons
+          name="arrow-forward"
+          size={24}
+          color={Color.generic.black}
+        />
       </View>
     </TouchableHighlight>
   );

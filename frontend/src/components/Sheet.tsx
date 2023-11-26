@@ -7,6 +7,8 @@ import {
   Dimensions,
 } from "react-native";
 
+import Color from "../style/color";
+
 /**
  * Wraps the bottom sheet component with a simplified interface.
  */
@@ -51,9 +53,9 @@ export interface SheetProps extends ViewProps {
 const styles = StyleSheet.create({
   innerBottomSheetStyle: {
     // Required to get the shadow to render
-    backgroundColor: "white",
+    backgroundColor: Color.generic.white,
     borderRadius: 24,
-    shadowColor: "#000",
+    shadowColor: Color.generic.black,
     shadowOffset: {
       width: 0,
       height: 12,
