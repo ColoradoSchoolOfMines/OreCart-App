@@ -15,11 +15,10 @@ interface Loading {
 }
 
 function getApiUrl(): string {
-  if (process.env.NODE_ENV === "development") {
-    return "http://" + process.env.EXPO_PUBLIC_DEV_API_URL;
-  } else {
-    return "https://" + process.env.EXPO_PUBLIC_PROD_API_URL;
+  if (process.env.EXPO_PUBLIC_API_URL == null) {
+    throw new Error("API URL not set");
   }
+  return process.env.EXPO_PUBLIC_API_URL;
 }
 
 export async function apiGet<T>(route: string): Promise<T> {
