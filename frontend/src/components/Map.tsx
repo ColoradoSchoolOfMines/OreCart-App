@@ -10,6 +10,9 @@ import SpacingStyle, { type Insets } from "../style/spacing";
 
 import FloatingButton from "./FloatingButton";
 
+/**
+ * The props for the {@interface Map} component.
+ */
 interface MapProps extends ViewProps {
   /**
    * The {@interface Insets} to pad map information with. Useful if map information will be

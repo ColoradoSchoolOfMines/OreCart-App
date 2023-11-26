@@ -10,6 +10,16 @@ import {
 import Color from "../style/color";
 
 /**
+ * The props for the {@interface Sheet} component.
+ */
+export interface SheetProps extends ViewProps {
+  /** How much of the bottom sheet to show initially as a fraction of the screen, such as '0.5' for half of the screen */
+  collapsedExtent: number;
+  /** The child view of the bottom sheet */
+  children: React.ReactNode;
+}
+
+/**
  * Wraps the bottom sheet component with a simplified interface.
  */
 const Sheet: React.FC<SheetProps> = ({ collapsedExtent, children }) => {
@@ -39,16 +49,6 @@ const Sheet: React.FC<SheetProps> = ({ collapsedExtent, children }) => {
     </BottomSheet>
   );
 };
-
-/**
- * The props for the {@interface Sheet} component.
- */
-export interface SheetProps extends ViewProps {
-  /** How much of the bottom sheet to show initially as a fraction of the screen, such as '0.5' for half of the screen */
-  collapsedExtent: number;
-  /** The child view of the bottom sheet */
-  children: React.ReactNode;
-}
 
 const styles = StyleSheet.create({
   innerBottomSheetStyle: {
