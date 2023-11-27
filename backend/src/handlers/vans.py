@@ -220,7 +220,9 @@ def get_all_van_ids(req: Request) -> List[int]:
         return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
 
 
-def get_location_for_vans(req: Request, van_ids: List[int]) -> Dict[int, dict[str, Union[str, int]]]:
+def get_location_for_vans(
+    req: Request, van_ids: List[int]
+) -> Dict[int, dict[str, Union[str, int]]]:
     locations_json: Dict[int, dict[str, Union[str, int]]] = {}
     for van_id in van_ids:
         if van_id not in req.app.state.van_locations:
