@@ -177,20 +177,19 @@ async def create_route(
     with req.app.state.db.session() as session:
         route = Route(name=name)
         session.add(route)
+
+        if kml:
+            contents = await kml.read()
+
+            latlons = kml_to_waypoints(contents)
+
+                for latlon in latlons:
+                    waypoint = Waypoint(route_id=route.id, lat=latlon[0], lon=latlon[1])
+                    session.add(waypoint)
+
+            await kml.close()
+        
         session.commit()
-
-    if kml:
-        contents = await kml.read()
-
-        latlons = kml_to_waypoints(contents)
-
-        with req.app.state.db.session() as session:
-            for latlon in latlons:
-                waypoint = Waypoint(route_id=route.id, lat=latlon[0], lon=latlon[1])
-                session.add(waypoint)
-            session.commit()
-
-        await kml.close()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
 
@@ -208,8 +207,8 @@ async def patch_route(
     if not name and not kml:
         raise HTTPException(status_code=400, detail="No name or KML file provided")
 
-    if name:
-        with req.app.state.db.session() as session:
+    with req.app.state.db.session() as session:
+        if name:
             route = session.query(Route).filter(Route.id == route_id).first()
             if not route:
                 raise HTTPException(status_code=404, detail="Route not found")
@@ -217,8 +216,7 @@ async def patch_route(
             route.name = name
             session.commit()
 
-    if kml:
-        with req.app.state.db.session() as session:
+        if kml:
             waypoints = (
                 session.query(Waypoint).filter(Waypoint.route_id == route_id).all()
             )
@@ -226,11 +224,10 @@ async def patch_route(
                 session.delete(waypoint)
             session.commit()
 
-        contents = await kml.read()
+            contents = await kml.read()
 
-        latlons = kml_to_waypoints(contents)
+            latlons = kml_to_waypoints(contents)
 
-        with req.app.state.db.session() as session:
             for latlon in latlons:
                 waypoint = Waypoint(route_id=route_id, lat=latlon[0], lon=latlon[1])
                 session.add(waypoint)
