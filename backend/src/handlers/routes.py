@@ -2,10 +2,13 @@
 Contains routes specific to working with routes.
 """
 
+import re
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
@@ -161,3 +164,57 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
     ) == 0
 
     return enabled
+
+
+@router.post("/")
+async def create_route(
+    req: Request, name: str = Form(...), kml: Optional[UploadFile] = File(None)
+):
+    """
+    Creates a new route.
+    """
+
+    with req.app.state.db.session() as session:
+        route = Route(name=name)
+        session.add(route)
+        session.commit()
+
+    if kml:
+        contents = await kml.read()
+
+        str_contents = contents.decode("utf-8").replace("\n", "").replace("\t", "")
+
+        regex = r"<coordinates>(.*)</coordinates>"
+
+        matches = re.findall(regex, str_contents)
+
+        m = matches[0].strip().split(" ")
+        trios = [i.split(",") for i in m]
+        latlons = [[float(i[1]), float(i[0])] for i in trios]
+
+        with req.app.state.db.session() as session:
+            for latlon in latlons:
+                waypoint = Waypoint(route_id=route.id, lat=latlon[0], lon=latlon[1])
+                session.add(waypoint)
+            session.commit()
+
+        await kml.close()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+@router.delete("/{route_id}")
+def delete_route(req: Request, route_id: int):
+    """
+    Deletes the route with the specified ID.
+    """
+
+    with req.app.state.db.session() as session:
+        route = session.query(Route).filter(Route.id == route_id).first()
+        if not route:
+            raise HTTPException(status_code=404, detail="Route not found")
+
+        session.delete(route)
+        session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
