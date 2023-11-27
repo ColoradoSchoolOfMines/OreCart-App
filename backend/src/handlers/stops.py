@@ -6,6 +6,8 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from src.model.alert import Alert
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
@@ -152,3 +154,74 @@ def is_stop_active(stop: Stop, alert: Optional[Alert], session) -> bool:
 
     # Might still be disabled even if the current alert does not disable the stop.
     return stop.active and enabled
+
+
+class StopModel(BaseModel):
+    """
+    A model for the request body to make a new stop or update a stop
+    """
+
+    name: str
+    latitude: float
+    longitude: float
+    active: bool
+
+
+@router.post("/")
+def create_stop(req: Request, stop_model: StopModel) -> JSONResponse:
+    """
+    Creates a new stop.
+    """
+
+    with req.app.state.db.session() as session:
+        stop = Stop(
+            name=stop_model.name,
+            lat=stop_model.latitude,
+            lon=stop_model.longitude,
+            active=stop_model.active,
+        )
+        session.add(stop)
+        session.commit()
+
+    return JSONResponse(content={"message": "OK"})
+
+
+@router.put("/{stop_id}")
+def update_stop(
+    req: Request,
+    stop_id: int,
+    stop_model: StopModel,
+) -> JSONResponse:
+    """
+    Updates the stop with the specified id.
+    """
+
+    with req.app.state.db.session() as session:
+        stop = session.query(Stop).filter(Stop.id == stop_id).first()
+        if not stop:
+            raise HTTPException(status_code=404, detail="Stop not found")
+        stop.name = stop_model.name
+        stop.lat = stop_model.latitude
+        stop.lon = stop_model.longitude
+        stop.active = stop_model.active
+
+        session.commit()
+
+    return JSONResponse(content={"message": "OK"})
+
+
+@router.delete("/{stop_id}")
+def delete_stop(req: Request, stop_id: int) -> JSONResponse:
+    """
+    Deletes the stop with the specified id.
+    """
+
+    with req.app.state.db.session() as session:
+        stop = session.query(Stop).filter(Stop.id == stop_id).first()
+        if not stop:
+            raise HTTPException(status_code=404, detail="Stop not found")
+
+        session.query(Stop).filter(Stop.id == stop_id).delete()
+        session.commit()
+
+    return JSONResponse(content={"message": "OK"})
