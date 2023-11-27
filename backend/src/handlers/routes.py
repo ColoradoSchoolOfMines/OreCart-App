@@ -2,10 +2,13 @@
 Contains routes specific to working with routes.
 """
 
+import re
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
@@ -161,3 +164,172 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
     ) == 0
 
     return enabled
+
+
+@router.post("/")
+async def create_route(
+    req: Request, name: str = Form(...), kml: Optional[UploadFile] = File(None)
+):
+    """
+    Creates a new route.
+    """
+
+    with req.app.state.db.session() as session:
+        route = Route(name=name)
+        session.add(route)
+
+        if kml:
+            contents = await kml.read()
+
+            latlons = kml_to_waypoints(contents)
+
+            for latlon in latlons:
+                waypoint = Waypoint(route_id=route.id, lat=latlon[0], lon=latlon[1])
+                session.add(waypoint)
+
+            await kml.close()
+
+        session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+@router.put("/{route_id}")
+async def patch_route(
+    req: Request,
+    route_id: int,
+    name: str = Form(None),
+    kml: Optional[UploadFile] = File(None),
+):
+    """
+    Updates the name of the route with the specified ID.
+    """
+    if not name and not kml:
+        raise HTTPException(status_code=400, detail="No name or KML file provided")
+
+    with req.app.state.db.session() as session:
+        if name:
+            route = session.query(Route).filter(Route.id == route_id).first()
+            if not route:
+                raise HTTPException(status_code=404, detail="Route not found")
+
+            route.name = name
+            session.commit()
+
+        if kml:
+            waypoints = (
+                session.query(Waypoint).filter(Waypoint.route_id == route_id).all()
+            )
+            for waypoint in waypoints:
+                session.delete(waypoint)
+            session.commit()
+
+            contents = await kml.read()
+
+            latlons = kml_to_waypoints(contents)
+
+            for latlon in latlons:
+                waypoint = Waypoint(route_id=route_id, lat=latlon[0], lon=latlon[1])
+                session.add(waypoint)
+
+            session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+def kml_to_waypoints(contents: bytes):
+    """
+    Converts a KML file to a list of waypoints.
+    """
+
+    str_contents = contents.decode("utf-8").replace("\n", "").replace("\t", "")
+
+    regex = r"<coordinates>(.*)</coordinates>"
+
+    matches = re.findall(regex, str_contents)
+
+    m = matches[0].strip().split(" ")
+    trios = [i.split(",") for i in m]
+    latlons = [[float(i[1]), float(i[0])] for i in trios]
+
+    return latlons
+
+
+@router.delete("/{route_id}")
+def delete_route(req: Request, route_id: int):
+    """
+    Deletes the route with the specified ID.
+    """
+
+    with req.app.state.db.session() as session:
+        route = session.query(Route).filter(Route.id == route_id).first()
+        if not route:
+            raise HTTPException(status_code=404, detail="Route not found")
+
+        session.delete(route)
+        session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+class RouteStopModel(BaseModel):
+    """
+    Represents a route stop.
+    """
+
+    stop_id: int
+
+
+@router.get("/{route_id}/stops")
+def get_route_stops(req: Request, route_id: int):
+    """
+    Gets all stops for the specified route.
+    """
+
+    with req.app.state.db.session() as session:
+        stops = (
+            session.query(RouteStop)
+            .filter(RouteStop.route_id == route_id)
+            .with_entities(RouteStop.stop_id)
+            .all()
+        )
+
+        return [stop_id for (stop_id,) in stops]
+
+
+@router.post("/{route_id}/stops")
+def create_route_stop(req: Request, route_id: int, route_stop_model: RouteStopModel):
+    """
+    Creates a new route stop.
+    """
+
+    with req.app.state.db.session() as session:
+        route_stop = RouteStop(route_id=route_id, stop_id=route_stop_model.stop_id)
+        session.add(route_stop)
+        session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+@router.delete("/{route_id}/stops")
+def delete_route_stop(req: Request, route_id: int, route_stop_model: RouteStopModel):
+    """
+    Deletes a route stop.
+    """
+
+    with req.app.state.db.session() as session:
+        route_stop = (
+            session.query(RouteStop)
+            .filter(
+                RouteStop.route_id == route_id,
+                RouteStop.stop_id == route_stop_model.stop_id,
+            )
+            .first()
+        )
+        if not route_stop:
+            raise HTTPException(status_code=404, detail="Route stop not found")
+
+        session.delete(route_stop)
+        session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
