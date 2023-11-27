@@ -1,19 +1,17 @@
+import asyncio
+import json
 import struct
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Set, Union
 
-from fastapi import APIRouter, Query, Request, HTTPException
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi import APIRouter, HTTPException, Query, Request
 from fastapi.encoders import jsonable_encoder
-from starlette.responses import Response
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
-from src.model.analytics import Analytics
 from src.model.van import Van
 from src.request import process_include
-import asyncio
-
-import json
+from starlette.responses import Response
 
 
 class VanModel(BaseModel):
