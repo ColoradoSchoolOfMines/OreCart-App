@@ -177,6 +177,7 @@ async def create_route(
     with req.app.state.db.session() as session:
         route = Route(name=name)
         session.add(route)
+        session.commit()
 
         if kml:
             contents = await kml.read()

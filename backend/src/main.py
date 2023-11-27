@@ -1,6 +1,7 @@
 from cachetools import TTLCache
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from .db import DBWrapper
 from .handlers import alert, location, ridership, routes, stops, vans
@@ -9,6 +10,15 @@ from .hardware import HardwareExceptionMiddleware
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 app.add_middleware(HardwareExceptionMiddleware)
 app.include_router(location.router)
 app.include_router(routes.router)
