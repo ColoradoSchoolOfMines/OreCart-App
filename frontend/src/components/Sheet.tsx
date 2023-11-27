@@ -22,7 +22,7 @@ export interface SheetProps extends ViewProps {
 /**
  * Wraps the bottom sheet component with a simplified interface.
  */
-const Sheet: React.FC<SheetProps> = ({ collapsedExtent, children }) => {
+const Sheet: React.FC<SheetProps> = ({ collapsedExtent, topInset, children }) => {
   // BottomSheet does have a topInset property, but that causes the shadow of the bottom
   // sheet to become clipped at the top for some reason. Instead, we manually recreate it
   // by adjusting our snap points such that they will cause the sheet to never overlap the
@@ -32,10 +32,11 @@ const Sheet: React.FC<SheetProps> = ({ collapsedExtent, children }) => {
   // Height normally excludes the status bar, so we want to figure out exactly how much of the
   // screen size given by Dimensions is actually available to us.
   const expandedPercent =
-    (100 * screenHeight) / (screenHeight + statusBarHeight);
+    (100 * screenHeight) / (screenHeight + statusBarHeight + topInset);
   // Then we can adjust that calculated value by the specified extent of the collapsed
   // bottom sheet.
-  const collapsedPercent = collapsedExtent * expandedPercent;
+  const collapsedPercent = 
+    (100 * collapsedExtent * screenHeight) / (screenHeight + statusBarHeight);
   const snapPoints = [collapsedPercent + "%", expandedPercent + "%"];
 
   return (
