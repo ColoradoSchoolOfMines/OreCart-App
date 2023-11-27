@@ -2,7 +2,7 @@ export type RequestState<T> = Ok<T> | Error | Loading;
 
 interface Ok<T> {
   type: "ok";
-  routes: T;
+  data: T;
 }
 
 interface Error {

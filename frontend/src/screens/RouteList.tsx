@@ -28,7 +28,7 @@ const RouteList: React.FC<ViewProps> = () => {
     // None of the callers are in async contexts, use callbacks instead
     getRoutes()
       .then((routes) => {
-        setRouteState({ type: "ok", routes });
+        setRouteState({ type: "ok", data: routes });
       })
       .catch((e) => {
         setRouteState({ type: "error", message: e.toString() });
@@ -56,7 +56,7 @@ const RouteList: React.FC<ViewProps> = () => {
       ) : routeState.type === "ok" ? (
         <FlatList
           style={styles.routeContainer}
-          data={routeState.routes}
+          data={routeState.data}
           renderItem={({ item }) => <RouteItem route={item} />}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={Divider}
