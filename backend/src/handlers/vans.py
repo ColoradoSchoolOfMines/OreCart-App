@@ -126,15 +126,7 @@ def delete_van(req: Request, van_id: int) -> JSONResponse:
 @router.get("/location/", response_class=Response)
 def get_locations(req: Request):
     vans = get_all_van_ids(req)
-    locations_json = {
-        van_id: {
-            "timestamp": int(location.timestamp.timestamp()),
-            "latitude": location.latitude,
-            "longitude": location.longitude,
-        }
-        for (van_id, location) in get_location_for_vans(req, vans).items()
-    }
-    return JSONResponse(content=locations_json)
+    return JSONResponse(content=get_location_for_vans(req, vans))
 
 
 @router.get("/location/subscribe/", response_class=Response)
@@ -143,14 +135,7 @@ def subscribe_locations(req: Request) -> StreamingResponse:
 
     async def generator():
         while True:
-            locations_json = {
-                van_id: {
-                    "timestamp": int(location.timestamp.timestamp()),
-                    "latitude": location.latitude,
-                    "longitude": location.longitude,
-                }
-                for (van_id, location) in get_location_for_vans(req, vans).items()
-            }
+            locations_json = get_location_for_vans(req, vans)
             # You can't yield a JSONResponse in a streaming response, roll it manually
             yield json.dumps(jsonable_encoder(locations_json))
             await asyncio.sleep(2)
@@ -235,12 +220,17 @@ def get_all_van_ids(req: Request) -> List[int]:
         return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
 
 
-def get_location_for_vans(req: Request, van_ids: List[int]) -> Dict[int, VanLocation]:
-    locations_json: Dict[int, VanLocation] = {}
+def get_location_for_vans(req: Request, van_ids: List[int]) -> Dict[int, dict[str, Union[str, int]]]:
+    locations_json: Dict[int, dict[str, Union[str, int]]] = {}
     for van_id in van_ids:
         if van_id not in req.app.state.van_locations:
             continue
 
-        locations_json[van_id] = req.app.state.van_locations[van_id]
+        location = req.app.state.van_locations[van_id]
+        locations_json[van_id] = {
+            "timestamp": int(location.timestamp.timestamp()),
+            "latitude": location.latitude,
+            "longitude": location.longitude,
+        }
 
     return locations_json
