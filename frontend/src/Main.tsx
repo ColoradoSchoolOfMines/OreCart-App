@@ -13,6 +13,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import FloatingButton from "./components/FloatingButton";
 import Map from "./components/Map";
 import Sheet from "./components/Sheet";
+import RouteList from "./screens/RouteList";
 import LayoutStyle from "./style/layout";
 
 /**
@@ -56,9 +57,7 @@ const Main: React.FC<ViewProps> = () => {
           </FloatingButton>
         </View>
         <Sheet collapsedExtent={SHEET_EXTENT}>
-          <View>
-            <Text>Hello World</Text>
-          </View>
+          <RouteList />
         </Sheet>
       </GestureHandlerRootView>
     </Drawer>
