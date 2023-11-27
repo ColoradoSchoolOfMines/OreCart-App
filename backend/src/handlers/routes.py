@@ -270,3 +270,66 @@ def delete_route(req: Request, route_id: int):
         session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+class RouteStopModel(BaseModel):
+    """
+    Represents a route stop.
+    """
+
+    stop_id: int
+
+
+@router.get("/{route_id}/stops")
+def get_route_stops(req: Request, route_id: int):
+    """
+    Gets all stops for the specified route.
+    """
+
+    with req.app.state.db.session() as session:
+        stops = (
+            session.query(RouteStop)
+            .filter(RouteStop.route_id == route_id)
+            .with_entities(RouteStop.stop_id)
+            .all()
+        )
+
+        return [stop_id for (stop_id,) in stops]
+
+
+@router.post("/{route_id}/stops")
+def create_route_stop(req: Request, route_id: int, route_stop_model: RouteStopModel):
+    """
+    Creates a new route stop.
+    """
+
+    with req.app.state.db.session() as session:
+        route_stop = RouteStop(route_id=route_id, stop_id=route_stop_model.stop_id)
+        session.add(route_stop)
+        session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+@router.delete("/{route_id}/stops")
+def delete_route_stop(req: Request, route_id: int, route_stop_model: RouteStopModel):
+    """
+    Deletes a route stop.
+    """
+
+    with req.app.state.db.session() as session:
+        route_stop = (
+            session.query(RouteStop)
+            .filter(
+                RouteStop.route_id == route_id,
+                RouteStop.stop_id == route_stop_model.stop_id,
+            )
+            .first()
+        )
+        if not route_stop:
+            raise HTTPException(status_code=404, detail="Route stop not found")
+
+        session.delete(route_stop)
+        session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
