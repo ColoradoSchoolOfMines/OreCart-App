@@ -182,15 +182,7 @@ async def create_route(
     if kml:
         contents = await kml.read()
 
-        str_contents = contents.decode("utf-8").replace("\n", "").replace("\t", "")
-
-        regex = r"<coordinates>(.*)</coordinates>"
-
-        matches = re.findall(regex, str_contents)
-
-        m = matches[0].strip().split(" ")
-        trios = [i.split(",") for i in m]
-        latlons = [[float(i[1]), float(i[0])] for i in trios]
+        latlons = kml_to_waypoints(contents)
 
         with req.app.state.db.session() as session:
             for latlon in latlons:
@@ -201,6 +193,68 @@ async def create_route(
         await kml.close()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+@router.put("/{route_id}")
+async def patch_route(
+    req: Request,
+    route_id: int,
+    name: str = Form(None),
+    kml: Optional[UploadFile] = File(None),
+):
+    """
+    Updates the name of the route with the specified ID.
+    """
+    if not name and not kml:
+        raise HTTPException(status_code=400, detail="No name or KML file provided")
+
+    if name:
+        with req.app.state.db.session() as session:
+            route = session.query(Route).filter(Route.id == route_id).first()
+            if not route:
+                raise HTTPException(status_code=404, detail="Route not found")
+
+            route.name = name
+            session.commit()
+
+    if kml:
+        with req.app.state.db.session() as session:
+            waypoints = (
+                session.query(Waypoint).filter(Waypoint.route_id == route_id).all()
+            )
+            for waypoint in waypoints:
+                session.delete(waypoint)
+            session.commit()
+
+        contents = await kml.read()
+
+        latlons = kml_to_waypoints(contents)
+
+        with req.app.state.db.session() as session:
+            for latlon in latlons:
+                waypoint = Waypoint(route_id=route_id, lat=latlon[0], lon=latlon[1])
+                session.add(waypoint)
+            session.commit()
+
+    return JSONResponse(status_code=200, content={"message": "OK"})
+
+
+def kml_to_waypoints(contents: bytes):
+    """
+    Converts a KML file to a list of waypoints.
+    """
+
+    str_contents = contents.decode("utf-8").replace("\n", "").replace("\t", "")
+
+    regex = r"<coordinates>(.*)</coordinates>"
+
+    matches = re.findall(regex, str_contents)
+
+    m = matches[0].strip().split(" ")
+    trios = [i.split(",") for i in m]
+    latlons = [[float(i[1]), float(i[0])] for i in trios]
+
+    return latlons
 
 
 @router.delete("/{route_id}")
