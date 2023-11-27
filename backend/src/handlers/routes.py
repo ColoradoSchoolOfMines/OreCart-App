@@ -183,12 +183,12 @@ async def create_route(
 
             latlons = kml_to_waypoints(contents)
 
-                for latlon in latlons:
-                    waypoint = Waypoint(route_id=route.id, lat=latlon[0], lon=latlon[1])
-                    session.add(waypoint)
+            for latlon in latlons:
+                waypoint = Waypoint(route_id=route.id, lat=latlon[0], lon=latlon[1])
+                session.add(waypoint)
 
             await kml.close()
-        
+
         session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
@@ -231,6 +231,7 @@ async def patch_route(
             for latlon in latlons:
                 waypoint = Waypoint(route_id=route_id, lat=latlon[0], lon=latlon[1])
                 session.add(waypoint)
+
             session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
