@@ -54,7 +54,7 @@ source venv/bin/activate
 Then execute the following command:
 
 ```
-uvicorn src.main:app --reload
+uvicorn src.main:app --reload --host 0.0.0.0
 ```
 
 The server will be running on `localhost:8000`!

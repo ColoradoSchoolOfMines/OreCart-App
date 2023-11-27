@@ -1,14 +1,19 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useMemo, useRef, useState } from "react";
-import { StatusBar, StyleSheet, View, type ViewProps } from "react-native";
+import React, { useRef, useState } from "react";
+import { StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { type Coordinate } from "../services/location";
+import Color from "../style/color";
 import LayoutStyle from "../style/layout";
 import SpacingStyle, { type Insets } from "../style/spacing";
 
 import FloatingButton from "./FloatingButton";
 
+/**
+ * The props for the {@interface Map} component.
+ */
 interface MapProps extends ViewProps {
   /**
    * The {@interface Insets} to pad map information with. Useful if map information will be
@@ -60,12 +65,12 @@ const Map: React.FC<MapProps> = ({ insets }) => {
 
   // Combine given insets with the status bar height to ensure that the map
   // is fully in-bounds.
-  const statusBarInset = useMemo(() => StatusBar.currentHeight ?? 0, []);
+  const safeAreaInsets = useSafeAreaInsets();
   const padding = {
-    top: (insets?.top ?? 0) + statusBarInset,
-    left: insets?.left ?? 0,
-    bottom: insets?.bottom ?? 0,
-    right: insets?.right ?? 0,
+    top: (insets?.top ?? 0) + safeAreaInsets.top,
+    left: insets?.left ?? 0 + safeAreaInsets.left,
+    bottom: insets?.bottom ?? 0 + safeAreaInsets.bottom,
+    right: insets?.right ?? 0 + safeAreaInsets.right,
   };
 
   return (
@@ -98,9 +103,17 @@ const Map: React.FC<MapProps> = ({ insets }) => {
           }}
         >
           {followingLocation ? (
-            <MaterialIcons name="my-location" size={24} color="green" />
+            <MaterialIcons
+              name="my-location"
+              size={24}
+              color={Color.generic.location}
+            />
           ) : (
-            <MaterialIcons name="location-searching" size={24} color="black" />
+            <MaterialIcons
+              name="location-searching"
+              size={24}
+              color={Color.generic.black}
+            />
           )}
         </FloatingButton>
       </View>

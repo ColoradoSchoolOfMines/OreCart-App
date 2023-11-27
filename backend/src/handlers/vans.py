@@ -1,14 +1,17 @@
+import asyncio
+import json
 import struct
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Set, Union
 
-from fastapi import APIRouter, Query, Request
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi.encoders import jsonable_encoder
+from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
-from src.model.analytics import Analytics
 from src.model.van import Van
 from src.request import process_include
+from starlette.responses import Response
 
 
 class VanModel(BaseModel):
@@ -18,6 +21,16 @@ class VanModel(BaseModel):
 
     route_id: int
     wheelchair: bool
+
+
+class VanLocation(BaseModel):
+    """
+    A model for the request body to make a new van or update a van
+    """
+
+    timestamp: datetime
+    latitude: float
+    longitude: float
 
 
 router = APIRouter(prefix="/vans", tags=["vans"])
@@ -49,15 +62,7 @@ def get_vans(
 
     if INCLUDE_LOCATION in include_set:
         for van in resp["vans"]:
-            if van["vanId"] in req.app.state.van_locations:
-                lat, lon, timestamp = req.app.state.van_locations[van["vanId"]]
-                van["lat"] = lat
-                van["lon"] = lon
-                van["timestamp"] = timestamp
-            else:
-                van["lat"] = None
-                van["lon"] = None
-                van["timestamp"] = None
+            van["location"] = req.app.state.van_locations[van["vanId"]]
 
     return JSONResponse(content=resp)
 
@@ -118,11 +123,65 @@ def delete_van(req: Request, van_id: int) -> JSONResponse:
     return JSONResponse(content={"message": "OK"})
 
 
+@router.get("/location/", response_class=Response)
+def get_locations(req: Request):
+    vans = get_all_van_ids(req)
+    return JSONResponse(content=get_location_for_vans(req, vans))
+
+
+@router.get("/location/subscribe/", response_class=Response)
+def subscribe_locations(req: Request) -> StreamingResponse:
+    vans = get_all_van_ids(req)
+
+    async def generator():
+        while True:
+            locations_json = get_location_for_vans(req, vans)
+            # You can't yield a JSONResponse in a streaming response, roll it manually
+            yield json.dumps(jsonable_encoder(locations_json))
+            await asyncio.sleep(2)
+
+    return StreamingResponse(generator(), media_type="text/event-stream")
+
+
+@router.get("/location/{van_id}")
+def get_location(req: Request, van_id: int) -> JSONResponse:
+    if van_id not in req.app.state.van_locations:
+        raise HTTPException(detail="Van not found", status_code=404)
+
+    location = req.app.state.van_locations[van_id]
+    location_json = {
+        "timestamp": int(location.timestamp.timestamp()),
+        "latitude": location.latitude,
+        "longitude": location.longitude,
+    }
+    return JSONResponse(content=location_json)
+
+
+@router.get("/location/{van_id}/subscribe", response_class=Response)
+def subscribe_location(req: Request, van_id: int) -> StreamingResponse:
+    if van_id not in req.app.state.van_locations:
+        raise HTTPException(detail="Van not found", status_code=404)
+
+    async def generator():
+        while True:
+            location = req.app.state.van_locations[van_id]
+            location_json = {
+                "timestamp": int(location.timestamp.timestamp()),
+                "latitude": location.latitude,
+                "longitude": location.longitude,
+            }
+            # You can't yield a JSONResponse in a streaming response, roll it manually
+            yield json.dumps(jsonable_encoder(location_json))
+            await asyncio.sleep(2)
+
+    return StreamingResponse(generator(), media_type="text/event-stream")
+
+
 @router.post("/location/{van_id}")
 async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     # byte body: long for timestamp, double for lat, double for lon
     body = await req.body()
-    timestamp, entered, exited, lat, lon = struct.unpack("!ldd", body)
+    timestamp, lat, lon = struct.unpack("!ldd", body)
     timestamp = datetime.fromtimestamp(timestamp, timezone.utc)
 
     current_time = datetime.now(timezone.utc)
@@ -141,16 +200,39 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_IN_FUTURE
         )
 
-    req.app.state.van_locations[van_id] = (lat, lon, timestamp)
+    # Check that the timestamp is the most recent one for the van. This prevents
+    # updates from being sent out of order.
+    last_location = req.app.state.van_locations.get(van_id)
+    if last_location is not None and timestamp < last_location.timestamp:
+        raise HardwareHTTPException(
+            status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
+        )
+
+    req.app.state.van_locations[van_id] = VanLocation(
+        timestamp=timestamp, latitude=lat, longitude=lon
+    )
 
     return HardwareOKResponse()
 
 
-@router.get("/location/{van_id}")
-def get_location(req: Request, van_id: int) -> JSONResponse:
-    if van_id not in req.app.state.van_locations:
-        return JSONResponse(content={"message": "Van not found"}, status_code=404)
+def get_all_van_ids(req: Request) -> List[int]:
+    with req.app.state.db.session() as session:
+        return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
 
-    lat, lon, timestamp = req.app.state.van_locations[van_id]
 
-    return JSONResponse(content={"lat": lat, "lon": lon, "timestamp": timestamp})
+def get_location_for_vans(
+    req: Request, van_ids: List[int]
+) -> Dict[int, dict[str, Union[str, int]]]:
+    locations_json: Dict[int, dict[str, Union[str, int]]] = {}
+    for van_id in van_ids:
+        if van_id not in req.app.state.van_locations:
+            continue
+
+        location = req.app.state.van_locations[van_id]
+        locations_json[van_id] = {
+            "timestamp": int(location.timestamp.timestamp()),
+            "latitude": location.latitude,
+            "longitude": location.longitude,
+        }
+
+    return locations_json
