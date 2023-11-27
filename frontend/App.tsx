@@ -11,7 +11,9 @@ import LayoutStyle from "./src/style/layout";
 // -----
 
 if (Platform.OS === "android") {
-  NavigationBar.setBackgroundColorAsync(Color.generic.white).catch(console.error);
+  NavigationBar.setBackgroundColorAsync(Color.generic.white).catch(
+    console.error,
+  );
 }
 
 const App: React.FC<void> = () => (

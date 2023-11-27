@@ -1,14 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Dimensions,
-  type ViewProps
-} from "react-native";
+import { View, Text, Dimensions, type ViewProps } from "react-native";
 import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "./components/FloatingButton";
 import Map from "./components/Map";
@@ -45,7 +40,9 @@ const Main: React.FC<ViewProps> = () => {
         setOpen(false);
       }}
       renderDrawerContent={() => {
-        return <Text style={SpacingStyle.pad(drawerInsets, 16)}>Drawer content</Text>;
+        return (
+          <Text style={SpacingStyle.pad(drawerInsets, 16)}>Drawer content</Text>
+        );
       }}
     >
       <GestureHandlerRootView>

@@ -1,10 +1,6 @@
 import BottomSheet from "@gorhom/bottom-sheet";
 import React from "react";
-import {
-  type ViewProps,
-  StyleSheet,
-  Dimensions,
-} from "react-native";
+import { type ViewProps, StyleSheet, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Color from "../style/color";
@@ -22,7 +18,11 @@ export interface SheetProps extends ViewProps {
 /**
  * Wraps the bottom sheet component with a simplified interface.
  */
-const Sheet: React.FC<SheetProps> = ({ collapsedExtent, expandedInset, children }) => {
+const Sheet: React.FC<SheetProps> = ({
+  collapsedExtent,
+  expandedInset,
+  children,
+}) => {
   // BottomSheet does have a topInset property, but that causes the shadow of the bottom
   // sheet to become clipped at the top for some reason. Instead, we manually recreate it
   // by adjusting our snap points such that they will cause the sheet to never overlap the
@@ -35,7 +35,7 @@ const Sheet: React.FC<SheetProps> = ({ collapsedExtent, expandedInset, children 
     (100 * screenHeight) / (screenHeight + insets.top + expandedInset);
   // Then we can adjust that calculated value by the specified extent of the collapsed
   // bottom sheet.
-  const collapsedPercent = 
+  const collapsedPercent =
     (100 * collapsedExtent * screenHeight) / (screenHeight + insets.top);
   const snapPoints = [collapsedPercent + "%", expandedPercent + "%"];
 
