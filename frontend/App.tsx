@@ -1,5 +1,5 @@
 import * as NavigationBar from "expo-navigation-bar";
-import { SafeAreaView } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 import Main from "./src/Main";
 import Color from "./src/style/color";
@@ -12,9 +12,9 @@ import LayoutStyle from "./src/style/layout";
 NavigationBar.setBackgroundColorAsync(Color.generic.white).catch(console.error);
 
 const App: React.FC<void> = () => (
-  <SafeAreaView style={LayoutStyle.fill}>
+  <SafeAreaProvider style={LayoutStyle.fill}>
     <Main style={LayoutStyle.fill} />
-  </SafeAreaView>
+  </SafeAreaProvider>
 );
 
 export default App;

@@ -1,15 +1,14 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
   Dimensions,
-  type ViewProps,
-  StyleSheet,
-  StatusBar
+  type ViewProps
 } from "react-native";
 import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import FloatingButton from "./components/FloatingButton";
 import Map from "./components/Map";
@@ -33,8 +32,8 @@ const Main: React.FC<ViewProps> = () => {
   const screenHeight = Dimensions.get("window").height;
   const [open, setOpen] = useState(false);
   const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
-  const statusBarHeight = useMemo(() => StatusBar.currentHeight ?? 0, []);
-  const drawerInsets = { top: statusBarHeight };
+  const insets = useSafeAreaInsets();
+  const drawerInsets = { top: insets.top };
 
   return (
     <Drawer
@@ -60,7 +59,7 @@ const Main: React.FC<ViewProps> = () => {
             <MaterialIcons name="menu" size={24} color="black" />
           </FloatingButton>
         </View>
-        <Sheet collapsedExtent={SHEET_EXTENT} topInset={96}>
+        <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
           <RouteList />
         </Sheet>
       </GestureHandlerRootView>
