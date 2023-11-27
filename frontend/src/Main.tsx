@@ -56,6 +56,7 @@ const Main: React.FC<ViewProps> = () => {
             <MaterialIcons name="menu" size={24} color="black" />
           </FloatingButton>
         </View>
+        {/* Must inset bottom sheet down by the drawer button (16 + 8 + 48 + 8 + 16) */}
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
           <RouteList />
         </Sheet>

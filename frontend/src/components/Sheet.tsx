@@ -10,7 +10,9 @@ import Color from "../style/color";
  */
 export interface SheetProps extends ViewProps {
   /** How much of the bottom sheet to show initially as a fraction of the screen, such as '0.5' for half of the screen */
-  collapsedExtent: number;
+  collapsedFraction: number;
+  /** The amount to inset the bottom sheet by in it's expanded state. Already includes the status bar, so do not add that. */
+  expandedInset: number;
   /** The child view of the bottom sheet */
   children: React.ReactNode;
 }
@@ -19,7 +21,7 @@ export interface SheetProps extends ViewProps {
  * Wraps the bottom sheet component with a simplified interface.
  */
 const Sheet: React.FC<SheetProps> = ({
-  collapsedExtent,
+  collapsedFraction,
   expandedInset,
   children,
 }) => {
@@ -36,7 +38,7 @@ const Sheet: React.FC<SheetProps> = ({
   // Then we can adjust that calculated value by the specified extent of the collapsed
   // bottom sheet.
   const collapsedPercent =
-    (100 * collapsedExtent * screenHeight) / (screenHeight + insets.top);
+    (100 * collapsedFraction * screenHeight) / (screenHeight + insets.top);
   const snapPoints = [collapsedPercent + "%", expandedPercent + "%"];
 
   return (
