@@ -29,10 +29,6 @@ const VanPage: React.FC = () => {
         {vans?.map((van: Van) => (
           <Card title={`Van #${van.vanId}`}></Card>
         ))}
-
-        {/* <Card title="Van #1"></Card>
-        <Card title="Van #2"></Card>
-        <Card title="Van #3"></Card> */}
       </div>
     </main>
   );
