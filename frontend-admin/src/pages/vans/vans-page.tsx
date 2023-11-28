@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import Card from '../../components/card/card';
 import './vans-page.scss';
@@ -17,6 +17,7 @@ interface VanData {
 
 interface AddVanFormProps {
   onSubmit: (data: VanData) => void; // or Promise<void> if async
+  onCancel: () => void;
 }
 
 const fetchVans = async () => {
@@ -29,10 +30,10 @@ const fetchVans = async () => {
 const VanPage: React.FC = () => {
   const queryClient = useQueryClient();
   const { data: vans, isLoading, error } = useQuery('vans', fetchVans);
-  const [isPopupOpen, setPopupOpen] = useState(false);
+  const dialogRef = useRef<HTMLDialogElement>(null);
 
   const handleAddVanClick = () => {
-    setPopupOpen(true);
+    dialogRef.current?.showModal();
   };
 
   const createVan = async (vanData: VanData) => {
@@ -47,7 +48,7 @@ const VanPage: React.FC = () => {
         body: JSON.stringify(vanData),
       });
       await queryClient.invalidateQueries('vans');
-      setPopupOpen(false);
+      dialogRef.current?.close();
       // ... Handle the response ...
     } catch (error) {
       console.error('Error creating van:', error);
@@ -70,12 +71,12 @@ const VanPage: React.FC = () => {
       <button onClick={handleAddVanClick}>
         Add Van
       </button>
-      {isPopupOpen && <AddVanForm onSubmit={createVan} />}
+      <dialog ref={dialogRef}><AddVanForm onSubmit={createVan} onCancel={() => {dialogRef.current?.close()}} /></dialog>
     </main>
   );
 };
 
-const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit }) => {
+const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit, onCancel }) => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -98,11 +99,14 @@ const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit }) => {
           Route ID:
           <input type="number" name="routeId" required />
         </label>
+        <br />
         <label>
           Wheelchair Accessible:
           <input type="checkbox" name="wheelchair" />
         </label>
+        <br />
         <button type="submit">Create Van</button>
+        <button type="button" onClick={onCancel}>Cancel</button>
       </form>
     </div>
   );
