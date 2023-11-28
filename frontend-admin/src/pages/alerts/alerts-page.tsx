@@ -205,9 +205,15 @@ const EditAlertForm = forwardRef<AlertEditFormRef, EditAlertFormProps>(({ onSubm
   };
 
   const setData = (data: Alert) => {
-    textRef.current!.value = data.text;
-    startTimeRef.current!.value = (new Date(data.startDateTime*1000).toISOString().slice(0, 16));
-    endTimeRef.current!.value = (new Date(data.endDateTime * 1000).toISOString().slice(0, 16));
+    if (! (data.text === undefined || data.text === null)) {
+      textRef.current!.value = data.text;
+    }
+    if (! (data.startDateTime === undefined || data.startDateTime === null)) {
+      startTimeRef.current!.value = (new Date(data.startDateTime*1000).toISOString().slice(0, 16));
+    }
+    if (! (data.endDateTime === undefined || data.endDateTime === null)) {
+      endTimeRef.current!.value = (new Date(data.endDateTime * 1000).toISOString().slice(0, 16));
+    }
   }
 
   const clearForm = () => {

@@ -52,7 +52,6 @@ const VanPage: React.FC = () => {
   const createVan = async (vanData: VanData) => {
     // Convert the routeId to an integer
     try {
-      console.log(JSON.stringify(vanData));
       await fetch('http://localhost:8000/vans/', {
         method: 'POST',
         headers: {
@@ -81,7 +80,6 @@ const VanPage: React.FC = () => {
   const editVanSubmit = async (vanData: VanData) => {
     // Convert the routeId to an integer
     try {
-      console.log(JSON.stringify(vanData));
       await fetch(`http://localhost:8000/vans/${currentVanId}`, {
         method: 'PUT',
         headers: {
@@ -203,8 +201,12 @@ const VanEditForm = forwardRef<VanEditFormRef, EditVanProps>( ({ onSubmit, onDel
   };
 
   const setData = (van: Van) => {
-    routeIdRef.current!.value = van.routeId.toString();
-    wheelchairRef.current!.checked = van.wheelchair;
+    if (! (van.routeId === undefined || van.routeId === null)) {
+      routeIdRef.current!.value = van.routeId.toString();
+    }
+    if (! (van.wheelchair === undefined || van.wheelchair === null)) {
+      wheelchairRef.current!.checked = van.wheelchair;
+    }
   };
 
   const clearForm = () => {

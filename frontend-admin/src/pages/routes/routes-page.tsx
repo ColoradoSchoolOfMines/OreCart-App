@@ -164,7 +164,9 @@ const EditRouteForm = forwardRef<RouteEditFormRef, RouteEditProps>(({onSubmit, o
   };
 
   const setData = (data: Route) => {
-    nameRef.current!.value = data.name;
+    if (nameRef.current && kmlRef.current) {
+      nameRef.current.value = data.name;
+    }
   }
 
   const clearForm = () => {
