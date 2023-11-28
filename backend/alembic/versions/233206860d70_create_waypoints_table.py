@@ -27,6 +27,7 @@ def upgrade() -> None:
 	        UNIQUE (route_id, lat, lon),
 	        FOREIGN KEY (route_id)
 		        REFERENCES routes (id)
+                ON DELETE CASCADE
         );
     """
     )

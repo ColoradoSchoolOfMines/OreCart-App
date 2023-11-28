@@ -27,6 +27,7 @@ interface EditVanProps {
 
 interface VanEditFormMethods {
   setData: (van: Van) => void;
+  clearForm: () => void;
 }
 
 const fetchVans = async () => {
@@ -70,6 +71,7 @@ const VanPage: React.FC = () => {
   const openVanEditForm = (vanId: number) => {
     dialogEditRef.current?.showModal();
     setCurrentVanId(vanId);
+    vanEditFormRef.current?.clearForm();
     const van = vans?.find((van) => van.vanId === vanId);
     if (van) {
       vanEditFormRef.current?.setData(van);
@@ -177,6 +179,7 @@ const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit, onCancel }) => {
 
 interface VanEditFormRef {
   setData: (van: Van) => void;
+  clearForm: () => void;
 }
 
 const VanEditForm = forwardRef<VanEditFormRef, EditVanProps>( ({ onSubmit, onDelete, onCancel}, ref) => {
@@ -204,8 +207,14 @@ const VanEditForm = forwardRef<VanEditFormRef, EditVanProps>( ({ onSubmit, onDel
     wheelchairRef.current!.checked = van.wheelchair;
   };
 
+  const clearForm = () => {
+    routeIdRef.current!.value = '';
+    wheelchairRef.current!.checked = false;
+  };
+
   useImperativeHandle(ref, () => ({
-    setData
+    setData,
+    clearForm,
   }));
 
   return (
