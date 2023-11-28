@@ -14,7 +14,7 @@ interface AddRouteFormProps {
 }
 
 const fetchRoutes = async () => {
-  const response = await fetch('http://localhost:8000/routes');
+  const response = await fetch('http://localhost:8000/routes/');
   const data = await response.json();
   const route_data = data as Route[];
   return route_data;
@@ -26,7 +26,7 @@ const RoutesPage: React.FC = () => {
 
   const handleFormSubmit = async (formData: FormData) => {
     try {
-      const response = await fetch('http://localhost:8000/routes', {
+      const response = await fetch('http://localhost:8000/routes/', {
         method: 'POST',
         body: formData, // FormData is directly sent without setting Content-Type header
       });
