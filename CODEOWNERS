@@ -4,6 +4,7 @@
 # general
 backend/ @OreCart/backend @OreCart/code-reviewers
 frontend/ @OreCart/frontend @OreCart/code-reviewers
+frontend-admin/ @OreCart/front-admin @OreCart/code-reviewers
 
 # DevOps Things
 .github/ @tbwrigh
