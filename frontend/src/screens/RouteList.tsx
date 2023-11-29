@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   FlatList,
   Text,
@@ -7,12 +7,12 @@ import {
   StyleSheet,
   TouchableHighlight,
 } from "react-native";
+import { useQuery, useQueryClient } from "react-query";
 
 import Divider from "../components/Divider";
 import { RouteItem, RouteItemSkeleton } from "../components/RouteItem";
 import SkeletonList from "../components/SkeletonList";
-import { type RequestState } from "../services/api";
-import { getRoutes, type Routes } from "../services/routes";
+import { getRoutes } from "../services/routes";
 import Color from "../style/color";
 import LayoutStyle from "../style/layout";
 
@@ -20,55 +20,36 @@ import LayoutStyle from "../style/layout";
  * Screen that displays a list of routes.
  */
 const RouteList: React.FC<ViewProps> = () => {
-  const [routeState, setRouteState] = useState<RequestState<Routes>>({
-    type: "loading",
-  });
+  const queryClient = useQueryClient();
+  const query = useQuery("routes", getRoutes);
 
-  function loadRoutes(): void {
-    // None of the callers are in async contexts, use callbacks instead
-    getRoutes()
-      .then((routes) => {
-        setRouteState({ type: "ok", data: routes });
-      })
-      .catch((e) => {
-        setRouteState({ type: "error", message: e.toString() });
-      });
+  function retry(): void {
+    queryClient.invalidateQueries("routes").then(async () => await query.refetch()).catch(console.error);
   }
-
-  useEffect(() => {
-    loadRoutes();
-  }, []);
-
-  const retryFetchRoutes = (): void => {
-    // Need to remove whatever prior state there was and go back to the initial
-    // loading state.
-    setRouteState({ type: "loading" });
-    loadRoutes();
-  };
 
   return (
     <View style={[LayoutStyle.fill]}>
-      {routeState.type === "loading" ? (
+      {query.isLoading ? (
         <SkeletonList
           style={styles.routeContainer}
           generator={() => <RouteItemSkeleton />}
         />
-      ) : routeState.type === "ok" ? (
+      ) : query.isSuccess ? (
         <FlatList
           style={styles.routeContainer}
-          data={routeState.data}
+          data={query.data}
           renderItem={({ item }) => <RouteItem route={item} />}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={Divider}
         />
-      ) : routeState.type === "error" ? (
+      ) : query.isError ? (
         <View style={styles.loadingContainer}>
           <Text style={styles.header}>
             We couldn't fetch the routes right now. Try again later.
           </Text>
           <TouchableHighlight
             style={styles.retryButton}
-            onPress={retryFetchRoutes}
+            onPress={retry}
             underlayColor={Color.csm.primary.ext.blaster_blue_highlight}
           >
             <Text style={styles.retryButtonText}>Retry</Text>
