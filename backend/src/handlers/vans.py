@@ -210,13 +210,13 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     return HardwareOKResponse()
 
 
-def get_all_van_ids(req: Request) -> List[int]:
+def get_all_van_ids(req: Union[Request, WebSocket]) -> List[int]:
     with req.app.state.db.session() as session:
         return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
 
 
 def get_location_for_vans(
-    req: Request, van_ids: List[int]
+    req: Union[Request, WebSocket], van_ids: List[int]
 ) -> Dict[int, dict[str, Union[str, int]]]:
     locations_json: Dict[int, dict[str, Union[str, int]]] = {}
     for van_id in van_ids:
