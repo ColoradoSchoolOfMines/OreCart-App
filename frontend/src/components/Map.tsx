@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { StyleSheet, View, type ViewProps } from "react-native";
-import MapView, { PROVIDER_GOOGLE } from "react-native-maps";
+import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { type Coordinate } from "../services/location";
@@ -63,6 +63,30 @@ const Map: React.FC<MapProps> = ({ insets }) => {
     });
   }
 
+  const [vanMarkers, setVanMarkers] = useState<Coordinate[]>([]);
+
+  useEffect(() => {
+    const ws = new WebSocket(
+      "ws://" +
+        process.env.EXPO_PUBLIC_API_DOMAIN +
+        "/vans/location/subscribe/",
+    );
+
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const coordinates: Coordinate[] = [];
+      console.log(data);
+      for (const key in data) {
+        coordinates.push(data[key]);
+      }
+      setVanMarkers(coordinates);
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
+
   // Combine given insets with the status bar height to ensure that the map
   // is fully in-bounds.
   const safeAreaInsets = useSafeAreaInsets();
@@ -82,13 +106,31 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         showsUserLocation={true}
         showsMyLocationButton={false}
         mapPadding={padding}
+        toolbarEnabled={false}
         onPanDrag={() => {
           setFollowingLocation(false);
         }}
         onUserLocationChange={(event) => {
           updateLocation(event.nativeEvent.coordinate);
         }}
-      />
+      >
+        {vanMarkers.map((coordinate, index) => (
+          <Marker
+            key={index}
+            coordinate={coordinate}
+            tracksViewChanges={false}
+            anchor={{ x: 0.5, y: 0.5 }}
+          >
+            <View style={styles.vanMarker}>
+              <MaterialIcons
+                name="local-shipping"
+                size={24}
+                color={Color.generic.white}
+              />
+            </View>
+          </Marker>
+        ))}
+      </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View
         style={[
@@ -125,6 +167,13 @@ const styles = StyleSheet.create({
   locationButtonContainer: {
     justifyContent: "flex-end",
     alignItems: "flex-end",
+  },
+  vanMarker: {
+    backgroundColor: Color.orecart.tungsten,
+    borderRadius: 100,
+    padding: 4,
+    width: 32,
+    height: 32,
   },
 });
 

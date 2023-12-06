@@ -3,6 +3,18 @@ export default {
     tungsten: "#CC4628",
     silver: "#879EC3",
     gold: "#F1B91A",
+    get: (name: string): string | null => {
+      switch (name) {
+        case "Tungsten":
+          return "#CC4628";
+        case "Silver":
+          return "#879EC3";
+        case "Gold":
+          return "#F1B91A";
+        default:
+          return null;
+      }
+    },
   },
   csm: {
     primary: {
