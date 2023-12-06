@@ -61,8 +61,6 @@ def get_stops(
             if FIELD_ROUTE_IDS in include_set:
                 stop_json[FIELD_ROUTE_IDS] = query_route_ids(stop.id, session)
 
-            # Already checked if included later when we fetched the alert, check for it's
-            # presence.
             if FIELD_IS_ACTIVE in include_set:
                 stop_json[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
