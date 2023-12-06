@@ -1,34 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Card from '../../components/card/card';
+import AddVanForm from './add-van-form.tsx';
+import VanEditForm from './edit-van-form.tsx';
+import { Van, VanData, VanEditFormMethods } from './van-types.tsx';
 import './vans-page.scss';
-
-interface Van {
-  vanId: number;
-  routeId: number;
-  wheelchair: boolean;
-}
-
-interface VanData {
-  route_id: number;
-  wheelchair: boolean;
-}
-
-interface AddVanFormProps {
-  onSubmit: (data: VanData) => void; // or Promise<void> if async
-  onCancel: () => void;
-}
-
-interface EditVanProps {
-  onSubmit: (data: VanData) => void; // or Promise<void> if async
-  onDelete: () => void;
-  onCancel: () => void;
-}
-
-interface VanEditFormMethods {
-  setData: (van: Van) => void;
-  clearForm: () => void;
-}
 
 const fetchVans = async () => {
   const response = await fetch('http://localhost:8000/vans/');
@@ -135,107 +111,5 @@ const VanPage: React.FC = () => {
     </main>
   );
 };
-
-const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit, onCancel }) => {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-    const routeIdInput = form.elements.namedItem('routeId') as HTMLInputElement;
-    const wheelchairInput = form.elements.namedItem('wheelchair') as HTMLInputElement;  
-
-    const formData: VanData = {
-      route_id: parseInt(routeIdInput.value, 10),
-      wheelchair: wheelchairInput.checked,
-    };
-
-    onSubmit(formData);
-  };
-
-  return (
-    <div className="popup-form">
-      <form onSubmit={handleSubmit}>
-        <label>
-          Route ID:
-          <input type="number" name="routeId" required />
-        </label>
-        <br />
-        <label>
-          Wheelchair Accessible:
-          <input type="checkbox" name="wheelchair" />
-        </label>
-        <br />
-        <button type="submit">Create Van</button>
-        <button type="button" onClick={onCancel}>Cancel</button>
-      </form>
-    </div>
-  );
-};
-
-interface VanEditFormRef {
-  setData: (van: Van) => void;
-  clearForm: () => void;
-}
-
-const VanEditForm = forwardRef<VanEditFormRef, EditVanProps>( ({ onSubmit, onDelete, onCancel}, ref) => {
-
-  const routeIdRef = useRef<HTMLInputElement>(null);
-  const wheelchairRef = useRef<HTMLInputElement>(null);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = e.currentTarget;
-    const routeIdInput = form.elements.namedItem('routeId') as HTMLInputElement;
-    const wheelchairInput = form.elements.namedItem('wheelchair') as HTMLInputElement;
-
-    const formData: VanData = {
-      route_id: parseInt(routeIdInput.value, 10),
-      wheelchair: wheelchairInput.checked,
-    };
-
-    onSubmit(formData);
-  };
-
-  const setData = (van: Van) => {
-    if (! (van.routeId === undefined || van.routeId === null)) {
-      routeIdRef.current!.value = van.routeId.toString();
-    }
-    if (! (van.wheelchair === undefined || van.wheelchair === null)) {
-      wheelchairRef.current!.checked = van.wheelchair;
-    }
-  };
-
-  const clearForm = () => {
-    routeIdRef.current!.value = '';
-    wheelchairRef.current!.checked = false;
-  };
-
-  useImperativeHandle(ref, () => ({
-    setData,
-    clearForm,
-  }));
-
-  return (
-    <div>
-      <form onSubmit={handleSubmit}>
-        <label>
-          Route ID:
-          <input type="number" name="routeId" ref={routeIdRef} required />
-        </label>
-        <br />
-        <label>
-          Wheelchair Accessible:
-          <input type="checkbox" name="wheelchair" ref={wheelchairRef} />
-        </label>
-        <br />
-        <button type="submit">Change Van</button>
-        <button type="button" onClick={onDelete}>Delete Van</button>
-        <button type="button" onClick={onCancel}>Cancel</button>
-      </form>
-    </div>
-  );
-});
-
 
 export default VanPage;
