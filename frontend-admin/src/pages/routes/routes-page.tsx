@@ -1,5 +1,5 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import Card from '../../components/card/card';
 import './routes-page.scss';
 
@@ -27,7 +27,7 @@ const fetchRoutes = async () => {
 }
 
 const RoutesPage: React.FC = () => {
-  const { data: routes, isLoading, error } = useQuery('routes', fetchRoutes);
+  const { data: routes, isLoading, error } = useQuery({ queryKey: ['routes'], queryFn: fetchRoutes });
   const dialogRef = useRef<HTMLDialogElement>(null);
   const dialogEditRef = useRef<HTMLDialogElement>(null);
   const [ currentRouteId, setCurrentRouteId ] = useState<number>(-1);
@@ -44,7 +44,7 @@ const RoutesPage: React.FC = () => {
         throw new Error('Network response was not ok');
       }
       // Handle the successful response
-      queryClient.invalidateQueries('routes');
+      await queryClient.invalidateQueries({ queryKey: ['routes'] });
       dialogRef.current?.close();
     } catch (error) {
       console.error('There was a problem with the fetch operation:', error);
@@ -71,7 +71,7 @@ const RoutesPage: React.FC = () => {
         throw new Error('Network response was not ok');
       }
       // Handle the successful response
-      queryClient.invalidateQueries('routes');
+      await queryClient.invalidateQueries({ queryKey: ['routes'] });
       setCurrentRouteId(-1);
       dialogEditRef.current?.close();
     } catch (error) {
@@ -88,7 +88,7 @@ const RoutesPage: React.FC = () => {
         throw new Error('Network response was not ok');
       }
       // Handle the successful response
-      queryClient.invalidateQueries('routes');
+      await queryClient.invalidateQueries({ queryKey: ['routes'] });
       setCurrentRouteId(-1);
       dialogEditRef.current?.close();
     } catch (error) {

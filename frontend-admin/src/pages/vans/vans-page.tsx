@@ -1,5 +1,5 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import Card from '../../components/card/card';
 import './vans-page.scss';
 
@@ -39,7 +39,7 @@ const fetchVans = async () => {
 
 const VanPage: React.FC = () => {
   const queryClient = useQueryClient();
-  const { data: vans, isLoading, error } = useQuery('vans', fetchVans);
+  const { data: vans, isLoading, error } = useQuery({ queryKey: ['vans'], queryFn: fetchVans });
   const dialogRef = useRef<HTMLDialogElement>(null);
   const dialogEditRef = useRef<HTMLDialogElement>(null);
   const [ currentVanId, setCurrentVanId ] = useState<number>(-1);
@@ -59,7 +59,7 @@ const VanPage: React.FC = () => {
         },
         body: JSON.stringify(vanData),
       });
-      await queryClient.invalidateQueries('vans');
+      await queryClient.invalidateQueries({ queryKey: ['vans'] });
       dialogRef.current?.close();
       // ... Handle the response ...
     } catch (error) {
@@ -87,8 +87,7 @@ const VanPage: React.FC = () => {
         },
         body: JSON.stringify(vanData),
       });
-      await queryClient.invalidateQueries('vans');
-
+      await queryClient.invalidateQueries({ queryKey: ['vans'] });
       setCurrentVanId(-1);
       dialogEditRef.current?.close();
       // ... Handle the response ...
@@ -105,11 +104,9 @@ const VanPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
       });
-      await queryClient.invalidateQueries('vans');
-
+      await queryClient.invalidateQueries({ queryKey: ['vans'] });
       setCurrentVanId(-1);
       dialogEditRef.current?.close();
-  
     } catch (error) {
       console.error('Error creating van:', error);
     }

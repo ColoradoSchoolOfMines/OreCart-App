@@ -1,5 +1,5 @@
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import Card from '../../components/card/card';
 import './alerts-page.scss';
 
@@ -41,7 +41,7 @@ const fetchAlerts = async () => {
 };
 
 const AlertsPage: React.FC = () => {
-  const { data: alerts, isLoading, error } = useQuery('alerts', fetchAlerts);
+  const { data: alerts, isLoading, error } = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts });
   const dialogRef = useRef<HTMLDialogElement>(null);
   const queryClient = useQueryClient();
   const dialogEditRef = useRef<HTMLDialogElement>(null);
@@ -64,8 +64,8 @@ const AlertsPage: React.FC = () => {
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      // Handle the successful response
-      queryClient.invalidateQueries('alerts');
+      // Handle the successful response 
+      await queryClient.invalidateQueries({ queryKey: ['alerts'] });
       dialogRef.current?.close();
     } catch (error) {
       console.error('There was a problem with the fetch operation:', error);
@@ -95,7 +95,7 @@ const AlertsPage: React.FC = () => {
         throw new Error('Network response was not ok');
       }
       // Handle the successful response
-      queryClient.invalidateQueries('alerts');
+      await queryClient.invalidateQueries({ queryKey: ['alerts'] });
       setCurrentAlertId(-1);
       dialogEditRef.current?.close();
     } catch (error) {
@@ -112,7 +112,7 @@ const AlertsPage: React.FC = () => {
         throw new Error('Network response was not ok');
       }
       // Handle the successful response
-      queryClient.invalidateQueries('alerts');
+      await queryClient.invalidateQueries({ queryKey: ['alerts'] });
       setCurrentAlertId(-1);
       dialogEditRef.current?.close();
     } catch (error) {
