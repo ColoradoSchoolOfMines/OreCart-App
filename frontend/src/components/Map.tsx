@@ -75,7 +75,6 @@ const Map: React.FC<MapProps> = ({ insets }) => {
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
       const coordinates: Coordinate[] = [];
-      console.log(data);
       for (const key in data) {
         coordinates.push(data[key]);
       }
