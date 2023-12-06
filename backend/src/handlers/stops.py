@@ -63,7 +63,7 @@ def get_stops(
 
             # Already checked if included later when we fetched the alert, check for it's
             # presence.
-            if alert:
+            if FIELD_IS_ACTIVE in include_set:
                 stop_json[FIELD_IS_ACTIVE] = is_stop_active(stop, alert, session)
 
             stops_json.append(stop_json)
