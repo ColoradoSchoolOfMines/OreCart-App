@@ -7,7 +7,7 @@ import {
   StyleSheet,
   TouchableHighlight,
 } from "react-native";
-import { useQuery, useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Divider from "../components/Divider";
 import { RouteItem, RouteItemSkeleton } from "../components/RouteItem";
@@ -21,11 +21,11 @@ import LayoutStyle from "../style/layout";
  */
 const RouteList: React.FC<ViewProps> = () => {
   const queryClient = useQueryClient();
-  const query = useQuery("routes", getRoutes);
+  const query = useQuery({ queryKey: ["routes"], queryFn: getRoutes });
 
   function retry(): void {
     queryClient
-      .invalidateQueries("routes")
+      .invalidateQueries({ queryKey: ["routes"]})
       .then(async () => await query.refetch())
       .catch(console.error);
   }

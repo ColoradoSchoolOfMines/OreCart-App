@@ -1,7 +1,7 @@
 import * as NavigationBar from "expo-navigation-bar";
 import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import Main from "./src/Main";
 import Color from "./src/style/color";
