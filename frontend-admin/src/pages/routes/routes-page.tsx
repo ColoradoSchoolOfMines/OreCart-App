@@ -1,23 +1,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import Card from '../../components/card/card';
+import AddRouteForm from './add-route-form';
+import EditRouteForm from './edit-route-form';
+import { Route, RouteEditFormRef } from './route-types';
 import './routes-page.scss';
-
-interface Route {
-  id: number;
-  name: string;
-}
-
-interface AddRouteFormProps {
-  onSubmit: (data: FormData) => void; // or Promise<void> if async
-  onCancel: () => void;
-}
-
-interface RouteEditProps {
-  onSubmit: (data: FormData) => void; // or Promise<void> if async
-  onDelete: () => void;
-  onCancel: () => void;
-}
 
 const fetchRoutes = async () => {
   const response = await fetch('http://localhost:8000/routes/');
@@ -122,77 +109,5 @@ const RoutesPage: React.FC = () => {
     </main>
   );
 };
-
-const AddRouteForm: React.FC<AddRouteFormProps> = ({ onSubmit, onCancel }) => {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.currentTarget);
-
-    onSubmit(formData);
-  };
-
-  return (
-    <form className="add-form" onSubmit={handleSubmit}>
-      <h2>Add Route</h2>
-      <label htmlFor="name">Name</label>
-      <input type="text" id="name" name="name" />
-      <label htmlFor="kml">KML File</label>
-      <input type="file" id="kml" name="kml" />
-      <button type="submit">Submit</button>
-      <button type="button" onClick={onCancel}>Cancel</button>
-    </form>
-  );
-};
-
-interface RouteEditFormRef {
-  setData: (van: Route) => void;
-  clearForm: () => void;
-}
-
-const EditRouteForm = forwardRef<RouteEditFormRef, RouteEditProps>(({onSubmit, onDelete, onCancel}, ref) => {
-
-  const nameRef = useRef<HTMLInputElement>(null);
-  const kmlRef = useRef<HTMLInputElement>(null);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.currentTarget);
-
-    onSubmit(formData);
-  };
-
-  const setData = (data: Route) => {
-    if (nameRef.current && kmlRef.current) {
-      nameRef.current.value = data.name;
-    }
-  }
-
-  const clearForm = () => {
-    nameRef.current!.value = '';
-    kmlRef.current!.value = '';
-  };
-
-  useImperativeHandle(ref, () => ({
-    setData,
-    clearForm,
-  }));
-
-  return (
-    <form className="edit-form" onSubmit={handleSubmit}>
-      <h2>Edit Route</h2>
-      <label htmlFor="name">Name</label>
-      <input type="text" id="name" name="name" ref={nameRef} />
-      <br />
-      <label htmlFor="kml">KML File</label>
-      <input type="file" id="kml" name="kml" ref={kmlRef} />
-      <br />
-      <button type="submit">Submit</button>
-      <button type="button" onClick={onDelete}>Delete</button>
-      <button type="button" onClick={onCancel}>Cancel</button>
-    </form>
-  );
-});
 
 export default RoutesPage;
