@@ -1,8 +1,8 @@
 function getApiUrl(): string {
-  if (process.env.EXPO_PUBLIC_API_URL == null) {
+  if (process.env.EXPO_PUBLIC_API_DOMAIN == null) {
     throw new Error("API URL not set");
   }
-  return process.env.EXPO_PUBLIC_API_URL;
+  return "http://" + process.env.EXPO_PUBLIC_API_DOMAIN;
 }
 
 export async function apiGet<T>(route: string): Promise<T> {
