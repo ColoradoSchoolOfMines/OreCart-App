@@ -4,7 +4,7 @@ import struct
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Set, Union
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
@@ -129,18 +129,15 @@ def get_locations(req: Request):
     return JSONResponse(content=get_location_for_vans(req, vans))
 
 
-@router.get("/location/subscribe/", response_class=Response)
-def subscribe_locations(req: Request) -> StreamingResponse:
-    vans = get_all_van_ids(req)
+@router.websocket("/location/subscribe/")
+async def subscribe_locations(websocket: WebSocket) -> None:
+    await websocket.accept()
 
-    async def generator():
-        while True:
-            locations_json = get_location_for_vans(req, vans)
-            # You can't yield a JSONResponse in a streaming response, roll it manually
-            yield json.dumps(jsonable_encoder(locations_json))
-            await asyncio.sleep(2)
-
-    return StreamingResponse(generator(), media_type="text/event-stream")
+    vans = get_all_van_ids(websocket)
+    while True:
+        locations_json = get_location_for_vans(websocket, vans)
+        await websocket.send_json(locations_json)
+        await asyncio.sleep(2)
 
 
 @router.get("/location/{van_id}")
@@ -157,24 +154,22 @@ def get_location(req: Request, van_id: int) -> JSONResponse:
     return JSONResponse(content=location_json)
 
 
-@router.get("/location/{van_id}/subscribe", response_class=Response)
-def subscribe_location(req: Request, van_id: int) -> StreamingResponse:
-    if van_id not in req.app.state.van_locations:
+@router.websocket("/location/{van_id}/subscribe")
+async def subscribe_location(websocket: WebSocket, van_id: int) -> None:
+    if van_id not in websocket.app.state.van_locations:
         raise HTTPException(detail="Van not found", status_code=404)
 
-    async def generator():
-        while True:
-            location = req.app.state.van_locations[van_id]
-            location_json = {
-                "timestamp": int(location.timestamp.timestamp()),
-                "latitude": location.latitude,
-                "longitude": location.longitude,
-            }
-            # You can't yield a JSONResponse in a streaming response, roll it manually
-            yield json.dumps(jsonable_encoder(location_json))
-            await asyncio.sleep(2)
+    await websocket.accept()
 
-    return StreamingResponse(generator(), media_type="text/event-stream")
+    while True:
+        location = websocket.app.state.van_locations[van_id]
+        location_json = {
+            "timestamp": int(location.timestamp.timestamp()),
+            "latitude": location.latitude,
+            "longitude": location.longitude,
+        }
+        await websocket.send_json(location_json)
+        await asyncio.sleep(2)
 
 
 @router.post("/location/{van_id}")
