@@ -1,3 +1,4 @@
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import {
   FlatList,
@@ -7,7 +8,6 @@ import {
   StyleSheet,
   TouchableHighlight,
 } from "react-native";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import Divider from "../components/Divider";
 import { RouteItem, RouteItemSkeleton } from "../components/RouteItem";
@@ -25,7 +25,7 @@ const RouteList: React.FC<ViewProps> = () => {
 
   function retry(): void {
     queryClient
-      .invalidateQueries({ queryKey: ["routes"]})
+      .invalidateQueries({ queryKey: ["routes"] })
       .then(async () => await query.refetch())
       .catch(console.error);
   }
