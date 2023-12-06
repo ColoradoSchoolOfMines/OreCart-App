@@ -24,7 +24,10 @@ const RouteList: React.FC<ViewProps> = () => {
   const query = useQuery("routes", getRoutes);
 
   function retry(): void {
-    queryClient.invalidateQueries("routes").then(async () => await query.refetch()).catch(console.error);
+    queryClient
+      .invalidateQueries("routes")
+      .then(async () => await query.refetch())
+      .catch(console.error);
   }
 
   return (
