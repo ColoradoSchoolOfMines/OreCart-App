@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 function getApiUrl(): string {
+  // Avoid an obvious poor environment setup footgun
   if (process.env.EXPO_PUBLIC_API_DOMAIN == null) {
     throw new Error("API URL not set");
   }
@@ -13,8 +14,12 @@ function getApiUrl(): string {
   }
 }
 
+/**
+ * The slice managing API fetching/result caching. Should not be used
+ * outside of the data store.
+ */
 export default createApi({
   baseQuery: fetchBaseQuery({ baseUrl: getApiUrl() }),
   tagTypes: ["Routes", "Vans"],
-  endpoints: () => ({}), // All endpoints are injected
+  endpoints: () => ({}), // All endpoints are injected by other files
 });

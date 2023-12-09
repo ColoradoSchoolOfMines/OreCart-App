@@ -1,9 +1,15 @@
 import { type Coordinate } from "../services/location";
 
-import apiSlice from "./apiSlice";
+import apiSlice from "./slice";
 
+/**
+ * A list of routes, as defined by the backend.
+ */
 export type Routes = Route[];
 
+/**
+ * A Route, as defined by the backend.
+ */
 export interface Route {
   id: string;
   name: string;
@@ -23,4 +29,7 @@ const routesApiSlice = apiSlice.injectEndpoints({
   }),
 });
 
+/**
+ * Hook for querying the list of routes.
+ */
 export const { useGetRoutesQuery } = routesApiSlice;

@@ -3,8 +3,8 @@ import { Platform } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 
-import store from "./src/data/store";
 import Main from "./src/Main";
+import store from "./src/state/store";
 import Color from "./src/style/color";
 import LayoutStyle from "./src/style/layout";
 

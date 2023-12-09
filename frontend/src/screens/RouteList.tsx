@@ -25,7 +25,7 @@ const RouteList: React.FC<ViewProps> = () => {
     isSuccess,
     isError,
     refetch,
-  } = useGetRoutesQuery({});
+  } = useGetRoutesQuery();
 
   function retry(): void {
     refetch().catch(console.error);
