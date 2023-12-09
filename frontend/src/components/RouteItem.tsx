@@ -9,7 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 
-import { type Route } from "../services/routes";
+import { type Route } from "../api/routes";
 import Color from "../style/color";
 
 /**
