@@ -1,9 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { useGetVansQuery, useVanLocations } from "../api/vans";
 import { type Coordinate } from "../services/location";
 import Color from "../style/color";
 import LayoutStyle from "../style/layout";
@@ -63,29 +64,6 @@ const Map: React.FC<MapProps> = ({ insets }) => {
     });
   }
 
-  const [vanMarkers, setVanMarkers] = useState<Coordinate[]>([]);
-
-  useEffect(() => {
-    const ws = new WebSocket(
-      "ws://" +
-        process.env.EXPO_PUBLIC_API_DOMAIN +
-        "/vans/location/subscribe/",
-    );
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      const coordinates: Coordinate[] = [];
-      for (const key in data) {
-        coordinates.push(data[key]);
-      }
-      setVanMarkers(coordinates);
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, []);
-
   // Combine given insets with the status bar height to ensure that the map
   // is fully in-bounds.
   const safeAreaInsets = useSafeAreaInsets();
@@ -95,6 +73,16 @@ const Map: React.FC<MapProps> = ({ insets }) => {
     bottom: insets?.bottom ?? 0 + safeAreaInsets.bottom,
     right: insets?.right ?? 0 + safeAreaInsets.right,
   };
+
+  const { data: vans } = useGetVansQuery();
+  const vanLocations = useVanLocations();
+
+  const vansWithLocation = (vans ?? [])
+    .filter((van) => vanLocations[van.id] !== undefined)
+    .map((van) => ({
+      ...van,
+      location: vanLocations[van.id],
+    }));
 
   return (
     <View>
@@ -113,10 +101,10 @@ const Map: React.FC<MapProps> = ({ insets }) => {
           updateLocation(event.nativeEvent.coordinate);
         }}
       >
-        {vanMarkers.map((coordinate, index) => (
+        {vansWithLocation.map((van, index) => (
           <Marker
             key={index}
-            coordinate={coordinate}
+            coordinate={van.location}
             tracksViewChanges={false}
             anchor={{ x: 0.5, y: 0.5 }}
           >

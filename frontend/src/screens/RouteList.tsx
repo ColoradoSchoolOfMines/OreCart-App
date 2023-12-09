@@ -15,12 +15,17 @@ import SkeletonList from "../components/SkeletonList";
 import Color from "../style/color";
 import LayoutStyle from "../style/layout";
 
-
 /**
  * Screen that displays a list of routes.
  */
 const RouteList: React.FC<ViewProps> = () => {
-  const { data: routes, isLoading, isSuccess, isError, refetch } = useGetRoutesQuery({});
+  const {
+    data: routes,
+    isLoading,
+    isSuccess,
+    isError,
+    refetch,
+  } = useGetRoutesQuery({});
 
   function retry(): void {
     refetch().catch(console.error);
@@ -28,7 +33,7 @@ const RouteList: React.FC<ViewProps> = () => {
 
   return (
     <View style={[LayoutStyle.fill]}>
-      { isLoading ? (
+      {isLoading ? (
         <SkeletonList
           style={styles.routeContainer}
           generator={() => <RouteItemSkeleton />}

@@ -1,6 +1,6 @@
-import { type Coordinate } from '../services/location';
+import { type Coordinate } from "../services/location";
 
-import apiSlice from './apiSlice'
+import apiSlice from "./apiSlice";
 
 export type Routes = Route[];
 
@@ -12,13 +12,15 @@ export interface Route {
   isActive: boolean;
 }
 
-export const routesApiSlice = apiSlice.injectEndpoints({
-  endpoints: builder => ({
-    getRoutes: builder.query({
-      query: () => '/routes/?include=stopIds&include=waypoints&include=isActive',
-      providesTags: ["Routes"]
-    })
-  })
-})
+const routesApiSlice = apiSlice.injectEndpoints({
+  endpoints: (builder) => ({
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
+    getRoutes: builder.query<Routes, void>({
+      query: () =>
+        "/routes/?include=stopIds&include=waypoints&include=isActive",
+      providesTags: ["Routes"],
+    }),
+  }),
+});
 
-export const { useGetRoutesQuery } = routesApiSlice
+export const { useGetRoutesQuery } = routesApiSlice;
