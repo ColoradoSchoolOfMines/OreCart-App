@@ -18,6 +18,8 @@ export interface Route {
   isActive: boolean;
 }
 
+// --- API Definition ---
+
 const routesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type

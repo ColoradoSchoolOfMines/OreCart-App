@@ -4,7 +4,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 
 import Main from "./src/Main";
-import store from "./src/state/store";
+import store from "./src/store";
 import Color from "./src/style/color";
 import LayoutStyle from "./src/style/layout";
 
@@ -17,6 +17,7 @@ if (Platform.OS === "android") {
     console.error,
   );
 }
+
 
 const App: React.FC<void> = () => (
   <Provider store={store}>

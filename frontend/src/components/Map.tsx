@@ -4,7 +4,7 @@ import { StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useGetVansQuery, useVanLocations } from "../api/vans";
+import { useGetVansQuery } from "../api/vans";
 import { type Coordinate } from "../services/location";
 import Color from "../style/color";
 import LayoutStyle from "../style/layout";
@@ -75,14 +75,6 @@ const Map: React.FC<MapProps> = ({ insets }) => {
   };
 
   const { data: vans } = useGetVansQuery();
-  const vanLocations = useVanLocations();
-
-  const vansWithLocation = (vans ?? [])
-    .filter((van) => vanLocations[van.id] !== undefined)
-    .map((van) => ({
-      ...van,
-      location: vanLocations[van.id],
-    }));
 
   return (
     <View>
@@ -101,7 +93,8 @@ const Map: React.FC<MapProps> = ({ insets }) => {
           updateLocation(event.nativeEvent.coordinate);
         }}
       >
-        {vansWithLocation.map((van, index) => (
+        {vans?.map((van, index) => (
+          van.location !== undefined ? (
           <Marker
             key={index}
             coordinate={van.location}
@@ -116,7 +109,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
               />
             </View>
           </Marker>
-        ))}
+        ) : null))}
       </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View
