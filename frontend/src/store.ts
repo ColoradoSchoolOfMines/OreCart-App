@@ -8,11 +8,10 @@ import apiSlice from "./api/slice";
  */
 const store = configureStore({
   reducer: {
-    [apiSlice.reducerPath]: apiSlice.reducer
+    [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware()
-      .concat(apiSlice.middleware)
+    getDefaultMiddleware().concat(apiSlice.middleware),
 });
 
 /**

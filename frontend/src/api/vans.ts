@@ -31,7 +31,7 @@ const vansApiSlice = apiSlice.injectEndpoints({
       query: () => "/vans/",
       async onCacheEntryAdded(
         _,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved },
       ) {
         const ws = new WebSocket(vanLocationApiUrl);
 

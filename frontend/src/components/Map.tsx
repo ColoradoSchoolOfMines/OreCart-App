@@ -93,23 +93,24 @@ const Map: React.FC<MapProps> = ({ insets }) => {
           updateLocation(event.nativeEvent.coordinate);
         }}
       >
-        {vans?.map((van, index) => (
+        {vans?.map((van, index) =>
           van.location !== undefined ? (
-          <Marker
-            key={index}
-            coordinate={van.location}
-            tracksViewChanges={false}
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
-            <View style={styles.vanMarker}>
-              <MaterialIcons
-                name="local-shipping"
-                size={24}
-                color={Color.generic.white}
-              />
-            </View>
-          </Marker>
-        ) : null))}
+            <Marker
+              key={index}
+              coordinate={van.location}
+              tracksViewChanges={false}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View style={styles.vanMarker}>
+                <MaterialIcons
+                  name="local-shipping"
+                  size={24}
+                  color={Color.generic.white}
+                />
+              </View>
+            </Marker>
+          ) : null,
+        )}
       </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View

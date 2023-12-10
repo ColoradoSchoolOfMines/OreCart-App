@@ -18,7 +18,6 @@ if (Platform.OS === "android") {
   );
 }
 
-
 const App: React.FC<void> = () => (
   <Provider store={store}>
     <SafeAreaProvider style={LayoutStyle.fill}>
