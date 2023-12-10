@@ -49,19 +49,17 @@ def get_vans(
     with req.app.state.db.session() as session:
         vans: List[Van] = session.query(Van).all()
 
-        resp: Dict[str, List[Dict[str, Optional[Union[int, float, bool]]]]] = {
-            "vans": [
-                {
-                    "vanId": van.id,
-                    "routeId": van.route_id,
-                    "wheelchair": van.wheelchair,
-                }
-                for van in vans
-            ]
-        }
+        resp: List[Dict[str, Optional[Union[int, float, bool]]]] = [
+            {
+                "id": van.id,
+                "routeId": van.route_id,
+                "wheelchair": van.wheelchair,
+            }
+            for van in vans
+        ]
 
     if INCLUDE_LOCATION in include_set:
-        for van in resp["vans"]:
+        for van in resp:
             van["location"] = req.app.state.van_locations[van["vanId"]]
 
     return JSONResponse(content=resp)
@@ -78,7 +76,7 @@ def get_van(
             return JSONResponse(content={"message": "Van not found"}, status_code=404)
 
         resp = {
-            "vanId": van_id,
+            "id": van_id,
             "routeId": van.route_id,
             "wheelchair": van.wheelchair,
         }
