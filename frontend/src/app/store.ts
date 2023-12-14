@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 
-import apiSlice from "./api/slice";
+import apiSlice from "./apiSlice";
 
 /**
  * The redux store for the app. This is the source of all state in the app. Avoid

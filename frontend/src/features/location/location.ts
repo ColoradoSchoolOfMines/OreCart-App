@@ -25,7 +25,7 @@ export type LocationCallback = (location: Coordinate | null) => void;
  * {@function Location.LocationSubscription.remove} when the subscribing component is unmounted.
  */
 export async function subscribeUserLocation(
-  cb: LocationCallback,
+  cb: LocationCallback
 ): Promise<Location.LocationSubscription> {
   const { status } = await Location.requestForegroundPermissionsAsync();
   if (status !== "granted") {
@@ -39,7 +39,7 @@ export async function subscribeUserLocation(
     { accuracy: ACCURACY },
     (newLocation) => {
       cb(newLocation.coords);
-    },
+    }
   );
 }
 

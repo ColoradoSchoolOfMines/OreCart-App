@@ -1,6 +1,6 @@
-import { type Coordinate } from "../services/location";
+import apiSlice from "../../app/apiSlice";
+import { type Coordinate } from "../location/location";
 
-import apiSlice from "./slice";
 
 /**
  * A list of vans, as defined by the backend.
@@ -33,22 +33,22 @@ const vansApiSlice = apiSlice.injectEndpoints({
         _,
         { updateCachedData, cacheDataLoaded, cacheEntryRemoved },
       ) {
+        // By coupling location tracking with the cached vans fetch results,
+        // we can not only collate van information with location information,
+        // but also ensure that the websocket is closed when the cache entry
+        // is removed.
         const ws = new WebSocket(vanLocationApiUrl);
 
         try {
           await cacheDataLoaded;
 
           const locationListener = (event: MessageEvent): void => {
-            // New location payload, send it to the companion reducer.
             const locations: VanLocations = JSON.parse(event.data);
             updateCachedData((vans) => {
               for (const vanId in locations) {
                 // Need to convert from the stringed JSON IDs to numbered ones.
                 const id = parseInt(vanId);
-                vans[id] = {
-                  ...vans[id],
-                  location: locations[vanId],
-                };
+                vans[id].location = locations[vanId];
               }
             });
           };

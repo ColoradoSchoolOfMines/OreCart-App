@@ -16,7 +16,8 @@ function getApiUrl(): string {
 
 /**
  * The slice managing API fetching/result caching. Should not be used
- * outside of the data store.
+ * outside of the data store. If you want to work with the API, look
+ * at the exports of the other files in this module.
  */
 export default createApi({
   baseQuery: fetchBaseQuery({ baseUrl: getApiUrl() }),

@@ -4,13 +4,12 @@ import { StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useGetVansQuery } from "../api/vans";
-import { type Coordinate } from "../services/location";
-import Color from "../style/color";
-import LayoutStyle from "../style/layout";
-import SpacingStyle, { type Insets } from "../style/spacing";
-
-import FloatingButton from "./FloatingButton";
+import FloatingButton from "../../common/components/FloatingButton";
+import Color from "../../common/style/color";
+import LayoutStyle from "../../common/style/layout";
+import SpacingStyle, { type Insets } from "../../common/style/spacing";
+import { type Coordinate } from "../location/location";
+import { useGetVansQuery } from "../vans/vansSlice";
 
 /**
  * The props for the {@interface Map} component.

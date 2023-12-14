@@ -8,12 +8,13 @@ import {
   TouchableHighlight,
 } from "react-native";
 
-import { useGetRoutesQuery } from "../api/routes";
-import Divider from "../components/Divider";
-import { RouteItem, RouteItemSkeleton } from "../components/RouteItem";
-import SkeletonList from "../components/SkeletonList";
-import Color from "../style/color";
-import LayoutStyle from "../style/layout";
+import Divider from "../../common/components/Divider";
+import SkeletonList from "../../common/components/SkeletonList";
+import Color from "../../common/style/color";
+import LayoutStyle from "../../common/style/layout";
+
+import { RouteItem, RouteItemSkeleton } from "./RouteItem";
+import { useGetRoutesQuery } from "./routesSlice";
 
 /**
  * Screen that displays a list of routes.

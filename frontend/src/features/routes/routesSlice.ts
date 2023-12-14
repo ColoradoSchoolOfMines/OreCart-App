@@ -1,6 +1,6 @@
-import { type Coordinate } from "../services/location";
+import apiSlice from "../../app/apiSlice";
+import { type Coordinate } from "../location/location";
 
-import apiSlice from "./slice";
 
 /**
  * A list of routes, as defined by the backend.
