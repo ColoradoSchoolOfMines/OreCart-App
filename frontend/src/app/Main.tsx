@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FloatingButton from "../common/components/FloatingButton";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
+import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
 import Sheet from "../features/navi/Sheet";
 import RouteList from "../features/routes/RouteList";
@@ -29,6 +30,8 @@ const Main: React.FC<ViewProps> = () => {
   const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
   const insets = useSafeAreaInsets();
   const drawerInsets = { top: insets.top };
+
+  manageLocationMiddleware();
 
   return (
     <Drawer

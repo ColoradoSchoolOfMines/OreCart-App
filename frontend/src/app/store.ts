@@ -1,5 +1,8 @@
 import { configureStore } from "@reduxjs/toolkit";
 
+import locationMiddleware from "../features/location/locationMiddleware";
+import locationReducer from "../features/location/locationSlice";
+
 import apiSlice from "./apiSlice";
 
 /**
@@ -9,9 +12,12 @@ import apiSlice from "./apiSlice";
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
+    location: locationReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
+    getDefaultMiddleware()
+      .concat(apiSlice.middleware)
+      .concat(locationMiddleware.middleware),
 });
 
 /**
@@ -23,10 +29,5 @@ export type RootState = ReturnType<typeof store.getState>;
  * Typed wrapper for dispatch. Should be avoided in favor of useAppDispatch.
  */
 export type AppDispatch = typeof store.dispatch;
-
-// These are currently unused, but if you need to drop from RTK to plain redux,
-// you'll need these since they're properly typed.
-// export const useAppDispatch: () => AppDispatch = useDispatch;
-// export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
 export default store;

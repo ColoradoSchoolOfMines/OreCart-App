@@ -8,7 +8,7 @@ import FloatingButton from "../../common/components/FloatingButton";
 import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
-import { type Coordinate } from "../location/location";
+import { type Coordinate } from "../location/locationSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
 
 /**
