@@ -3,7 +3,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { useAppSelector } from "../../common/hooks";
 
 /**
- * Implemenetation of latitude/longitude-based coordinates independent from any particular
+ * Implementation of latitude/longitude-based coordinates independent from any particular
  * mapping library.
  */
 export interface Coordinate {
@@ -53,6 +53,14 @@ const initialState: LocationState = {
   status: { type: "inactive" },
 };
 
+/*
+ * This slice holds the current location status. Unlike the other RTK Query
+ * slices, this has internal state that we must work with. You can think of
+ * it as just a dumb holder of the current location. Everything else is managed
+ * by the "companion" middleware that is in the other file in this package.
+ * That does most of the work on tracking the location, and then just updates
+ * the state value in this.
+ */
 const locationSlice = createSlice({
   name: "location",
   initialState,

@@ -1,7 +1,6 @@
 import apiSlice from "../../app/apiSlice";
 import { type Coordinate } from "../location/locationSlice";
 
-
 /**
  * A list of routes, as defined by the backend.
  */
@@ -20,6 +19,10 @@ export interface Route {
 
 // --- API Definition ---
 
+/**
+ * This slice extends the existing API slice with the route information route.
+ * There should be no state to reason about here, it's just configuration.
+ */
 const routesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type

@@ -16,9 +16,18 @@ const ACCURACY = Location.Accuracy.BestForNavigation;
 
 let locationSubscription: Location.LocationSubscription | null = null;
 
-// The subscribeLocation action signifies to set up 
+// The problem with location updates is that they are a callback-based API with sensitive lifecycle limitations
+// that we need to cram into the redux API. This middleware attempts to abstract this process with the following
+// lifecycle:
+// 1. The top-level Main component calls manageLocationMiddleware(), which then sends a subscribe action to
+// the middleware. This creates the subscription and forwards them to the state in the location slice.
+// 2. The top-level Main component unmounts, which sends an unsubscribe action to the middleware. The middleware
+// immediately unsubscribes and frees the subscription. This way, we can stop tracking location as soon as the
+// app is no longer visible.
 
 locationMiddleware.startListening({
+  // actionCreator specifies the action that when dispatched will trigger the
+  // code below.
   actionCreator: subscribeLocation,
   effect: async (_, listenerApi) => {
     if (locationSubscription !== null) {
@@ -28,7 +37,8 @@ locationMiddleware.startListening({
 
     const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      // Permission was not granted, we can't do anything.
+      // Permission was not granted, we can't do anything. Send the outcome
+      // to the companion slice state.
       listenerApi.dispatch(updateLocationStatus({ type: "not_granted" }));
       return;
     }
@@ -54,6 +64,8 @@ locationMiddleware.startListening({
 });
 
 locationMiddleware.startListening({
+  // actionCreator specifies the action that when dispatched will trigger the
+  // code below.
   actionCreator: unsubscribeLocation,
   effect: async (_, listenerApi) => {
     if (locationSubscription === null) {
@@ -71,7 +83,7 @@ export default locationMiddleware;
 
 /**
  * Convienence function to automatically manage the location middleware. This should be called
- * in the highest level component that still has access to the redux store. 
+ * in the highest level component that still has access to the redux store.
  */
 export function manageLocationMiddleware(): void {
   const dispatch = useAppDispatch();
