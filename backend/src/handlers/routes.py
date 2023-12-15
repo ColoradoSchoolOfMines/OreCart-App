@@ -63,9 +63,7 @@ def get_routes(
             if FIELD_WAYPOINTS in include_set:
                 route_json[FIELD_WAYPOINTS] = query_route_waypoints(route.id, session)
 
-            # Already checked if included later when we fetched the alert, check for it's
-            # presence.
-            if alert:
+            if FIELD_IS_ACTIVE in include_set:
                 route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
 
             routes_json.append(route_json)
