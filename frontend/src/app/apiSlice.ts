@@ -18,11 +18,11 @@ function getApiUrl(): string {
  * The slice managing API fetching/result caching. Should not be used
  * outside of the data store. If you want to work with the API, look
  * at the exports of the other files in this module.
- * 
+ *
  * While this is a slice, it has no internal state that we declared.
  * RTK handles effectively all of this and exposes API hooks for us that
  * are nearly equivalent to something like React Query.
- * 
+ *
  * If you need to connect to a new API, you will need to create a new slice
  * (and corresponding) interfaces, import this slice, and then call `injectEndpoints`
  * on it with the new endpoint URL and types. You will also need to add a new tag

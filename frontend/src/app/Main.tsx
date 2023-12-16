@@ -10,7 +10,7 @@ import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
-import Sheet from "../features/navi/Sheet";
+import Sheet from "../features/navigation/Sheet";
 import RouteList from "../features/routes/RouteList";
 
 /**

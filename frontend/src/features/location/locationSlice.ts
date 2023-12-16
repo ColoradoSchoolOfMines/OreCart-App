@@ -79,7 +79,7 @@ export const useLocation = (): Coordinate | undefined =>
   useAppSelector((state) =>
     state.location.status.type === "active"
       ? state.location.status.location
-      : undefined
+      : undefined,
   );
 
 /**

@@ -42,6 +42,7 @@ locationMiddleware.startListening({
       listenerApi.dispatch(updateLocationStatus({ type: "not_granted" }));
       return;
     }
+
     try {
       // Have to track the current subscription so we can unsubscribe later.
       locationSubscription = await Location.watchPositionAsync(
@@ -53,9 +54,9 @@ locationMiddleware.startListening({
             updateLocationStatus({
               type: "active",
               location: newLocation.coords,
-            })
+            }),
           );
-        }
+        },
       );
     } catch (e) {
       listenerApi.dispatch(updateLocationStatus({ type: "error" }));
@@ -82,7 +83,7 @@ locationMiddleware.startListening({
 export default locationMiddleware;
 
 /**
- * Convienence function to automatically manage the location middleware. This should be called
+ * Convienence function to automatically start/stop the location middleware. This should be called
  * in the highest level component that still has access to the redux store.
  */
 export function manageLocationMiddleware(): void {

@@ -36,7 +36,7 @@ const vansApiSlice = apiSlice.injectEndpoints({
       query: () => "/vans/",
       async onCacheEntryAdded(
         _,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved },
       ) {
         // By coupling location tracking with the cached vans fetch results,
         // we can not only collate van information with location information,
