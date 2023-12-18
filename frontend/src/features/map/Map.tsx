@@ -128,6 +128,16 @@ const Map: React.FC<MapProps> = ({ insets }) => {
             </Marker>
           ) : null
         )}
+        {routes?.map((route, index) => (
+          <Polyline
+            key={index}
+            coordinates={route.waypoints}
+            strokeColor={Color.orecart.get(route.name)}
+            strokeWidth={4}
+            lineCap="round"
+            lineJoin="round"
+          />
+        ))}
         {stops?.map((stop, index) => (
           <Marker
             key={vans?.length ?? 0 + index}

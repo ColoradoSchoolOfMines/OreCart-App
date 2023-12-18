@@ -3,7 +3,7 @@ export default {
     tungsten: "#CC4628",
     silver: "#879EC3",
     gold: "#F1B91A",
-    get: (name: string): string | null => {
+    get: (name: string): string | undefined => {
       switch (name) {
         case "Tungsten":
           return "#CC4628";
@@ -12,7 +12,7 @@ export default {
         case "Gold":
           return "#F1B91A";
         default:
-          return null;
+          return undefined;
       }
     },
   },
