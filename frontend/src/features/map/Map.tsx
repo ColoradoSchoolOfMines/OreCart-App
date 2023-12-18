@@ -9,6 +9,8 @@ import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
 import { type Coordinate } from "../location/locationSlice";
+import { type Route, useGetRoutesQuery } from "../routes/routesSlice";
+import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
 
 /**
@@ -74,6 +76,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
   };
 
   const { data: vans } = useGetVansQuery();
+  const { data: stops } = useGetStopsQuery();
 
   return (
     <View>
@@ -100,7 +103,14 @@ const Map: React.FC<MapProps> = ({ insets }) => {
               tracksViewChanges={false}
               anchor={{ x: 0.5, y: 0.5 }}
             >
-              <View style={styles.vanMarker}>
+              <View
+                style={[
+                  styles.marker,
+                  {
+                    backgroundColor: Color.orecart.tungsten,
+                  },
+                ]}
+              >
                 <MaterialIcons
                   name="local-shipping"
                   size={24}
@@ -108,8 +118,29 @@ const Map: React.FC<MapProps> = ({ insets }) => {
                 />
               </View>
             </Marker>
-          ) : null,
+          ) : null
         )}
+        {stops?.map((stop, index) => (
+          <Marker
+            key={vans?.length ?? 0 + index}
+            coordinate={stop}
+            tracksViewChanges={false}
+            anchor={{ x: 0.5, y: 0.5 }}
+          >
+            <View
+              style={[
+                styles.marker,
+                { backgroundColor: Color.orecart.tungsten },
+              ]}
+            >
+              <MaterialIcons
+                name="hail"
+                size={24}
+                color={Color.generic.white}
+              />
+            </View>
+          </Marker>
+        ))}
       </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View
@@ -148,12 +179,10 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "flex-end",
   },
-  vanMarker: {
+  marker: {
     backgroundColor: Color.orecart.tungsten,
     borderRadius: 100,
     padding: 4,
-    width: 32,
-    height: 32,
   },
 });
 
