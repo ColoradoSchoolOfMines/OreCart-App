@@ -19,6 +19,23 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
-
+  backend:
+    container_name: orecart-backend
+    build: ./backend
+    restart: always
+    ports:
+      - 8000:8000
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@database:5432/postgres
+  frontend-admin:
+    container_name: orecart-frontend-admin
+    build: ./frontend-admin
+    restart: always
+    ports:
+      - 5173:5173
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_ADMIN_URL=http://localhost:3000
+      - REACT_APP_ADMIN=true
 volumes:
   orecart-db-volume: {}
