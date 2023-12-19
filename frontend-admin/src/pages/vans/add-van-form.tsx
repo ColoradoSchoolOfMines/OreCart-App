@@ -1,6 +1,17 @@
+import { useQuery } from '@tanstack/react-query';
+import { Route } from '../routes/route-types.tsx';
 import { AddVanFormProps, VanData } from './van-types.tsx';
 
+const fetchRoutes = async () => {
+    const response = await fetch('http://localhost:8000/routes/');
+    const data = await response.json();
+    const route_data = data as Route[];
+    return route_data;
+}
+  
 const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit, onCancel }) => {
+    const { data: routes, isLoading, error } = useQuery({ queryKey: ['routes'], queryFn: fetchRoutes });
+
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
@@ -21,7 +32,15 @@ const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit, onCancel }) => {
         <form onSubmit={handleSubmit}>
             <label>
             Route ID:
-            <input type="number" name="routeId" required />
+            {routes?.length === 0 ? (
+                <p>No routes available</p>
+            ) : (
+                <select name="number" id="routeId" required>
+                    {routes?.map((route: Route) => (
+                        <option key={route.id} value={route.id}>{route.name} ({route.id})</option>
+                    ))}
+                </select>
+            )}
             </label>
             <br />
             <label>
