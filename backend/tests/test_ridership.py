@@ -4,7 +4,11 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from src.handlers.ridership import post_ridership_stats, get_ridership, RidershipFilterModel
+from src.handlers.ridership import (
+    RidershipFilterModel,
+    get_ridership,
+    post_ridership_stats,
+)
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
 from src.model.route import Route
@@ -174,38 +178,183 @@ async def test_post_ridership_stats_not_most_recent(mock_route_args, mock_van_mo
     assert e.value.error_code == HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
     assert mock_route_args.session.query(Analytics).filter_by(datetime=now).count() == 0
 
+
 @pytest.mark.parametrize(
     "filter_params, expected_count",
     [
-        (RidershipFilterModel(route_id=None, van_id=None, start_timestamp=None, end_timestamp=None), 10),  # No filters, expect all records
-        (RidershipFilterModel(route_id=1, van_id=None, start_timestamp=None, end_timestamp=None), 5),  # Filter by route_id
-        (RidershipFilterModel(route_id=None, van_id=1, start_timestamp=None, end_timestamp=None), 5),  # Filter by van_id
-        (RidershipFilterModel(route_id=None, van_id=None, start_timestamp=int(datetime(2022, 1, 1).timestamp()), end_timestamp=None), 10),  # Filter by start_date
-        (RidershipFilterModel(route_id=None, van_id=None, start_timestamp=None, end_timestamp=int(datetime(2022, 1, 6).timestamp())), 10),  # Filter by end_date
         (
-            RidershipFilterModel(route_id=1, van_id=1, start_timestamp=int(datetime(2022, 1, 1).timestamp()), end_timestamp=int(datetime(2022, 1, 6).timestamp())),
+            RidershipFilterModel(
+                route_id=None, van_id=None, start_timestamp=None, end_timestamp=None
+            ),
+            10,
+        ),  # No filters, expect all records
+        (
+            RidershipFilterModel(
+                route_id=1, van_id=None, start_timestamp=None, end_timestamp=None
+            ),
+            5,
+        ),  # Filter by route_id
+        (
+            RidershipFilterModel(
+                route_id=None, van_id=1, start_timestamp=None, end_timestamp=None
+            ),
+            5,
+        ),  # Filter by van_id
+        (
+            RidershipFilterModel(
+                route_id=None,
+                van_id=None,
+                start_timestamp=int(datetime(2022, 1, 1).timestamp()),
+                end_timestamp=None,
+            ),
+            10,
+        ),  # Filter by start_date
+        (
+            RidershipFilterModel(
+                route_id=None,
+                van_id=None,
+                start_timestamp=None,
+                end_timestamp=int(datetime(2022, 1, 6).timestamp()),
+            ),
+            10,
+        ),  # Filter by end_date
+        (
+            RidershipFilterModel(
+                route_id=1,
+                van_id=1,
+                start_timestamp=int(datetime(2022, 1, 1).timestamp()),
+                end_timestamp=int(datetime(2022, 1, 6).timestamp()),
+            ),
             5,
         ),  # Filter by all parameters
-        (RidershipFilterModel(route_id=99, van_id=None, start_timestamp=None, end_timestamp=None), 0),  # Filter by non-existent route_id
-        (RidershipFilterModel(route_id=None, van_id=99, start_timestamp=None, end_timestamp=None), 0),  # Filter by non-existent van_id
-        (RidershipFilterModel(route_id=None, van_id=None, start_timestamp=int(datetime(2023, 1, 1).timestamp()), end_timestamp=None), 0),  # Filter by future start_date
-        (RidershipFilterModel(route_id=None, van_id=None, start_timestamp=None, end_timestamp=int(datetime(2021, 1, 1).timestamp())), 0),  # Filter by past end_date
+        (
+            RidershipFilterModel(
+                route_id=99, van_id=None, start_timestamp=None, end_timestamp=None
+            ),
+            0,
+        ),  # Filter by non-existent route_id
+        (
+            RidershipFilterModel(
+                route_id=None, van_id=99, start_timestamp=None, end_timestamp=None
+            ),
+            0,
+        ),  # Filter by non-existent van_id
+        (
+            RidershipFilterModel(
+                route_id=None,
+                van_id=None,
+                start_timestamp=int(datetime(2023, 1, 1).timestamp()),
+                end_timestamp=None,
+            ),
+            0,
+        ),  # Filter by future start_date
+        (
+            RidershipFilterModel(
+                route_id=None,
+                van_id=None,
+                start_timestamp=None,
+                end_timestamp=int(datetime(2021, 1, 1).timestamp()),
+            ),
+            0,
+        ),  # Filter by past end_date
     ],
 )
 def test_get_ridership(mock_route_args, filter_params, expected_count):
     # Arrange
-    mock_route_args.session.add_all([
-        Analytics(van_id=1, route_id=1, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 2, tzinfo=timezone.utc)),
-        Analytics(van_id=1, route_id=1, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 3, tzinfo=timezone.utc)),
-        Analytics(van_id=1, route_id=1, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 4, tzinfo=timezone.utc)),
-        Analytics(van_id=1, route_id=1, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 5, tzinfo=timezone.utc)),
-        Analytics(van_id=1, route_id=1, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 6, tzinfo=timezone.utc)),
-        Analytics(van_id=2, route_id=2, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 2, tzinfo=timezone.utc)),
-        Analytics(van_id=2, route_id=2, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 3, tzinfo=timezone.utc)),
-        Analytics(van_id=2, route_id=2, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 4, tzinfo=timezone.utc)),
-        Analytics(van_id=2, route_id=2, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 5, tzinfo=timezone.utc)),
-        Analytics(van_id=2, route_id=2, entered=1, exited=1, lat=37.7749, lon=-122.4194, datetime=datetime(2022, 1, 6, tzinfo=timezone.utc)),
-    ])
+    mock_route_args.session.add_all(
+        [
+            Analytics(
+                van_id=1,
+                route_id=1,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 2, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=1,
+                route_id=1,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 3, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=1,
+                route_id=1,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 4, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=1,
+                route_id=1,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 5, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=1,
+                route_id=1,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 6, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=2,
+                route_id=2,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 2, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=2,
+                route_id=2,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 3, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=2,
+                route_id=2,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 4, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=2,
+                route_id=2,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 5, tzinfo=timezone.utc),
+            ),
+            Analytics(
+                van_id=2,
+                route_id=2,
+                entered=1,
+                exited=1,
+                lat=37.7749,
+                lon=-122.4194,
+                datetime=datetime(2022, 1, 6, tzinfo=timezone.utc),
+            ),
+        ]
+    )
     mock_route_args.session.commit()
 
     response = get_ridership(mock_route_args.req, filter_params)

@@ -4,7 +4,7 @@ Routes for tracking ridership statistics.
 
 import struct
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional, Dict, Union
+from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse

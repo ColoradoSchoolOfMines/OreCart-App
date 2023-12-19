@@ -1,20 +1,14 @@
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
 
 import pytest
 
-from src.handlers.stops import (
-    StopModel,
-    get_stops,
-    get_stop,
-    create_stop,
-    update_stop,
-)
-from src.model.stop import Stop
+from src.handlers.stops import StopModel, create_stop, get_stop, get_stops, update_stop
+from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_stop import RouteStop
+from src.model.stop import Stop
 from src.model.stop_disable import StopDisable
-from src.model.alert import Alert
 
 
 @pytest.fixture
