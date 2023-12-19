@@ -1,19 +1,3 @@
-export type RequestState<T> = Ok<T> | Error | Loading;
-
-interface Ok<T> {
-  type: "ok";
-  data: T;
-}
-
-interface Error {
-  type: "error";
-  message: string;
-}
-
-interface Loading {
-  type: "loading";
-}
-
 function getApiUrl(): string {
   if (process.env.EXPO_PUBLIC_API_URL == null) {
     throw new Error("API URL not set");
