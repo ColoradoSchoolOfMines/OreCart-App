@@ -23,7 +23,6 @@ jobs:
         working-directory: ./backend
       - run: mypy ./
         working-directory: ./backend
-      - run: pylint --rcfile ./pylintrc -E ./
-        working-directory: ./backend
+      - run: pylint --rcfile ./backend/pylintrc -E ./backend
       - run: pytest ./
         working-directory: ./backend
