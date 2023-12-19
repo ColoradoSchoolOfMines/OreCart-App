@@ -143,10 +143,10 @@ def subscribe_locations(req: Request) -> StreamingResponse:
 
 @router.get("/location/{van_id}")
 def get_location(req: Request, van_id: int) -> JSONResponse:
-    if van_id not in req.app.state.van_locations:
-        raise HTTPException(detail="Van not found", status_code=404)
+    # if van_id not in req.app.state.van_locations:
+    #     raise HTTPException(detail="Van not found", status_code=404)
 
-    location = req.app.state.memcache_client.get(van_id)
+    location = req.app.state.memcache_client.get(str(van_id))
     
     location_json = {
         "timestamp": int(location.timestamp.timestamp()),
@@ -158,12 +158,12 @@ def get_location(req: Request, van_id: int) -> JSONResponse:
 
 @router.get("/location/{van_id}/subscribe", response_class=Response)
 def subscribe_location(req: Request, van_id: int) -> StreamingResponse:
-    if van_id not in req.app.state.van_locations:
-        raise HTTPException(detail="Van not found", status_code=404)
+    # if van_id not in req.app.state.van_locations:
+    #     raise HTTPException(detail="Van not found", status_code=404)
 
     async def generator():
         while True:
-            location = req.app.state.memcache_client.get(van_id)
+            location = req.app.state.memcache_client.get(str(van_id))
             location_json = {
                 "timestamp": int(location.timestamp.timestamp()),
                 "latitude": location.latitude,
@@ -207,7 +207,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
         )
 
-    req.app.state.memcache_client.set(van_id, VanLocation(timestamp=timestamp, latitude=lat, longitude=lon), 60)
+    req.app.state.memcache_client.set(str(van_id), VanLocation(timestamp=timestamp, latitude=lat, longitude=lon), 60)
 
     return HardwareOKResponse()
 
