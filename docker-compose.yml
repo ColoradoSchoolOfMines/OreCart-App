@@ -19,6 +19,14 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
+  memcached:
+    container_name: orecart-memcached
+    image: memcached:alpine
+    restart: always
+    environment:
+         - MEMCACHED_CACHE_SIZE=64
+    ports:
+      - 11211:11211
   backend:
     container_name: orecart-backend
     build: ./backend

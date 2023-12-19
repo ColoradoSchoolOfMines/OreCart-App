@@ -146,12 +146,13 @@ def get_location(req: Request, van_id: int) -> JSONResponse:
     if van_id not in req.app.state.van_locations:
         raise HTTPException(detail="Van not found", status_code=404)
 
-    location = req.app.state.van_locations[van_id]
+    location = req.app.state.memcache_client.get(van_id)
+    
     location_json = {
         "timestamp": int(location.timestamp.timestamp()),
         "latitude": location.latitude,
         "longitude": location.longitude,
-    }
+    } if location is not None else {}
     return JSONResponse(content=location_json)
 
 
@@ -162,12 +163,12 @@ def subscribe_location(req: Request, van_id: int) -> StreamingResponse:
 
     async def generator():
         while True:
-            location = req.app.state.van_locations[van_id]
+            location = req.app.state.memcache_client.get(van_id)
             location_json = {
                 "timestamp": int(location.timestamp.timestamp()),
                 "latitude": location.latitude,
                 "longitude": location.longitude,
-            }
+            } if location is not None else {}
             # You can't yield a JSONResponse in a streaming response, roll it manually
             yield json.dumps(jsonable_encoder(location_json))
             await asyncio.sleep(2)
@@ -206,9 +207,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
         )
 
-    req.app.state.van_locations[van_id] = VanLocation(
-        timestamp=timestamp, latitude=lat, longitude=lon
-    )
+    req.app.state.memcache_client.set(van_id, VanLocation(timestamp=timestamp, latitude=lat, longitude=lon), 60)
 
     return HardwareOKResponse()
 

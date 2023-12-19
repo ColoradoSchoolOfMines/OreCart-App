@@ -1,4 +1,4 @@
-from cachetools import TTLCache
+import memcache
 from dotenv import load_dotenv
 from fastapi import FastAPI
 
@@ -21,4 +21,6 @@ app.include_router(vans.router)
 @app.on_event("startup")
 def startup_event():
     app.state.db = DBWrapper()
-    app.state.van_locations = TTLCache(maxsize=100, ttl=300)
+    app.state.memcache_client = memcache.Client([('127.0.0.1', 11211)])
+
+
