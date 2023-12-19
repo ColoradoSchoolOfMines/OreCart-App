@@ -147,12 +147,16 @@ def get_location(req: Request, van_id: int) -> JSONResponse:
     #     raise HTTPException(detail="Van not found", status_code=404)
 
     location = req.app.state.memcache_client.get(str(van_id))
-    
-    location_json = {
-        "timestamp": int(location.timestamp.timestamp()),
-        "latitude": location.latitude,
-        "longitude": location.longitude,
-    } if location is not None else {}
+
+    location_json = (
+        {
+            "timestamp": int(location.timestamp.timestamp()),
+            "latitude": location.latitude,
+            "longitude": location.longitude,
+        }
+        if location is not None
+        else {}
+    )
     return JSONResponse(content=location_json)
 
 
@@ -164,11 +168,15 @@ def subscribe_location(req: Request, van_id: int) -> StreamingResponse:
     async def generator():
         while True:
             location = req.app.state.memcache_client.get(str(van_id))
-            location_json = {
-                "timestamp": int(location.timestamp.timestamp()),
-                "latitude": location.latitude,
-                "longitude": location.longitude,
-            } if location is not None else {}
+            location_json = (
+                {
+                    "timestamp": int(location.timestamp.timestamp()),
+                    "latitude": location.latitude,
+                    "longitude": location.longitude,
+                }
+                if location is not None
+                else {}
+            )
             # You can't yield a JSONResponse in a streaming response, roll it manually
             yield json.dumps(jsonable_encoder(location_json))
             await asyncio.sleep(2)
@@ -180,6 +188,10 @@ def subscribe_location(req: Request, van_id: int) -> StreamingResponse:
 async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     # byte body: long for timestamp, double for lat, double for lon
     body = await req.body()
+
+    print(body)
+    print(len(body))
+
     timestamp, lat, lon = struct.unpack("!ldd", body)
     timestamp = datetime.fromtimestamp(timestamp, timezone.utc)
 
@@ -207,7 +219,9 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
         )
 
-    req.app.state.memcache_client.set(str(van_id), VanLocation(timestamp=timestamp, latitude=lat, longitude=lon), 60)
+    req.app.state.memcache_client.set(
+        str(van_id), VanLocation(timestamp=timestamp, latitude=lat, longitude=lon), 60
+    )
 
     return HardwareOKResponse()
 

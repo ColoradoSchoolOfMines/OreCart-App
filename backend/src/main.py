@@ -21,6 +21,4 @@ app.include_router(vans.router)
 @app.on_event("startup")
 def startup_event():
     app.state.db = DBWrapper()
-    app.state.memcache_client = memcache.Client([('127.0.0.1', 11211)])
-
-
+    app.state.memcache_client = memcache.Client([("127.0.0.1", 11211)])
