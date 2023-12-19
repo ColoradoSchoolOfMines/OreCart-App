@@ -9,7 +9,7 @@ import './vans-page.scss';
 const fetchVans = async () => {
   const response = await fetch('http://localhost:8000/vans/');
   const data = await response.json();
-  const van_data = data["vans"] as Van[];
+  const van_data = data["vans"] as Van[] || [];
   return van_data;
 };
 
