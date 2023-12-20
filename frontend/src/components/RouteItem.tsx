@@ -24,20 +24,11 @@ interface RouteItemProps {
  * A component that renders a single route item.
  */
 export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
-  const routeNameColorStyle = { color: Color.generic.black };
+  const routeNameColorStyle = {
+    color: Color.orecart.get(route.name) ?? Color.generic.black,
+  };
 
   // TODO: Remove as soon as we fetch colors from backend
-  switch (route.name) {
-    case "Tungsten":
-      routeNameColorStyle.color = Color.orecart.tungsten;
-      break;
-    case "Silver":
-      routeNameColorStyle.color = Color.orecart.silver;
-      break;
-    case "Gold":
-      routeNameColorStyle.color = Color.orecart.gold;
-      break;
-  }
 
   return (
     <TouchableHighlight

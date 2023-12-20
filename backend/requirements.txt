@@ -41,3 +41,4 @@ types-psycopg2==2.9.21.14
 typing_extensions==4.8.0
 uvicorn==0.23.2
 wrapt==1.15.0
+websockets==12.0
