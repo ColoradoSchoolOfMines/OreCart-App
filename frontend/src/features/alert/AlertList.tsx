@@ -1,70 +1,81 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableHighlight, FlatList } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableHighlight,
+  FlatList,
+} from "react-native";
 
-import { type Alert, useGetActiveAlertsQuery } from "./alertSlice";
+import Spacer from "../../common/components/Spacer";
+import Color from "../../common/style/color";
 
-const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+import AlertItem from "./AlertItem";
+import { useGetActiveAlertsQuery } from "./alertSlice";
 
+/**
+ * A component that renders a collapsible list of active alerts.
+ */
 const AlertList: React.FC = () => {
-  const [expanded, setExpanded] = useState(false);
   const alerts = useGetActiveAlertsQuery().data;
-  
-  const alertEndDates: Record<number, string> = {};
-  const now = new Date().getTime() / 1000
-  alerts?.forEach((alert: Alert) => {
-    // If more than a week, use the date
-    const endDate = new Date(alert.endDateTime * 1000);
-    if (alert.endDateTime - now > 60*60*24*7) {
-      alertEndDates[alert.id] = endDate.toLocaleDateString();
-    } else {
-      const endDate = new Date(alert.endDateTime * 1000);
-      alertEndDates[alert.id] = daysOfWeek[endDate.getDay()];
-    }
-    alertEndDates[alert.id] += " at " + endDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-  });
+  const [expanded, setExpanded] = useState(false);
 
   if (alerts === undefined || alerts.length === 0) {
     return null;
   }
 
+  // It would be best to reduce the friction of the user having to expand the component
+  // if there is just one alert, as we have the space to show it in it's entirety
+  // (as we do later on in the component)
+  const expandable = alerts.length > 1;
+
   return (
     <View style={styles.spacing}>
       <TouchableHighlight
-        underlayColor={"#ED4B4B"}
-        onPress={() => {
-          setExpanded(!expanded);
-        }}
+        underlayColor={Color.alert.pressed}
+        onPress={
+          expandable
+            ? () => {
+                setExpanded((expanded) => !expanded);
+              }
+            : undefined
+        }
         style={styles.container}
       >
         <View>
           <View style={styles.headerContainer}>
             <Text style={styles.header}>Alert</Text>
-            <MaterialIcons name={expanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={20} color="#FFFFFF" />
+            {/* Indicate the expansion status with an icon, or hide it if we don't need to be expandable. */}
+            {expandable ? (
+              <MaterialIcons
+                name={expanded ? "keyboard-arrow-up" : "keyboard-arrow-down"}
+                size={24}
+                color={Color.generic.white}
+              />
+            ) : null}
           </View>
-          {expanded ? (
-              <FlatList
+          {/*  */}
+          {expanded && expandable ? (
+            <FlatList
               data={alerts}
               style={styles.alertsContainer}
-              renderItem={
-                ({ item }) => (
-                  <View key={item.id} style={styles.alertContainer}>
-                    <Text style={styles.alertText}>{item.text}</Text>
-                    <Text style={styles.alertSubtext}>Ends on <Text>{alertEndDates[item.id]}</Text></Text>
-                  </View>
-                )
-              }
+              renderItem={({ item }) => (
+                /* Want to put the alert information into a container to differentiate it from others */
+                <AlertItem style={styles.elevatedAlertContainer} alert={item} />
+              )}
               keyExtractor={(item) => item.id.toString()}
-              ItemSeparatorComponent={() => <View style={{height: 8}} />} />
-          ) : 
-            (alerts.length === 1 ?
-              
-              <View>
-                <Text style={styles.alertText}>{alerts[0].text}</Text>
-                <Text style={styles.alertSubtext}>Ends on <Text>{alertEndDates[alerts[0].id]}</Text></Text>
-              </View>
-            : <Text style={styles.alertText}>{`${alerts.length} active alerts`}</Text>)
-          }
+              ItemSeparatorComponent={Spacer}
+            />
+          ) : /* If there's just one alert, resulting in the component not being expandable,
+          we would want to show it in full rather than require the user to expand it, given that we have the space. */
+          expandable ? (
+            <Text
+              style={styles.alertText}
+            >{`${alerts.length} currently active`}</Text>
+          ) : (
+            <AlertItem alert={alerts[0]} />
+          )}
         </View>
       </TouchableHighlight>
     </View>
@@ -78,7 +89,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 16,
-    backgroundColor: "#FF5151",
+    backgroundColor: Color.alert.primary,
     borderRadius: 16,
   },
   headerContainer: {
@@ -93,21 +104,17 @@ const styles = StyleSheet.create({
   header: {
     fontSize: 20,
     fontWeight: "bold",
-    color: "#FFFFFF",
+    color: Color.generic.white,
   },
-  alertContainer: {
-    backgroundColor: "#FF7575",
-    borderRadius: 8,
+  elevatedAlertContainer: {
     padding: 8,
+    backgroundColor: Color.alert.elevated,
+    borderRadius: 8,
   },
   alertText: {
     fontSize: 16,
-    color: "#FFFFFF",
+    color: Color.generic.white,
   },
-  alertSubtext: {
-    color: "#FFFFFF",
-    fontStyle: "italic"
-  }
 });
 
 export default AlertList;
