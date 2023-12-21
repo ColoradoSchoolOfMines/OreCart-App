@@ -12,6 +12,7 @@ import { manageLocationMiddleware } from "../features/location/locationMiddlewar
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
 import RouteList from "../features/routes/RouteList";
+import AlertList from "../features/alert/AlertList";
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in
@@ -61,6 +62,7 @@ const Main: React.FC<ViewProps> = () => {
         </View>
         {/* Must inset bottom sheet down by the drawer button (16 + 8 + 48 + 8 + 16) */}
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
+          <AlertList />
           <RouteList />
         </Sheet>
       </GestureHandlerRootView>
