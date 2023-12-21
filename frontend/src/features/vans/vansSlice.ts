@@ -59,7 +59,7 @@ const vansApiSlice = apiSlice.injectEndpoints({
 
         const errorListener = (event: Event): void => {
           console.error("Unable to track van location", event);
-        }
+        };
 
         try {
           await cacheDataLoaded;
@@ -68,7 +68,9 @@ const vansApiSlice = apiSlice.injectEndpoints({
         } catch {
           // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
           // in which case `cacheDataLoaded` will throw
-          console.error("Cache entry removed before cache data loaded, ignoring");
+          console.error(
+            "Cache entry removed before cache data loaded, ignoring",
+          );
         }
 
         await cacheEntryRemoved;
