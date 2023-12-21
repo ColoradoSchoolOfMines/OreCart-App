@@ -11,6 +11,8 @@ export type Alerts = Alert[]
 export interface Alert {
   id: number
   text: string
+  startDateTime: number
+  endDateTime: number
 }
 
 // --- API Definition ---
