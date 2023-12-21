@@ -44,28 +44,37 @@ const vansApiSlice = apiSlice.injectEndpoints({
         // is removed.
         const ws = new WebSocket(vanLocationApiUrl);
 
-        try {
-          await cacheDataLoaded;
-
-          const locationListener = (event: MessageEvent): void => {
-            const locations: VanLocations = JSON.parse(event.data);
-            updateCachedData((vans) => {
-              for (const vanId in locations) {
-                // Need to convert from the stringed JSON IDs to numbered ones.
-                const id = parseInt(vanId);
+        const locationListener = (event: MessageEvent): void => {
+          const locations: VanLocations = JSON.parse(event.data);
+          updateCachedData((vans) => {
+            for (const vanId in locations) {
+              // Need to convert from the stringed JSON IDs to numbered ones.
+              const id = parseInt(vanId, 10);
+              if (id in vans) {
                 vans[id].location = locations[vanId];
               }
-            });
-          };
+            }
+          });
+        };
 
+        const errorListener = (event: Event): void => {
+          console.error("Unable to track van location", event);
+        }
+
+        try {
+          await cacheDataLoaded;
           ws.addEventListener("message", locationListener);
+          ws.addEventListener("error", errorListener);
         } catch {
           // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
           // in which case `cacheDataLoaded` will throw
+          console.error("Cache entry removed before cache data loaded, ignoring");
         }
 
         await cacheEntryRemoved;
         ws.close();
+        ws.removeEventListener("message", locationListener);
+        ws.removeEventListener("error", errorListener);
       },
       providesTags: ["Vans"],
     }),
