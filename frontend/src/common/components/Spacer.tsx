@@ -1,5 +1,5 @@
-import React from 'react';
-import { View } from 'react-native';
+import React from "react";
+import { View } from "react-native";
 
 /**
  * A transparent spacer that can be used to divide elements in a list. Always use this

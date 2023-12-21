@@ -1,9 +1,4 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  type ViewProps,
-} from "react-native";
+import { View, Text, StyleSheet, type ViewProps } from "react-native";
 
 import Color from "../../common/style/color";
 

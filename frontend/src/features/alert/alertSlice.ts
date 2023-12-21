@@ -1,18 +1,18 @@
-import apiSlice from "../../app/apiSlice"
+import apiSlice from "../../app/apiSlice";
 
 /**
  * A list of alerts, as defined by the backend.
  */
-export type Alerts = Alert[]
+export type Alerts = Alert[];
 
 /**
  * An alert, as defined by the backend.
  */
 export interface Alert {
-  id: number
-  text: string
-  startDateTime: number
-  endDateTime: number
+  id: number;
+  text: string;
+  startDateTime: number;
+  endDateTime: number;
 }
 
 // --- API Definition ---
@@ -28,10 +28,10 @@ const alertsApiSlice = apiSlice.injectEndpoints({
       query: () => "/alerts/?active=true",
       providesTags: ["Alerts"],
     }),
-  })
-})
+  }),
+});
 
 /**
  * Hook for querying the list of active alerts.
  */
-export const { useGetActiveAlertsQuery } = alertsApiSlice
+export const { useGetActiveAlertsQuery } = alertsApiSlice;

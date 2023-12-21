@@ -8,11 +8,11 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FloatingButton from "../common/components/FloatingButton";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
+import AlertList from "../features/alert/AlertList";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
 import RouteList from "../features/routes/RouteList";
-import AlertList from "../features/alert/AlertList";
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in

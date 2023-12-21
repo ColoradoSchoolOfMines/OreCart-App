@@ -43,6 +43,6 @@ export default {
   alert: {
     primary: "#FF5151",
     pressed: "#ED4B4B",
-    elevated: "#FF7575"
-  }
+    elevated: "#FF7575",
+  },
 };
