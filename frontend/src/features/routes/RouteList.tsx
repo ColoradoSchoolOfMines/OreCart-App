@@ -1,4 +1,3 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React from "react";
 import {
   FlatList,
@@ -9,43 +8,46 @@ import {
   TouchableHighlight,
 } from "react-native";
 
-import Divider from "../components/Divider";
-import { RouteItem, RouteItemSkeleton } from "../components/RouteItem";
-import SkeletonList from "../components/SkeletonList";
-import { getRoutes } from "../services/routes";
-import Color from "../style/color";
-import LayoutStyle from "../style/layout";
+import Divider from "../../common/components/Divider";
+import SkeletonList from "../../common/components/SkeletonList";
+import Color from "../../common/style/color";
+import LayoutStyle from "../../common/style/layout";
+
+import { RouteItem, RouteItemSkeleton } from "./RouteItem";
+import { useGetRoutesQuery } from "./routesSlice";
 
 /**
  * Screen that displays a list of routes.
  */
 const RouteList: React.FC<ViewProps> = () => {
-  const queryClient = useQueryClient();
-  const query = useQuery({ queryKey: ["routes"], queryFn: getRoutes });
+  const {
+    data: routes,
+    isLoading,
+    isSuccess,
+    isError,
+    refetch,
+  } = useGetRoutesQuery();
 
   function retry(): void {
-    queryClient
-      .invalidateQueries({ queryKey: ["routes"] })
-      .then(async () => await query.refetch())
-      .catch(console.error);
+    refetch().catch(console.error);
   }
 
   return (
     <View style={[LayoutStyle.fill]}>
-      {query.isLoading ? (
+      {isLoading ? (
         <SkeletonList
           style={styles.routeContainer}
           generator={() => <RouteItemSkeleton />}
         />
-      ) : query.isSuccess ? (
+      ) : isSuccess ? (
         <FlatList
           style={styles.routeContainer}
-          data={query.data}
+          data={routes}
           renderItem={({ item }) => <RouteItem route={item} />}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={Divider}
         />
-      ) : query.isError ? (
+      ) : isError ? (
         <View style={styles.loadingContainer}>
           <Text style={styles.header}>
             We couldn't fetch the routes right now. Try again later.

@@ -5,12 +5,13 @@ import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import FloatingButton from "./components/FloatingButton";
-import Map from "./components/Map";
-import Sheet from "./components/Sheet";
-import RouteList from "./screens/RouteList";
-import LayoutStyle from "./style/layout";
-import SpacingStyle from "./style/spacing";
+import FloatingButton from "../common/components/FloatingButton";
+import LayoutStyle from "../common/style/layout";
+import SpacingStyle from "../common/style/spacing";
+import { manageLocationMiddleware } from "../features/location/locationMiddleware";
+import Map from "../features/map/Map";
+import Sheet from "../features/navigation/Sheet";
+import RouteList from "../features/routes/RouteList";
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in
@@ -29,6 +30,8 @@ const Main: React.FC<ViewProps> = () => {
   const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
   const insets = useSafeAreaInsets();
   const drawerInsets = { top: insets.top };
+
+  manageLocationMiddleware();
 
   return (
     <Drawer

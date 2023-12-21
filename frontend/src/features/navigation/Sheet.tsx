@@ -3,7 +3,7 @@ import React from "react";
 import { type ViewProps, StyleSheet, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Color from "../style/color";
+import Color from "../../common/style/color";
 
 /**
  * The props for the {@interface Sheet} component.

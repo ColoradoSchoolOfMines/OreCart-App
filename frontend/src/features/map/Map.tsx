@@ -1,15 +1,15 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { type Coordinate } from "../services/location";
-import Color from "../style/color";
-import LayoutStyle from "../style/layout";
-import SpacingStyle, { type Insets } from "../style/spacing";
-
-import FloatingButton from "./FloatingButton";
+import FloatingButton from "../../common/components/FloatingButton";
+import Color from "../../common/style/color";
+import LayoutStyle from "../../common/style/layout";
+import SpacingStyle, { type Insets } from "../../common/style/spacing";
+import { type Coordinate } from "../location/locationSlice";
+import { useGetVansQuery } from "../vans/vansSlice";
 
 /**
  * The props for the {@interface Map} component.
@@ -63,29 +63,6 @@ const Map: React.FC<MapProps> = ({ insets }) => {
     });
   }
 
-  const [vanMarkers, setVanMarkers] = useState<Coordinate[]>([]);
-
-  useEffect(() => {
-    const ws = new WebSocket(
-      "ws://" +
-        process.env.EXPO_PUBLIC_API_DOMAIN +
-        "/vans/location/subscribe/",
-    );
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      const coordinates: Coordinate[] = [];
-      for (const key in data) {
-        coordinates.push(data[key]);
-      }
-      setVanMarkers(coordinates);
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, []);
-
   // Combine given insets with the status bar height to ensure that the map
   // is fully in-bounds.
   const safeAreaInsets = useSafeAreaInsets();
@@ -95,6 +72,8 @@ const Map: React.FC<MapProps> = ({ insets }) => {
     bottom: insets?.bottom ?? 0 + safeAreaInsets.bottom,
     right: insets?.right ?? 0 + safeAreaInsets.right,
   };
+
+  const { data: vans } = useGetVansQuery();
 
   return (
     <View>
@@ -113,22 +92,24 @@ const Map: React.FC<MapProps> = ({ insets }) => {
           updateLocation(event.nativeEvent.coordinate);
         }}
       >
-        {vanMarkers.map((coordinate, index) => (
-          <Marker
-            key={index}
-            coordinate={coordinate}
-            tracksViewChanges={false}
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
-            <View style={styles.vanMarker}>
-              <MaterialIcons
-                name="local-shipping"
-                size={24}
-                color={Color.generic.white}
-              />
-            </View>
-          </Marker>
-        ))}
+        {vans?.map((van, index) =>
+          van.location !== undefined ? (
+            <Marker
+              key={index}
+              coordinate={van.location}
+              tracksViewChanges={false}
+              anchor={{ x: 0.5, y: 0.5 }}
+            >
+              <View style={styles.vanMarker}>
+                <MaterialIcons
+                  name="local-shipping"
+                  size={24}
+                  color={Color.generic.white}
+                />
+              </View>
+            </Marker>
+          ) : null,
+        )}
       </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View

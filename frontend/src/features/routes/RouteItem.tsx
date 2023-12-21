@@ -9,8 +9,9 @@ import {
   Dimensions,
 } from "react-native";
 
-import { type Route } from "../services/routes";
-import Color from "../style/color";
+import Color from "../../common/style/color";
+
+import { type Route } from "./routesSlice";
 
 /**
  * The props for the {@interface RouteItem} component.
