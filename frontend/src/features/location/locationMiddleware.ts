@@ -25,6 +25,10 @@ let locationSubscription: Location.LocationSubscription | null = null;
 // immediately unsubscribes and frees the subscription. This way, we can stop tracking location as soon as the
 // app is no longer visible.
 
+// We will need to track two events: When the app starts location tracking, and when it stops it. Each startListening
+// call listens for one of these events and performs the appropriate action.
+
+// Listen for when location tracking starts
 locationMiddleware.startListening({
   // actionCreator specifies the action that when dispatched will trigger the
   // code below.
@@ -64,6 +68,7 @@ locationMiddleware.startListening({
   },
 });
 
+// Listen for when location tracking stops
 locationMiddleware.startListening({
   // actionCreator specifies the action that when dispatched will trigger the
   // code below.
