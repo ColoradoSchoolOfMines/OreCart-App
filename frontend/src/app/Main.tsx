@@ -10,6 +10,7 @@ import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
 import AlertList from "../features/alert/AlertList";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
+import LocationPermissionPrompt from "../features/location/LocationPermissionPrompt";
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
 import RouteList from "../features/routes/RouteList";
@@ -62,6 +63,7 @@ const Main: React.FC<ViewProps> = () => {
         </View>
         {/* Must inset bottom sheet down by the drawer button (16 + 8 + 48 + 8 + 16) */}
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
+          <LocationPermissionPrompt />
           <AlertList />
           <RouteList />
         </Sheet>
