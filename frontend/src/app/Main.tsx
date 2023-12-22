@@ -47,28 +47,36 @@ const Main: React.FC<ViewProps> = () => {
       renderDrawerContent={() => {
         return (
           <View style={SpacingStyle.pad(drawerInsets, 16)}>
-            <TouchableOpacity onPress={()=>{}}>
+            <TouchableOpacity onPress={()=>{
+              setOpen(false);
+            }}>
                 <View style={styles.drawerItem}>
                   <MaterialIcons name="accessible" size={24} color="black" /> 
                   <Text style={styles.drawerItemText}>ADA Ride Request</Text>
                 </View>
             </TouchableOpacity>
             
-            <TouchableOpacity onPress={()=>{}}>
+            <TouchableOpacity onPress={()=>{
+              setOpen(false);
+            }}>
                 <View style={styles.drawerItem}>
                   <MaterialIcons name="error-outline" size={24} color="black" /> 
                   <Text style={styles.drawerItemText}>Upcoming Outages</Text>
                 </View>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={()=>{}}>
+            <TouchableOpacity onPress={()=>{
+              setOpen(false);
+            }}>
                 <View style={styles.drawerItem}>
                   <MaterialIcons name="settings" size={24} color="black" /> 
                   <Text style={styles.drawerItemText}>Settings</Text>
                 </View>
             </TouchableOpacity>
   
-            <TouchableOpacity onPress={()=>{}}>
+            <TouchableOpacity onPress={()=>{
+              setOpen(false);
+            }}>
                 <View style={styles.drawerItem}>
                   <MaterialIcons name="bug-report" size={24} color="black" /> 
                   <Text style={styles.drawerItemText}>Bug Report</Text>
