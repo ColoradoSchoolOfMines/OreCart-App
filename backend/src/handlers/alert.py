@@ -51,6 +51,7 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
 
     alert_json: Dict[str, Union[str, int]] = {
+        "id": alert.id,
         "text": alert.text,
         "startDateTime": int(alert.start_datetime.timestamp()),
         "endDateTime": int(alert.end_datetime.timestamp()),

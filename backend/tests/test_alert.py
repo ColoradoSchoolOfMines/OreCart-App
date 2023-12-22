@@ -61,6 +61,7 @@ def test_get_alerts(mock_route_args, mock_alerts):
     # Assert
     assert response == [
         {
+            "id": mock_alert.id,
             "text": mock_alert.text,
             "startDateTime": int(mock_alert.start_datetime.timestamp()),
             "endDateTime": int(mock_alert.end_datetime.timestamp()),
@@ -78,6 +79,7 @@ def test_get_alert(mock_route_args, mock_alerts):
 
     # Assert
     assert response == {
+        "id": mock_alert.id,
         "text": "Alert 1",
         "startDateTime": int(mock_alerts[0].start_datetime.timestamp()),
         "endDateTime": int(mock_alerts[0].end_datetime.timestamp()),
