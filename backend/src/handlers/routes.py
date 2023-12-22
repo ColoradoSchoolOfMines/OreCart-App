@@ -175,19 +175,21 @@ async def create_route(
     with req.app.state.db.session() as session:
         route = Route(name=name)
         session.add(route)
+        session.commit()
 
         if kml:
             contents = await kml.read()
 
-            latlons = kml_to_waypoints(contents)
+            latlons = kml_to_waypoints(contents)[:-1]
 
             for latlon in latlons:
+                print(latlon)
                 waypoint = Waypoint(route_id=route.id, lat=latlon[0], lon=latlon[1])
                 session.add(waypoint)
 
             await kml.close()
 
-        session.commit()
+            session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
 
@@ -224,7 +226,7 @@ async def patch_route(
 
             contents = await kml.read()
 
-            latlons = kml_to_waypoints(contents)
+            latlons = kml_to_waypoints(contents)[:-1]
 
             for latlon in latlons:
                 waypoint = Waypoint(route_id=route_id, lat=latlon[0], lon=latlon[1])
