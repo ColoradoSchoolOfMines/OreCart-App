@@ -33,7 +33,7 @@ const AlertList: React.FC = () => {
   return (
     <View style={styles.spacing}>
       <TouchableHighlight
-        underlayColor={Color.alert.pressed}
+        underlayColor={Color.generic.alert.pressed}
         onPress={
           expandable
             ? () => {
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 16,
-    backgroundColor: Color.alert.primary,
+    backgroundColor: Color.generic.alert.primary,
     borderRadius: 16,
   },
   headerContainer: {
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   },
   elevatedAlertContainer: {
     padding: 8,
-    backgroundColor: Color.alert.elevated,
+    backgroundColor: Color.generic.alert.elevated,
     borderRadius: 8,
   },
   alertText: {

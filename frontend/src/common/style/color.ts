@@ -39,10 +39,10 @@ export default {
     selection: "#EEEEEE",
     skeleton: "#DDDDDD",
     location: "#148D00",
-  },
-  alert: {
-    primary: "#FF5151",
-    pressed: "#ED4B4B",
-    elevated: "#FF7575",
+    alert: {
+      primary: "#FF5151",
+      pressed: "#ED4B4B",
+      elevated: "#FF7575",
+    },
   },
 };
