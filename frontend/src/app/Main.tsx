@@ -31,7 +31,7 @@ const Main: React.FC<ViewProps> = () => {
   const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
   const insets = useSafeAreaInsets();
   const drawerInsets = { top: insets.top };
-  const expoVersion = Constants.expoVersion;
+  const expoVersion = Constants.expoConfig?.version;
 
   manageLocationMiddleware();
 
