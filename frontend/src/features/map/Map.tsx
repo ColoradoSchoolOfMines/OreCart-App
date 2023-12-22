@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import { StyleSheet, View, type ViewProps } from "react-native";
-import MapView, { PROVIDER_GOOGLE, Marker } from "react-native-maps";
+import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../../common/components/FloatingButton";
@@ -85,6 +85,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         showsMyLocationButton={false}
         mapPadding={padding}
         toolbarEnabled={false}
+        scrollEnabled={true}
         onPanDrag={() => {
           setFollowingLocation(false);
         }}
@@ -114,7 +115,6 @@ const Map: React.FC<MapProps> = ({ insets }) => {
       {/* Layer the location button on the map instead of displacing it. */}
       <View
         style={[
-          LayoutStyle.overlay,
           SpacingStyle.pad(padding, 16),
           styles.locationButtonContainer,
         ]}
@@ -145,8 +145,15 @@ const Map: React.FC<MapProps> = ({ insets }) => {
 
 const styles = StyleSheet.create({
   locationButtonContainer: {
-    justifyContent: "flex-end",
-    alignItems: "flex-end",
+    flexDirection: 'row',
+    position: 'absolute',
+    bottom: 10,
+    alignSelf: 'flex-end',
+    backgroundColor: 'transparent',
+    flex: 1,
+    justifyContent: "space-between",
+    borderWidth: 0.5,
+    borderRadius: 20
   },
   vanMarker: {
     backgroundColor: Color.orecart.tungsten,

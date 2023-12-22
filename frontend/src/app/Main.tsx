@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { View, Text, Dimensions, type ViewProps } from "react-native";
+import { Dimensions, Text, View, type ViewProps } from "react-native";
 import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
