@@ -79,7 +79,7 @@ def test_get_alert(mock_route_args, mock_alerts):
 
     # Assert
     assert response == {
-        "id": mock_alert.id,
+        "id": 1,
         "text": "Alert 1",
         "startDateTime": int(mock_alerts[0].start_datetime.timestamp()),
         "endDateTime": int(mock_alerts[0].end_datetime.timestamp()),
@@ -115,7 +115,7 @@ def test_update_alert(mock_route_args, mock_alert):
         end_datetime=mock_alert.end_datetime + timedelta(minutes=2),
     )
     new_alert_model = AlertModel(
-        text=new_mock_alert.text,
+        text="New Alert (updated)",
         start_time=int(new_mock_alert.start_datetime.timestamp()),
         end_time=int(new_mock_alert.end_datetime.timestamp()),
     )

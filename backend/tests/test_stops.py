@@ -243,14 +243,14 @@ def test_get_stop_no_includes(mock_route_args, mock_stops):
     mock_stop = mock_stops[0]
 
     # Act
-    response = get_stop(mock_route_args.req, mock_stop.id)
+    response = get_stop(mock_route_args.req, 1)
 
     # Assert
     assert response == {
-        "id": mock_stop.id,
-        "name": mock_stop.name,
-        "latitude": mock_stop.lat,
-        "longitude": mock_stop.lon,
+        "id": 1,
+        "name": "Stop 1",
+        "latitude": 52.5200,
+        "longitude": 13.4050,
     }
 
 
@@ -261,15 +261,15 @@ def test_get_stop_include_is_active_and_active(mock_route_args, mock_stops):
     mock_stop = mock_stops[0]
 
     # Act
-    response = get_stop(mock_route_args.req, mock_stop.id, ["isActive"])
+    response = get_stop(mock_route_args.req, 1, ["isActive"])
 
     # Assert
     assert response == {
-        "id": mock_stop.id,
-        "name": mock_stop.name,
-        "latitude": mock_stop.lat,
-        "longitude": mock_stop.lon,
-        "isActive": mock_stop.active,
+        "id": 1,
+        "name": "Stop 1",
+        "latitude": 52.5200,
+        "longitude": 13.4050,
+        "isActive": True,
     }
 
 
@@ -277,18 +277,16 @@ def test_get_stop_include_is_active_and_inactive(mock_route_args, mock_stops):
     mock_route_args.session.add_all(mock_stops)
     mock_route_args.session.commit()
 
-    mock_stop = mock_stops[1]
-
     # Act
-    response = get_stop(mock_route_args.req, mock_stop.id, ["isActive"])
+    response = get_stop(mock_route_args.req, 2, ["isActive"])
 
     # Assert
     assert response == {
-        "id": mock_stop.id,
-        "name": mock_stop.name,
-        "latitude": mock_stop.lat,
-        "longitude": mock_stop.lon,
-        "isActive": mock_stop.active,
+        "id": 2,
+        "name": "Stop 2",
+        "latitude": 48.8566,
+        "longitude": 2.3522,
+        "isActive": False,
     }
 
 
@@ -300,15 +298,15 @@ def test_get_stop_include_is_active_with_alert(mock_route_args, mock_stops, mock
     mock_stop = mock_stops[2]
 
     # Act
-    response = get_stop(mock_route_args.req, mock_stop.id, ["isActive"])
+    response = get_stop(mock_route_args.req, 3, ["isActive"])
 
     # Assert
     assert response == {
-        "id": mock_stop.id,
-        "name": mock_stop.name,
-        "latitude": mock_stop.lat,
-        "longitude": mock_stop.lon,
-        "isActive": mock_stop.active,
+        "id": 3,
+        "name": "Stop 3",
+        "latitude": 51.5074,
+        "longitude": 0.1278,
+        "isActive": True,
     }
 
 
@@ -320,17 +318,15 @@ def test_get_stop_include_is_active_with_alert_and_disables(
     mock_route_args.session.add_all(mock_stop_disables)
     mock_route_args.session.commit()
 
-    mock_stop = mock_stops[2]
-
     # Act
-    response = get_stop(mock_route_args.req, mock_stop.id, ["isActive"])
+    response = get_stop(mock_route_args.req, 3, ["isActive"])
 
     # Assert
     assert response == {
-        "id": mock_stop.id,
-        "name": mock_stop.name,
-        "latitude": mock_stop.lat,
-        "longitude": mock_stop.lon,
+        "id": 3,
+        "name": "Stop 3",
+        "latitude": 51.5074,
+        "longitude": 0.1278,
         "isActive": False,
     }
 
@@ -343,17 +339,15 @@ def test_get_stop_with_route_ids(
     mock_route_args.session.add_all(mock_route_stops)
     mock_route_args.session.commit()
 
-    mock_stop = mock_stops[1]
-
     # Act
-    response = get_stop(mock_route_args.req, mock_stop.id, ["routeIds"])
+    response = get_stop(mock_route_args.req, 2, ["routeIds"])
 
     # Assert
     assert response == {
-        "id": mock_stop.id,
-        "name": mock_stop.name,
-        "latitude": mock_stop.lat,
-        "longitude": mock_stop.lon,
+        "id": 2,
+        "name": "Stop 2",
+        "latitude": 48.8566,
+        "longitude": 2.3522,
         "routeIds": [2, 1],
     }
 
@@ -373,17 +367,15 @@ def test_get_stop_with_routeIds_and_isActive(
     mock_route_args.session.add_all(mock_stop_disables)
     mock_route_args.session.commit()
 
-    mock_stop = mock_stops[2]
-
     # Act
-    response = get_stop(mock_route_args.req, mock_stop.id, ["routeIds", "isActive"])
+    response = get_stop(mock_route_args.req, 3, ["routeIds", "isActive"])
 
     # Assert
     assert response == {
-        "id": mock_stop.id,
-        "name": mock_stop.name,
-        "latitude": mock_stop.lat,
-        "longitude": mock_stop.lon,
+        "id": 3,
+        "name": "Stop 3",
+        "latitude": 51.5074,
+        "longitude": 0.1278,
         "routeIds": [1],
         "isActive": False,
     }
