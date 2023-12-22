@@ -1,12 +1,13 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View, type ViewProps } from "react-native";
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import Constants from 'expo-constants';
 import FloatingButton from "../common/components/FloatingButton";
+import { MainScreenProps } from "../common/navTypes";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
@@ -23,7 +24,7 @@ const SHEET_EXTENT = 0.5;
 /**
  * The main screen containing the map and sheet components.
  */
-const Main: React.FC<ViewProps> = () => {
+const Main = ({ route, navigation }: MainScreenProps) => {
   // The bottom sheet extends halfway across the screen, with the map
   // being inset accordingly.
   const screenHeight = Dimensions.get("window").height;
@@ -47,36 +48,28 @@ const Main: React.FC<ViewProps> = () => {
       renderDrawerContent={() => {
         return (
           <View style={SpacingStyle.pad(drawerInsets, 16)}>
-            <TouchableOpacity onPress={()=>{
-              setOpen(false);
-            }}>
+            <TouchableOpacity onPress={() => { navigation.push('ADARequest'); }}>
                 <View style={styles.drawerItem}>
                   <MaterialIcons name="accessible" size={24} color="black" /> 
                   <Text style={styles.drawerItemText}>ADA Ride Request</Text>
                 </View>
             </TouchableOpacity>
             
-            <TouchableOpacity onPress={()=>{
-              setOpen(false);
-            }}>
+            <TouchableOpacity onPress={() => { navigation.push('Alerts'); }}>
                 <View style={styles.drawerItem}>
                   <MaterialIcons name="error-outline" size={24} color="black" /> 
-                  <Text style={styles.drawerItemText}>Upcoming Outages</Text>
+                  <Text style={styles.drawerItemText}>Upcoming Alerts</Text>
                 </View>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={()=>{
-              setOpen(false);
-            }}>
+            <TouchableOpacity onPress={() => { navigation.push('Settings'); }}>
                 <View style={styles.drawerItem}>
                   <MaterialIcons name="settings" size={24} color="black" /> 
                   <Text style={styles.drawerItemText}>Settings</Text>
                 </View>
             </TouchableOpacity>
   
-            <TouchableOpacity onPress={()=>{
-              setOpen(false);
-            }}>
+            <TouchableOpacity onPress={() => { navigation.push('BugReport'); }}>
                 <View style={styles.drawerItem}>
                   <MaterialIcons name="bug-report" size={24} color="black" /> 
                   <Text style={styles.drawerItemText}>Bug Report</Text>
