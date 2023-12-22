@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FloatingButton from "../common/components/FloatingButton";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
+import AlertList from "../features/alert/AlertList";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
@@ -61,6 +62,7 @@ const Main: React.FC<ViewProps> = () => {
         </View>
         {/* Must inset bottom sheet down by the drawer button (16 + 8 + 48 + 8 + 16) */}
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
+          <AlertList />
           <RouteList />
         </Sheet>
       </GestureHandlerRootView>
