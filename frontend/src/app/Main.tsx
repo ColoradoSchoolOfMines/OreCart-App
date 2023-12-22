@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { View, Text, Dimensions, type ViewProps } from "react-native";
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View, type ViewProps } from "react-native";
 import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -44,7 +44,37 @@ const Main: React.FC<ViewProps> = () => {
       }}
       renderDrawerContent={() => {
         return (
-          <Text style={SpacingStyle.pad(drawerInsets, 16)}>Drawer content</Text>
+          <View style={SpacingStyle.pad(drawerInsets, 16)}>
+            <TouchableOpacity onPress={()=>{}}>
+                <View style={styles.drawerItem}>
+                  <MaterialIcons name="accessible" size={24} color="black" /> 
+                  <Text style={styles.drawerItemText}>ADA Ride Request</Text>
+                </View>
+            </TouchableOpacity>
+            
+            <TouchableOpacity onPress={()=>{}}>
+                <View style={styles.drawerItem}>
+                  <MaterialIcons name="error-outline" size={24} color="black" /> 
+                  <Text style={styles.drawerItemText}>Upcoming Outages</Text>
+                </View>
+            </TouchableOpacity>
+
+            <TouchableOpacity onPress={()=>{}}>
+                <View style={styles.drawerItem}>
+                  <MaterialIcons name="settings" size={24} color="black" /> 
+                  <Text style={styles.drawerItemText}>Settings</Text>
+                </View>
+            </TouchableOpacity>
+  
+            <TouchableOpacity onPress={()=>{}}>
+                <View style={styles.drawerItem}>
+                  <MaterialIcons name="bug-report" size={24} color="black" /> 
+                  <Text style={styles.drawerItemText}>Bug Report</Text>
+                </View>
+            </TouchableOpacity>
+  
+            <Text>Version 1.0.0</Text>
+          </View>
         );
       }}
     >
@@ -67,5 +97,17 @@ const Main: React.FC<ViewProps> = () => {
     </Drawer>
   );
 };
+
+const styles = StyleSheet.create({
+  drawerItem: {
+    alignItems: 'center', 
+    flexDirection: 'row',
+    marginBottom: 16,
+  },
+  drawerItemText: {
+    paddingLeft: 4,
+    fontSize: 18
+  }
+});
 
 export default Main;
