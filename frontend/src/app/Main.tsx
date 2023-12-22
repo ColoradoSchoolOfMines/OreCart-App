@@ -5,6 +5,7 @@ import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import Constants from 'expo-constants';
 import FloatingButton from "../common/components/FloatingButton";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
@@ -30,6 +31,7 @@ const Main: React.FC<ViewProps> = () => {
   const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
   const insets = useSafeAreaInsets();
   const drawerInsets = { top: insets.top };
+  const expoVersion = Constants.expoVersion;
 
   manageLocationMiddleware();
 
@@ -73,7 +75,7 @@ const Main: React.FC<ViewProps> = () => {
                 </View>
             </TouchableOpacity>
   
-            <Text>Version 1.0.0</Text>
+            <Text>Version {expoVersion}</Text>
           </View>
         );
       }}
