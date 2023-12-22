@@ -2,7 +2,7 @@
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,
     "editor.codeActionsOnSave": {
-        "source.organizeImports": true
+        "source.organizeImports": "explicit"
     },
     "[css]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
