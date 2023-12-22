@@ -1,9 +1,9 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-// import App from './App.tsx'
 import {
-  createBrowserRouter,
   RouterProvider,
+  createBrowserRouter,
 } from "react-router-dom";
 import "./index.css";
 import AccommodationsPage from './pages/accommodations/accommodations-page';
@@ -22,7 +22,6 @@ const router = createBrowserRouter([
         path: "/vans",
         element: <VanPage />
       },
-      // Add more pages here
       {
         path: "/ridership",
         element: <RidershipPage />
@@ -43,9 +42,12 @@ const router = createBrowserRouter([
   },
 ]);
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+const queryClient = new QueryClient();
 
-  <React.StrictMode>
-    <RouterProvider router={router} />
-  </React.StrictMode>
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <QueryClientProvider client={queryClient}>
+    <React.StrictMode>
+      <RouterProvider router={router} />
+    </React.StrictMode>
+  </QueryClientProvider>,
 );

@@ -1,5 +1,5 @@
 from sqlalchemy import UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.db import Base
 
 
@@ -10,3 +10,5 @@ class Route(Base):
         primary_key=True, autoincrement=True, nullable=False
     )
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
+
+    waypoints = relationship("Waypoint", backref="route", cascade="all, delete-orphan")

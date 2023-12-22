@@ -32,6 +32,7 @@ def get_alerts(req: Request, active: bool = False) -> JSONResponse:
     alerts_json: List[Dict[str, Union[str, int]]] = []
     for alert in alerts:
         alert_json = {
+            "id": alert.id,
             "text": alert.text,
             "startDateTime": int(alert.start_datetime.timestamp()),
             "endDateTime": int(alert.end_datetime.timestamp()),
@@ -82,16 +83,11 @@ def update_alert(req: Request, alert_id: int, alert_model: AlertModel) -> JSONRe
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
 
         dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
-        dt_end_time = datetime.fromtimestamp(
-            alert_model.end_time,
-        )
+        dt_end_time = datetime.fromtimestamp(alert_model.end_time, timezone.utc)
 
-        alert = Alert(
-            text=alert_model.text,
-            start_datetime=dt_start_time,
-            end_datetime=dt_end_time,
-        )
-        session.add(alert)
+        alert.text = alert_model.text
+        alert.start_datetime = dt_start_time
+        alert.end_datetime = dt_end_time
         session.commit()
 
     return JSONResponse(content={"message": "OK"})
@@ -103,5 +99,7 @@ def delete_alert(req: Request, alert_id: int) -> JSONResponse:
         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
         if alert is None:
             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
+        session.query(Alert).filter_by(id=alert_id).delete()
+        session.commit()
 
     return JSONResponse(content={"message": "OK"})
