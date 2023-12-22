@@ -1,8 +1,10 @@
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKeyConstraint, UniqueConstraint
+from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
+
 from src.db import Base
+from src.model.types import TZDateTime
 
 
 class Schedule(Base):
@@ -16,5 +18,18 @@ class Schedule(Base):
     )
     route_id: Mapped[int] = mapped_column(nullable=False)
     dow: Mapped[int] = mapped_column(nullable=False)
-    start_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
-    end_time: Mapped[datetime] = mapped_column(DateTime, nullable=False)
+    start_time: Mapped[datetime] = mapped_column(TZDateTime, nullable=False)
+    end_time: Mapped[datetime] = mapped_column(TZDateTime, nullable=False)
+
+    def __eq__(self, __value: object) -> bool:
+        # Exclude ID since it'll always differ, only compare on content
+        return (
+            isinstance(__value, Schedule)
+            and self.route_id == __value.route_id
+            and self.dow == __value.dow
+            and self.start_time == __value.start_time
+            and self.end_time == __value.end_time
+        )
+
+    def __repr__(self) -> str:
+        return f"<Schedule id={self.id} route_id={self.route_id} dow={self.dow} start_time={self.start_time} end_time={self.end_time}>"
