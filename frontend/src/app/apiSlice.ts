@@ -33,6 +33,6 @@ function getApiUrl(): string {
  */
 export default createApi({
   baseQuery: fetchBaseQuery({ baseUrl: getApiUrl() }),
-  tagTypes: ["Routes", "Vans"],
+  tagTypes: ["Alerts", "Routes", "Stops", "Vans"],
   endpoints: () => ({}), // All endpoints are injected by other files
 });

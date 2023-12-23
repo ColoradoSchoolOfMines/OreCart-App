@@ -9,6 +9,8 @@ import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
 import { type Coordinate } from "../location/locationSlice";
+import { useGetRoutesQuery, type Route } from "../routes/routesSlice";
+import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
 
 /**
@@ -74,6 +76,13 @@ const Map: React.FC<MapProps> = ({ insets }) => {
   };
 
   const { data: vans } = useGetVansQuery();
+  const { data: routes } = useGetRoutesQuery();
+  const { data: stops } = useGetStopsQuery();
+
+  const routesById: Record<string, Route> = {};
+  routes?.forEach((route) => {
+    routesById[route.id] = route;
+  });
 
   return (
     <View>
@@ -85,6 +94,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         showsMyLocationButton={false}
         mapPadding={padding}
         toolbarEnabled={false}
+        scrollEnabled={true}
         onPanDrag={() => {
           setFollowingLocation(false);
         }}
@@ -100,16 +110,60 @@ const Map: React.FC<MapProps> = ({ insets }) => {
               tracksViewChanges={false}
               anchor={{ x: 0.5, y: 0.5 }}
             >
-              <View style={styles.vanMarker}>
+              <View
+                style={[
+                  styles.marker,
+                  {
+                    backgroundColor: Color.orecart.get(
+                      routesById[van.routeId].name,
+                    ),
+                  },
+                ]}
+              >
                 <MaterialIcons
-                  name="local-shipping"
-                  size={24}
+                  name="directions-bus"
+                  size={20}
                   color={Color.generic.white}
                 />
               </View>
             </Marker>
           ) : null,
         )}
+        {routes?.map((route, index) => (
+          <Polyline
+            key={index}
+            coordinates={route.waypoints}
+            strokeColor={Color.orecart.get(route.name)}
+            strokeWidth={4}
+            lineCap="round"
+            lineJoin="round"
+          />
+        ))}
+        {stops?.map((stop, index) => (
+          <Marker
+            key={vans?.length ?? 0 + index}
+            coordinate={stop}
+            tracksViewChanges={false}
+            anchor={{ x: 0.5, y: 0.5 }}
+          >
+            <View
+              style={[
+                styles.marker,
+                {
+                  backgroundColor: Color.orecart.get(
+                    routesById[stop.routeIds[0]].name,
+                  ),
+                },
+              ]}
+            >
+              <MaterialIcons
+                name="hail"
+                size={20}
+                color={Color.generic.white}
+              />
+            </View>
+          </Marker>
+        ))}
       </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View
@@ -148,12 +202,10 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     alignItems: "flex-end",
   },
-  vanMarker: {
+  marker: {
     backgroundColor: Color.orecart.tungsten,
     borderRadius: 100,
     padding: 4,
-    width: 32,
-    height: 32,
   },
 });
 

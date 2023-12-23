@@ -8,10 +8,11 @@ from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
+from starlette.responses import Response
+
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.van import Van
 from src.request import process_include
-from starlette.responses import Response
 
 
 class VanModel(BaseModel):
@@ -117,6 +118,7 @@ def delete_van(req: Request, van_id: int) -> JSONResponse:
         if van is None:
             return JSONResponse(content={"message": "Van not found"}, status_code=404)
         session.query(Van).filter_by(id=van_id).delete()
+        session.commit()
 
     return JSONResponse(content={"message": "OK"})
 

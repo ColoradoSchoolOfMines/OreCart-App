@@ -10,7 +10,7 @@ export type Routes = Route[];
  * A Route, as defined by the backend.
  */
 export interface Route {
-  id: string;
+  id: number;
   name: string;
   stopIds: number[];
   waypoints: Coordinate[];
