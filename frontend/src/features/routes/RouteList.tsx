@@ -1,11 +1,11 @@
 import React from "react";
 import {
   FlatList,
+  StyleSheet,
   Text,
+  TouchableHighlight,
   View,
   type ViewProps,
-  StyleSheet,
-  TouchableHighlight,
 } from "react-native";
 
 import Divider from "../../common/components/Divider";
