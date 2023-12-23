@@ -200,7 +200,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
 const styles = StyleSheet.create({
   locationButtonContainer: {
     justifyContent: "flex-end",
-    alignItems: "flex-end"
+    alignItems: "flex-end",
   },
   marker: {
     backgroundColor: Color.orecart.tungsten,
