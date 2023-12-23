@@ -33,7 +33,11 @@ const App: React.FC<void> = () => (
       <View style={LayoutStyle.fill}>
         <NavigationContainer>
           <Stack.Navigator>
-            <Stack.Screen name="Home" component={Main} options={{ headerShown: false }} />
+            <Stack.Screen
+              name="Home"
+              component={Main}
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="Alerts" component={Alerts} />
             <Stack.Screen name="ADARequest" component={ADARequest} />
             <Stack.Screen name="BugReport" component={BugReport} />

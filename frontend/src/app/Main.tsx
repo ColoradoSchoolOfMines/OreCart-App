@@ -1,11 +1,17 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
-import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 import FloatingButton from "../common/components/FloatingButton";
 import { MainScreenProps } from "../common/navTypes";
 import LayoutStyle from "../common/style/layout";
@@ -48,34 +54,50 @@ const Main = ({ route, navigation }: MainScreenProps) => {
       renderDrawerContent={() => {
         return (
           <View style={SpacingStyle.pad(drawerInsets, 16)}>
-            <TouchableOpacity onPress={() => { navigation.push('ADARequest'); }}>
-                <View style={styles.drawerItem}>
-                  <MaterialIcons name="accessible" size={24} color="black" /> 
-                  <Text style={styles.drawerItemText}>ADA Ride Request</Text>
-                </View>
-            </TouchableOpacity>
-            
-            <TouchableOpacity onPress={() => { navigation.push('Alerts'); }}>
-                <View style={styles.drawerItem}>
-                  <MaterialIcons name="error-outline" size={24} color="black" /> 
-                  <Text style={styles.drawerItemText}>Upcoming Alerts</Text>
-                </View>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push("ADARequest");
+              }}
+            >
+              <View style={styles.drawerItem}>
+                <MaterialIcons name="accessible" size={24} color="black" />
+                <Text style={styles.drawerItemText}>ADA Ride Request</Text>
+              </View>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => { navigation.push('Settings'); }}>
-                <View style={styles.drawerItem}>
-                  <MaterialIcons name="settings" size={24} color="black" /> 
-                  <Text style={styles.drawerItemText}>Settings</Text>
-                </View>
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push("Alerts");
+              }}
+            >
+              <View style={styles.drawerItem}>
+                <MaterialIcons name="error-outline" size={24} color="black" />
+                <Text style={styles.drawerItemText}>Upcoming Alerts</Text>
+              </View>
             </TouchableOpacity>
-  
-            <TouchableOpacity onPress={() => { navigation.push('BugReport'); }}>
-                <View style={styles.drawerItem}>
-                  <MaterialIcons name="bug-report" size={24} color="black" /> 
-                  <Text style={styles.drawerItemText}>Bug Report</Text>
-                </View>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push("Settings");
+              }}
+            >
+              <View style={styles.drawerItem}>
+                <MaterialIcons name="settings" size={24} color="black" />
+                <Text style={styles.drawerItemText}>Settings</Text>
+              </View>
             </TouchableOpacity>
-  
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.push("BugReport");
+              }}
+            >
+              <View style={styles.drawerItem}>
+                <MaterialIcons name="bug-report" size={24} color="black" />
+                <Text style={styles.drawerItemText}>Bug Report</Text>
+              </View>
+            </TouchableOpacity>
+
             <Text>Version {expoVersion}</Text>
           </View>
         );
@@ -103,14 +125,14 @@ const Main = ({ route, navigation }: MainScreenProps) => {
 
 const styles = StyleSheet.create({
   drawerItem: {
-    alignItems: 'center', 
-    flexDirection: 'row',
+    alignItems: "center",
+    flexDirection: "row",
     marginBottom: 16,
   },
   drawerItemText: {
     paddingLeft: 4,
-    fontSize: 18
-  }
+    fontSize: 18,
+  },
 });
 
 export default Main;
