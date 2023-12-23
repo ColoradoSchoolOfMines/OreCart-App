@@ -1,11 +1,24 @@
 import { type Coordinate } from "./locationSlice";
 
+/**
+ * A coordinate and its distance from a target coordinate.
+ * @see closest
+ */
 interface ClosestCoordinate<O extends Coordinate> {
-  inner: O
+  inner: O;
   distance: number;
 }
 
-export function closest<O extends Coordinate, T extends Coordinate, >(ofAll: O[], to: T): ClosestCoordinate<O> | undefined {
+/**
+ * Finds the closest coordinate out of the given list to the given target coordinate.
+ * @param ofAll The list of coordinates to search.
+ * @param to The target coordinate.
+ * @returns The closest coordinate, or undefined if the list is empty.
+ */
+export function closest<O extends Coordinate, T extends Coordinate>(
+  ofAll: O[],
+  to: T,
+): ClosestCoordinate<O> | undefined {
   if (ofAll.length === 0) {
     return undefined;
   }
@@ -26,12 +39,40 @@ export function closest<O extends Coordinate, T extends Coordinate, >(ofAll: O[]
   return closest;
 }
 
+/**
+ * Simple pythagorean distance between two coordinates.
+ * @param a The first coordinate.
+ * @param b The second coordinate.
+ * @returns The distance between the two coordinates. Note that this is in lat-lon distance,
+ * so you will need to convert it with geoDistanceToMiles() to get a human-readable miles
+ * result.
+ */
 export function distance(a: Coordinate, b: Coordinate): number {
   const latDiff = a.latitude - b.latitude;
   const lonDiff = a.longitude - b.longitude;
   return Math.sqrt(latDiff * latDiff + lonDiff * lonDiff);
 }
 
+/**
+ * Converts a lat-lon distance to miles.
+ * @param distance The distance in lat-lon units.
+ * @returns The distance in miles.
+ */
 export function geoDistanceToMiles(distance: number): number {
   return distance * 69.0;
+}
+
+/**
+ * Formats a miles distance in human-readable format. If the distance is less than 1 mile,
+ * it will be formatted as "<1 mi". Otherwise, it will be rounded to the nearest integer
+ * and suffixed with "mi".
+ * @param distance The distance in miles.
+ * @returns The distance in human-readable format.
+ */
+export function formatMiles(distance: number): string {
+  if (distance < 1) {
+    return "<1 mi";
+  } else {
+    return `${Math.round(distance)} mi`;
+  }
 }

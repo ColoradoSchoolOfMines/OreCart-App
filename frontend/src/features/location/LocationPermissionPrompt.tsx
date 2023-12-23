@@ -7,6 +7,10 @@ import Color from "../../common/style/color";
 import { requestLocationPermissions } from "./locationMiddleware";
 import { useLocationStatus } from "./locationSlice";
 
+/**
+ * A banner component that requests the user to grant location permissions to
+ * the app.
+ */
 const LocationPermissionPrompt: React.FC = () => {
   const dispatch = useAppDispatch();
   const locationStatus = useLocationStatus();
@@ -22,7 +26,8 @@ const LocationPermissionPrompt: React.FC = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.message}>
-        Allow OreCart to access your location to see nearby stops and arrival estimates
+        Allow OreCart to access your location to see nearby stops and arrival
+        estimates
       </Text>
 
       <TouchableHighlight
@@ -42,7 +47,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 16,
     marginHorizontal: 16,
-    marginBottom: 16
+    marginBottom: 16,
   },
   message: {
     fontSize: 16,

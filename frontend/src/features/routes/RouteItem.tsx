@@ -11,13 +11,12 @@ import {
 
 import Color from "../../common/style/color";
 import { type Coordinate, useLocation } from "../location/locationSlice";
-import { closest, geoDistanceToMiles } from "../location/util";
+import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
 import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
 import { estimateTime } from "../vans/util";
 import { useGetVansQuery } from "../vans/vansSlice";
 
 import { type Route } from "./routesSlice";
-
 
 /**
  * The props for the {@interface RouteItem} component.
@@ -55,11 +54,11 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
                 <Text style={styles.routeStatus}>
                   Next OreCart in{" "}
                   <Text style={styles.routeStatusEmphasis}>
-                    {closestStop.vanArrivalTime} min
+                    {closestStop.vanArrivalTime}
                   </Text>
                 </Text>
                 <Text style={styles.routeContext}>
-                  At {closestStop.name} ({closestStop.distanceFromUser} mi)
+                  At {closestStop.name} ({closestStop.distanceFromUser})
                 </Text>
               </>
             ) : (
@@ -80,8 +79,8 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
 };
 
 interface ClosestStop extends Stop {
-  distanceFromUser: number;
-  vanArrivalTime: number;
+  distanceFromUser: string;
+  vanArrivalTime: string;
 }
 
 function useClosestStop(to: Route): ClosestStop | undefined {
@@ -116,12 +115,10 @@ function useClosestStop(to: Route): ClosestStop | undefined {
 
   return {
     ...closestRouteStop.inner,
-    distanceFromUser: Math.round(
-      Math.ceil(geoDistanceToMiles(closestRouteStop.distance))
+    distanceFromUser: formatMiles(
+      geoDistanceToMiles(closestRouteStop.distance),
     ),
-    vanArrivalTime: Math.round(
-      Math.ceil(estimateTime(geoDistanceToMiles(closestRouteStopVan?.distance)))
-    ),
+    vanArrivalTime: estimateTime(closestRouteStopVan?.distance),
   };
 }
 

@@ -9,7 +9,9 @@ import { updateLocationStatus } from "./locationSlice";
 const locationMiddleware = createListenerMiddleware();
 const subscribeLocation = createAction<undefined>("location/start");
 const unsubscribeLocation = createAction<undefined>("location/stop");
-export const requestLocationPermissions = createAction<undefined>("location/requestPermissions");
+export const requestLocationPermissions = createAction<undefined>(
+  "location/requestPermissions",
+);
 
 // This seems to be the only accuracy that's at least somewhat reliable for our purposes. Takes a few seconds
 // to initialize and then updates every second or so.

@@ -14,7 +14,12 @@ export interface Coordinate {
 /**
  * The status of location updates.
  */
-export type LocationStatus = Active | Inactive | Initializing | NotGranted | Error;
+export type LocationStatus =
+  | Active
+  | Inactive
+  | Initializing
+  | NotGranted
+  | Error;
 
 /**
  * Location updates are currently being sent.
