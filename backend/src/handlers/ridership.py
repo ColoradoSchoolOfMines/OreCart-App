@@ -4,12 +4,13 @@ Routes for tracking ridership statistics.
 
 import struct
 from datetime import datetime, timedelta, timezone
-from typing import List, Optional
+from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.sql import ColumnElement
+
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
 from src.model.van import Van
@@ -133,7 +134,7 @@ async def post_ridership_stats(req: Request, van_id: int):
 @router.get("/")
 def get_ridership(
     req: Request, filters: Optional[RidershipFilterModel]
-) -> JSONResponse:
+) -> List[Dict[str, Union[str, int, float]]]:
     with req.app.state.db.session() as session:
         analytics: List[Analytics] = []
         if filters is None or filters.filters is None:
@@ -142,7 +143,7 @@ def get_ridership(
             analytics = session.query(Analytics).filter(*filters.filters).all()
 
     # convert analytics to json
-    analytics_json = []
+    analytics_json: List[Dict[str, Union[str, int, float]]] = []
     for analytic in analytics:
         analytics_json.append(
             {
@@ -156,4 +157,4 @@ def get_ridership(
             }
         )
 
-    return JSONResponse(content=analytics_json)
+    return analytics_json

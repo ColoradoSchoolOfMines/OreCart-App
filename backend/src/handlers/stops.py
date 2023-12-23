@@ -6,8 +6,8 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+
 from src.model.alert import Alert
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
@@ -166,7 +166,7 @@ class StopModel(BaseModel):
 
 
 @router.post("/")
-def create_stop(req: Request, stop_model: StopModel) -> JSONResponse:
+def create_stop(req: Request, stop_model: StopModel) -> dict[str, str]:
     """
     Creates a new stop.
     """
@@ -181,7 +181,7 @@ def create_stop(req: Request, stop_model: StopModel) -> JSONResponse:
         session.add(stop)
         session.commit()
 
-    return JSONResponse(content={"message": "OK"})
+    return {"message": "OK"}
 
 
 @router.put("/{stop_id}")
@@ -189,7 +189,7 @@ def update_stop(
     req: Request,
     stop_id: int,
     stop_model: StopModel,
-) -> JSONResponse:
+) -> dict[str, str]:
     """
     Updates the stop with the specified id.
     """
@@ -205,11 +205,11 @@ def update_stop(
 
         session.commit()
 
-    return JSONResponse(content={"message": "OK"})
+    return {"message": "OK"}
 
 
 @router.delete("/{stop_id}")
-def delete_stop(req: Request, stop_id: int) -> JSONResponse:
+def delete_stop(req: Request, stop_id: int) -> dict[str, str]:
     """
     Deletes the stop with the specified id.
     """
@@ -222,4 +222,4 @@ def delete_stop(req: Request, stop_id: int) -> JSONResponse:
         session.query(Stop).filter(Stop.id == stop_id).delete()
         session.commit()
 
-    return JSONResponse(content={"message": "OK"})
+    return {"message": "OK"}

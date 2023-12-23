@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import DBWrapper
-from .handlers import alert, location, ridership, routes, stops, vans
+from .handlers import alert, ridership, routes, stops, vans
 from .hardware import HardwareExceptionMiddleware
 
 load_dotenv()
@@ -20,7 +20,6 @@ app.add_middleware(
 )
 
 app.add_middleware(HardwareExceptionMiddleware)
-app.include_router(location.router)
 app.include_router(routes.router)
 app.include_router(stops.router)
 app.include_router(alert.router)
