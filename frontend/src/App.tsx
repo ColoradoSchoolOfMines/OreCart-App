@@ -5,7 +5,6 @@ import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 
-
 import Main from "./app/Main";
 import store from "./app/store";
 import { type ParamListBase } from "./common/navTypes";
