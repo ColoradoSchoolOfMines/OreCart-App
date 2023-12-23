@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import Constants from "expo-constants";
 import React, { useState } from "react";
 import {
   Dimensions,
@@ -11,9 +12,8 @@ import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import Constants from "expo-constants";
 import FloatingButton from "../common/components/FloatingButton";
-import { MainScreenProps } from "../common/navTypes";
+import { type MainScreenProps } from "../common/navTypes";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
 import AlertList from "../features/alert/AlertList";
@@ -31,7 +31,7 @@ const SHEET_EXTENT = 0.5;
 /**
  * The main screen containing the map and sheet components.
  */
-const Main = ({ route, navigation }: MainScreenProps) => {
+const Main = ({ route, navigation }: MainScreenProps): React.JSX.Element => {
   // The bottom sheet extends halfway across the screen, with the map
   // being inset accordingly.
   const screenHeight = Dimensions.get("window").height;

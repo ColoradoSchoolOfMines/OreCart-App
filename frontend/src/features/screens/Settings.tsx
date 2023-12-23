@@ -1,7 +1,8 @@
 import { Text, View } from "react-native";
-import { SettingsScreenProps } from "../../common/navTypes";
 
-export const Settings = ({ route, navigation }: SettingsScreenProps) => {
+import { type SettingsScreenProps } from "../../common/navTypes";
+
+export const Settings = ({ route, navigation }: SettingsScreenProps): React.JSX.Element => {
     return (
         <View>
             <Text>Hello!</Text>

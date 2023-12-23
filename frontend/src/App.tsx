@@ -1,13 +1,14 @@
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as NavigationBar from "expo-navigation-bar";
 import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
 import Main from "./app/Main";
 import store from "./app/store";
-import { ParamListBase } from "./common/navTypes";
+import { type ParamListBase } from "./common/navTypes";
 import Color from "./common/style/color";
 import LayoutStyle from "./common/style/layout";
 import { ADARequest } from "./features/screens/ADARequest";

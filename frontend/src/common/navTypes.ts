@@ -1,35 +1,35 @@
-import { RouteProp } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { type RouteProp } from "@react-navigation/native";
+import { type NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-export type ParamListBase = {
+export interface ParamListBase {
   Home: undefined,
   ADARequest: undefined,
   Alerts: undefined,
   BugReport: undefined,
   Settings: undefined
-};
+}
 
-export type MainScreenProps = {
+export interface MainScreenProps {
   navigation: NativeStackNavigationProp<ParamListBase, 'Home'>;
   route: RouteProp<ParamListBase, 'Home'>;
-};
+}
 
-export type ADARequestScreenProps = {
+export interface ADARequestScreenProps {
   navigation: NativeStackNavigationProp<ParamListBase, 'ADARequest'>;
   route: RouteProp<ParamListBase, 'ADARequest'>;
-};
+}
 
-export type AlertsScreenProps = {
+export interface AlertsScreenProps {
   navigation: NativeStackNavigationProp<ParamListBase, 'Alerts'>;
   route: RouteProp<ParamListBase, 'Alerts'>;
-};
+}
 
-export type BugReportScreenProps = {
+export interface BugReportScreenProps {
   navigation: NativeStackNavigationProp<ParamListBase, 'BugReport'>;
   route: RouteProp<ParamListBase, 'BugReport'>;
-};
+}
 
-export type SettingsScreenProps = {
+export interface SettingsScreenProps {
   navigation: NativeStackNavigationProp<ParamListBase, 'Settings'>;
   route: RouteProp<ParamListBase, 'Settings'>;
-};
+}
