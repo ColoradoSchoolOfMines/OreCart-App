@@ -8,7 +8,7 @@ import FloatingButton from "../../common/components/FloatingButton";
 import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
-import { type Coordinate } from "../location/locationSlice";
+import { useLocationStatus, type Coordinate } from "../location/locationSlice";
 import { type Route, useGetRoutesQuery } from "../routes/routesSlice";
 import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
@@ -33,6 +33,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
   const [lastLocation, setLastLocation] = React.useState<
     Coordinate | undefined
   >(undefined);
+  const locationStatus = useLocationStatus();
 
   function panToLocation(location: Coordinate | undefined): void {
     if (location !== undefined && mapRef.current != null) {
@@ -95,7 +96,13 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         mapPadding={padding}
         toolbarEnabled={false}
         onPanDrag={() => {
-          setFollowingLocation(false);
+          // Let's say the user accidentally pans a tad before they realize
+          // that they haven't granted location permissions. We won't pan
+          // back to their location until they re-toggle the location button.
+          // That's not very good UX.
+          if (locationStatus.type !== "not_granted") {
+            setFollowingLocation(false);
+          }
         }}
         onUserLocationChange={(event) => {
           updateLocation(event.nativeEvent.coordinate);
@@ -114,7 +121,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
                   styles.marker,
                   {
                     backgroundColor: Color.orecart.get(
-                      routesById[van.routeId].name,
+                      routesById[van.routeId].name
                     ),
                   },
                 ]}
@@ -126,7 +133,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
                 />
               </View>
             </Marker>
-          ) : null,
+          ) : null
         )}
         {routes?.map((route, index) => (
           <Polyline
@@ -150,7 +157,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
                 styles.marker,
                 {
                   backgroundColor: Color.orecart.get(
-                    routesById[stop.routeIds[0]].name,
+                    routesById[stop.routeIds[0]].name
                   ),
                 },
               ]}
@@ -172,25 +179,27 @@ const Map: React.FC<MapProps> = ({ insets }) => {
           styles.locationButtonContainer,
         ]}
       >
-        <FloatingButton
-          onPress={() => {
-            flipFollowingLocation();
-          }}
-        >
-          {followingLocation ? (
-            <MaterialIcons
-              name="my-location"
-              size={24}
-              color={Color.generic.location}
-            />
-          ) : (
-            <MaterialIcons
-              name="location-searching"
-              size={24}
-              color={Color.generic.black}
-            />
-          )}
-        </FloatingButton>
+        {locationStatus.type !== "not_granted" ? (
+          <FloatingButton
+            onPress={() => {
+              flipFollowingLocation();
+            }}
+          >
+            {followingLocation ? (
+              <MaterialIcons
+                name="my-location"
+                size={24}
+                color={Color.generic.location}
+              />
+            ) : (
+              <MaterialIcons
+                name="location-searching"
+                size={24}
+                color={Color.generic.black}
+              />
+            )}
+          </FloatingButton>
+        ) : null}
       </View>
     </View>
   );
