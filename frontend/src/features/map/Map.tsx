@@ -168,6 +168,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
       {/* Layer the location button on the map instead of displacing it. */}
       <View
         style={[
+          LayoutStyle.overlay,
           SpacingStyle.pad(padding, 16),
           styles.locationButtonContainer,
         ]}
@@ -198,15 +199,8 @@ const Map: React.FC<MapProps> = ({ insets }) => {
 
 const styles = StyleSheet.create({
   locationButtonContainer: {
-    flexDirection: 'row',
-    position: 'absolute',
-    bottom: 10,
-    alignSelf: 'flex-end',
-    backgroundColor: 'transparent',
-    flex: 1,
-    justifyContent: "space-between",
-    borderWidth: 0.5,
-    borderRadius: 20
+    justifyContent: "flex-end",
+    alignItems: "flex-end"
   },
   marker: {
     backgroundColor: Color.orecart.tungsten,

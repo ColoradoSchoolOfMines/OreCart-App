@@ -7,7 +7,8 @@ export default StyleSheet.create({
   },
   overlay: {
     position: "absolute",
-    // width: "100%",
-    // height: "100%",
+    pointerEvents: "box-none", // Allow touches to go through the overlay
+    width: "100%",
+    height: "100%",
   },
 });
