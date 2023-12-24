@@ -2,6 +2,7 @@ from cachetools import TTLCache as _TTLCache
 
 from .cache import Cache
 
+
 class TTLCache(Cache):
     def __init__(self, config={}):
         if "maxsize" not in config:
