@@ -1,7 +1,7 @@
 import os
 
-from .ttl_cache import TTLCache
 from .memcached import Memcached
+from .ttl_cache import TTLCache
 
 
 def get_cache():
