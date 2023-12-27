@@ -2,16 +2,15 @@
 Contains routes specific to working with routes.
 """
 
-import pygeoif
 import re
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
+import pygeoif
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
 from pydantic import BaseModel
-
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
@@ -169,9 +168,7 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
 
 
 @router.post("/")
-async def create_route(
-    req: Request, kml_file: UploadFile
-):
+async def create_route(req: Request, kml_file: UploadFile):
     """
     Creates a new route.
     """
@@ -202,7 +199,7 @@ async def create_route(
             route_model = Route(name=route_name)
             session.add(route_model)
             session.flush()
-            
+
             route_routeid_map[route_name] = route_model.id
 
             for coords in route.geometry.exterior.coords:
@@ -211,9 +208,11 @@ async def create_route(
                 )
                 session.add(waypoint)
                 session.flush()
-        
+
         for stop_name, stop in stops.items():
-            stop_model = Stop(name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True)
+            stop_model = Stop(
+                name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
+            )
             session.add(stop_model)
             session.flush()
 
@@ -223,12 +222,13 @@ async def create_route(
             for match in matches:
                 if match not in route_routeid_map:
                     return HTTPException(status_code=400, detail="bad kml file")
-                route_stop = RouteStop(route_id=route_routeid_map[match], stop_id=stop_model.id)
+                route_stop = RouteStop(
+                    route_id=route_routeid_map[match], stop_id=stop_model.id
+                )
                 session.add(route_stop)
                 session.flush()
 
-
-        await kml.close()
+        await kml_file.close()
 
         session.commit()
 
