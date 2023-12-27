@@ -1,5 +1,5 @@
 import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStackNavigator } from "@react-navigation/stack";
 import * as NavigationBar from "expo-navigation-bar";
 import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -25,7 +25,7 @@ if (Platform.OS === "android") {
   );
 }
 
-const Stack = createNativeStackNavigator<ParamListBase>();
+const Stack = createStackNavigator<ParamListBase>();
 
 const App: React.FC<void> = () => (
   <Provider store={store}>
