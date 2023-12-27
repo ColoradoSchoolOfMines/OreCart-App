@@ -8,20 +8,20 @@ const fetchRoutes = async () => {
     const route_data = data as Route[];
     return route_data;
 }
-  
+
 const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit, onCancel }) => {
-    const { data: routes, isLoading, error } = useQuery({ queryKey: ['routes'], queryFn: fetchRoutes });
+    const { data: routes } = useQuery({ queryKey: ['routes'], queryFn: fetchRoutes });
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         const form = e.currentTarget;
         const routeIdInput = form.elements.namedItem('routeId') as HTMLInputElement;
-        const wheelchairInput = form.elements.namedItem('wheelchair') as HTMLInputElement;  
+        const wheelchairInput = form.elements.namedItem('wheelchair') as HTMLInputElement;
 
         const formData: VanData = {
-        route_id: parseInt(routeIdInput.value, 10),
-        wheelchair: wheelchairInput.checked,
+            route_id: parseInt(routeIdInput.value, 10),
+            wheelchair: wheelchairInput.checked,
         };
 
         onSubmit(formData);
@@ -29,28 +29,28 @@ const AddVanForm: React.FC<AddVanFormProps> = ({ onSubmit, onCancel }) => {
 
     return (
         <div className="popup-form">
-        <form onSubmit={handleSubmit}>
-            <label>
-            Route ID:
-            {routes?.length === 0 ? (
-                <p>No routes available</p>
-            ) : (
-                <select name="number" id="routeId" required>
-                    {routes?.map((route: Route) => (
-                        <option key={route.id} value={route.id}>{route.name} ({route.id})</option>
-                    ))}
-                </select>
-            )}
-            </label>
-            <br />
-            <label>
-            Wheelchair Accessible:
-            <input type="checkbox" name="wheelchair" />
-            </label>
-            <br />
-            <button type="submit">Create Van</button>
-            <button type="button" onClick={onCancel}>Cancel</button>
-        </form>
+            <form onSubmit={handleSubmit}>
+                <label>
+                    Route ID:
+                    {routes?.length === 0 ? (
+                        <p>No routes available</p>
+                    ) : (
+                        <select name="number" id="routeId" required>
+                            {routes?.map((route: Route) => (
+                                <option key={route.id} value={route.id}>{route.name} ({route.id})</option>
+                            ))}
+                        </select>
+                    )}
+                </label>
+                <br />
+                <label>
+                    Wheelchair Accessible:
+                    <input type="checkbox" name="wheelchair" />
+                </label>
+                <br />
+                <button type="submit">Create Van</button>
+                <button type="button" onClick={onCancel}>Cancel</button>
+            </form>
         </div>
     );
 };
