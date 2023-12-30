@@ -10,6 +10,11 @@ import {
 } from "react-native";
 
 import Color from "../../common/style/color";
+import { type Coordinate, useLocation } from "../location/locationSlice";
+import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
+import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
+import { estimateTime } from "../vans/util";
+import { useGetVansQuery } from "../vans/vansSlice";
 
 import { type Route } from "./routesSlice";
 
@@ -25,6 +30,7 @@ interface RouteItemProps {
  * A component that renders a single route item.
  */
 export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
+  const closestStop = useClosestStop(route);
   const routeNameColorStyle = {
     color: Color.orecart.get(route.name) ?? Color.generic.black,
   };
@@ -43,13 +49,21 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
             {route.name}
           </Text>
           {route.isActive ? (
-            <>
-              <Text style={styles.routeStatus}>
-                Next OreCart in{" "}
-                <Text style={styles.routeStatusEmphasis}>5 min</Text>
-              </Text>
-              <Text style={styles.routeContext}>At Jackston Street (1 mi)</Text>
-            </>
+            closestStop !== undefined ? (
+              <>
+                <Text style={styles.routeStatus}>
+                  Next OreCart in{" "}
+                  <Text style={styles.routeStatusEmphasis}>
+                    {closestStop.vanArrivalTime}
+                  </Text>
+                </Text>
+                <Text style={styles.routeContext}>
+                  At {closestStop.name} ({closestStop.distanceFromUser})
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.routeStatus}>Running</Text>
+            )
           ) : (
             <Text style={styles.routeStatus}>Not running</Text>
           )}
@@ -63,6 +77,50 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
     </TouchableHighlight>
   );
 };
+
+interface ClosestStop extends Stop {
+  distanceFromUser: string;
+  vanArrivalTime: string;
+}
+
+function useClosestStop(to: Route): ClosestStop | undefined {
+  const vans = useGetVansQuery().data;
+  if (vans === undefined) {
+    return undefined;
+  }
+
+  const stops = useGetStopsQuery().data;
+  if (stops === undefined) {
+    return undefined;
+  }
+
+  const location = useLocation();
+  if (location === undefined) {
+    return undefined;
+  }
+
+  const routeStops = stops.filter((stop) => stop.routeIds.includes(to.id));
+  const closestRouteStop = closest(routeStops, location);
+  if (closestRouteStop === undefined) {
+    return undefined;
+  }
+
+  const vansWithLocation = vans
+    .filter((van) => van.location !== undefined)
+    .map((van) => van.location) as Coordinate[];
+  const closestRouteStopVan = closest(vansWithLocation, closestRouteStop.inner);
+  if (closestRouteStopVan === undefined) {
+    return undefined;
+  }
+
+  return {
+    ...closestRouteStop.inner,
+    distanceFromUser: formatMiles(
+      geoDistanceToMiles(closestRouteStop.distance),
+    ),
+    vanArrivalTime: estimateTime(closestRouteStopVan?.distance),
+  };
+}
 
 /**
  * A skeleton component that mimics the {@interface RouteItem} component.
