@@ -63,16 +63,14 @@ export function geoDistanceToMiles(distance: number): number {
 }
 
 /**
- * Formats a miles distance in human-readable format. If the distance is less than 1 mile,
- * it will be formatted as "<1 mi". Otherwise, it will be rounded to the nearest integer
- * and suffixed with "mi".
+ * Formats a miles distance in human-readable format.
  * @param distance The distance in miles.
  * @returns The distance in human-readable format.
  */
 export function formatMiles(distance: number): string {
-  if (distance < 1) {
-    return "<1 mi";
+  if (distance < 0.1) {
+    return `<0.1 mi`;
   } else {
-    return `${Math.round(distance)} mi`;
+    return `${distance.toFixed(1)} mi`;
   }
 }
