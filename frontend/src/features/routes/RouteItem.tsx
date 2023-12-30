@@ -99,7 +99,7 @@ function useClosestStop(to: Route): ClosestStop | undefined {
     return undefined;
   }
 
-  const routeStops = stops.filter((stop) => to.id in stop.routeIds);
+  const routeStops = stops.filter((stop) => stop.routeIds.includes(to.id));
   const closestRouteStop = closest(routeStops, location);
   if (closestRouteStop === undefined) {
     return undefined;
