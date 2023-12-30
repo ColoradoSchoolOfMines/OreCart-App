@@ -11,6 +11,11 @@ from pydantic import BaseModel
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.van import Van
 from src.request import process_include
+from src.vans.manager import VanManager
+from src.model.route import Route
+from src.model.route_stop import RouteStop
+from src.model.stop import Stop
+from src.vans.manager import Coordinate
 from starlette.responses import Response
 
 
@@ -144,12 +149,7 @@ def get_location(req: Request, van_id: int) -> JSONResponse:
     if van_id not in req.app.state.van_locations:
         raise HTTPException(detail="Van not found", status_code=404)
 
-    location = req.app.state.van_locations[van_id]
-    location_json = {
-        "timestamp": int(location.timestamp.timestamp()),
-        "latitude": location.latitude,
-        "longitude": location.longitude,
-    }
+    location_json = get_location_for_van(req, van_id)
     return JSONResponse(content=location_json)
 
 
@@ -161,15 +161,52 @@ async def subscribe_location(websocket: WebSocket, van_id: int) -> None:
     await websocket.accept()
 
     while True:
-        location = websocket.app.state.van_locations[van_id]
-        location_json = {
-            "timestamp": int(location.timestamp.timestamp()),
-            "latitude": location.latitude,
-            "longitude": location.longitude,
-        }
+        location_json = get_location_for_van(websocket, van_id)
         await websocket.send_json(location_json)
         await asyncio.sleep(2)
 
+def get_all_van_ids(req: Union[Request, WebSocket]) -> List[int]:
+    with req.app.state.db.session() as session:
+        return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
+
+
+def get_location_for_vans(
+    req: Union[Request, WebSocket], van_ids: List[int]
+) -> Dict[int, dict[str, Union[str, int]]]:
+    locations_json: Dict[int, dict[str, Union[str, int]]] = {}
+    for van_id in van_ids:
+        if van_id not in req.app.state.van_locations:
+            continue
+
+        location = req.app.state.van_manager.location(van_id)
+        if location is None:
+            continue
+        next_stop = req.app.state.van_manager.next_stop(van_id)
+        locations_json[van_id] = {
+            "timestamp": int(location.timestamp.timestamp()),
+            "latitude": location.latitude,
+            "longitude": location.longitude,
+            "time_to_next_stop": int(next_stop.time_to.total_seconds()),
+        }
+
+    return locations_json
+
+def get_location_for_van(
+    req: Union[Request, WebSocket], van_id: int
+) -> Dict[int, dict[str, Union[str, int]]]:
+    if van_id not in req.app.state.van_locations:
+        return None
+
+    location = req.app.state.van_manager.location(van_id)
+    if location is None:
+        return None
+    next_stop = req.app.state.van_manager.next_stop(van_id)
+    return {
+        "timestamp": int(location.timestamp.timestamp()),
+        "latitude": location.latitude,
+        "longitude": location.longitude,
+        "time_to_next_stop": int(next_stop.time_to.total_seconds()),
+    }
 
 @router.post("/location/{van_id}")
 async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
@@ -201,32 +238,34 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
         )
+    
+    # The van may be starting up for the first time, in which we need to initialize it's
+    # cache entry and stop list. It's better to do this once rather than coupling it with
+    # push_location due to the very expensive stop query we have to do.
+    if req.app.state.van_manager.aware_of(van_id):
+        with req.app.state.db.session() as session:
+            # Query van by ID while joining with the list of stops on the van's route in order of
+            # their position. The ordering is required as it allows us to determine what the next
+            # stop should be in time estimates.
+            stops = (
+                session.query(Van)
+                .filter(Van.id == van_id)
+                .join(Route, Van.route_id == Route.id)
+                .join(RouteStop, Route.id == RouteStop.route_id)
+                .order_by(RouteStop.position)
+                .join(Stop, RouteStop.stop_id == Stop.id)
+                .first()
+            )
 
-    req.app.state.van_locations[van_id] = VanLocation(
-        timestamp=timestamp, latitude=lat, longitude=lon
+            if not stops:
+                raise HardwareHTTPException(
+                    status_code=400, error_code=HardwareErrorCode.VAN_NOT_ACTIVE
+                )
+            
+            req.app.state.van_manager.init_van(van_id, stops)
+
+    req.app.state.van_manager.push_location(
+        van_id, Coordinate(latitude=lat, longitude=lon)
     )
 
     return HardwareOKResponse()
-
-
-def get_all_van_ids(req: Union[Request, WebSocket]) -> List[int]:
-    with req.app.state.db.session() as session:
-        return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
-
-
-def get_location_for_vans(
-    req: Union[Request, WebSocket], van_ids: List[int]
-) -> Dict[int, dict[str, Union[str, int]]]:
-    locations_json: Dict[int, dict[str, Union[str, int]]] = {}
-    for van_id in van_ids:
-        if van_id not in req.app.state.van_locations:
-            continue
-
-        location = req.app.state.van_locations[van_id]
-        locations_json[van_id] = {
-            "timestamp": int(location.timestamp.timestamp()),
-            "latitude": location.latitude,
-            "longitude": location.longitude,
-        }
-
-    return locations_json
