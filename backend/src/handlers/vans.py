@@ -15,7 +15,7 @@ from src.vans.manager import VanManager
 from src.model.route import Route
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
-from src.vans.manager import Coordinate
+from src.vans.manager import Coordinate, Location
 from starlette.responses import Response
 
 
@@ -178,15 +178,14 @@ def get_location_for_vans(
         if van_id not in req.app.state.van_locations:
             continue
 
-        location = req.app.state.van_manager.location(van_id)
-        if location is None:
+        state = req.app.state.van_manager.get_van(van_id)
+        if state is None:
             continue
-        next_stop = req.app.state.van_manager.next_stop(van_id)
         locations_json[van_id] = {
-            "timestamp": int(location.timestamp.timestamp()),
-            "latitude": location.latitude,
-            "longitude": location.longitude,
-            "time_to_next_stop": int(next_stop.time_to.total_seconds()),
+            "timestamp": int(state.timestamp.timestamp()),
+            "latitude": state.latitude,
+            "longitude": state.longitude,
+            "time_to_next_stop": int(state.time_to_next_stop.total_seconds()),
         }
 
     return locations_json
@@ -197,15 +196,14 @@ def get_location_for_van(
     if van_id not in req.app.state.van_locations:
         return None
 
-    location = req.app.state.van_manager.location(van_id)
-    if location is None:
+    state = req.app.state.van_manager.get_van(van_id)
+    if state is None:
         return None
-    next_stop = req.app.state.van_manager.next_stop(van_id)
     return {
-        "timestamp": int(location.timestamp.timestamp()),
-        "latitude": location.latitude,
-        "longitude": location.longitude,
-        "time_to_next_stop": int(next_stop.time_to.total_seconds()),
+        "timestamp": int(state.location.timestamp.timestamp()),
+        "latitude": state.location.latitude,
+        "longitude": state.location.longitude,
+        "time_to_next_stop": int(state.next_stop.time_to_next_stop.total_seconds()),
     }
 
 @router.post("/location/{van_id}")
@@ -233,8 +231,8 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
 
     # Check that the timestamp is the most recent one for the van. This prevents
     # updates from being sent out of order.
-    last_location = req.app.state.van_locations.get(van_id)
-    if last_location is not None and timestamp < last_location.timestamp:
+    van_state = req.app.state.van_manager.get_van(van_id)
+    if van_state is not None and timestamp < van_state.location.timestamp:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
         )
@@ -242,19 +240,18 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     # The van may be starting up for the first time, in which we need to initialize it's
     # cache entry and stop list. It's better to do this once rather than coupling it with
     # push_location due to the very expensive stop query we have to do.
-    if req.app.state.van_manager.aware_of(van_id):
+    if van_id not in req.app.state.van_manager:
         with req.app.state.db.session() as session:
             # Query van by ID while joining with the list of stops on the van's route in order of
             # their position. The ordering is required as it allows us to determine what the next
             # stop should be in time estimates.
             stops = (
-                session.query(Van)
-                .filter(Van.id == van_id)
-                .join(Route, Van.route_id == Route.id)
-                .join(RouteStop, Route.id == RouteStop.route_id)
+                session.query(Stop)
+                .join(RouteStop, Stop.id == RouteStop.stop_id)
                 .order_by(RouteStop.position)
-                .join(Stop, RouteStop.stop_id == Stop.id)
-                .first()
+                .join(Van, Van.route_id == RouteStop.route_id)
+                .filter(Van.id == van_id)
+                .all()
             )
 
             if not stops:
@@ -265,7 +262,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
             req.app.state.van_manager.init_van(van_id, stops)
 
     req.app.state.van_manager.push_location(
-        van_id, Coordinate(latitude=lat, longitude=lon)
+        van_id, Location(timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon))
     )
 
     return HardwareOKResponse()

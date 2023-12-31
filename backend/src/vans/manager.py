@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from math import radians, sqrt
 from typing import Optional
 
@@ -16,11 +16,11 @@ THRESHOLD_TIME = timedelta(minutes=2)
 AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
 
 
-class VanState(BaseModel):
-    location: Location
-    stop: Stop
-    time_to: timedelta
-
+class VanState:
+    def __init__(self, location: Location, stop: Stop, time_to_next_stop: timedelta):
+        self.location = location
+        self.next_stop = stop
+        self.time_to_next_stop = time_to_next_stop
 
 def distance_m(a: Coordinate, b: Coordinate) -> float:
     """
@@ -42,56 +42,55 @@ class VanManager:
     def __init__(self, cache: VanStateCache):
         self.cache = cache
 
-    def init_van(self, van_id: int, stops: list[Stop]):
-        self.cache.add_van(van_id, stops)
+    def __contains__(self, van_id: int):
+        return van_id in self.cache
 
-    def aware_of(self, van_id: int) -> bool:
-        self.cache.has_van(van_id)
+    def init_van(self, van_id: int, stops: list[Stop]):
+        self.cache.add(van_id, stops)
 
     def get_van(self, van_id: int) -> Optional[VanState]:
-        state = self.cache.get_van_state(van_id)
-        if state is None:
+        if van_id not in self.cache:
             return None
-        latest_location = next(state.locations)
-        if latest_location is None:
+        locations = self.cache.get_locations(van_id)
+        if not locations:
             return None
-        next_stop = state.stops[(state.current_stop_index + 1) % len(state.stops)]
-        distance = distance_m(latest_location, next_stop.location)
+        location = locations[0]
+        stops = self.cache.get_stops(van_id)
+        current_stop_index = self.cache.get_current_stop_index(van_id)
+        next_stop = stops[(current_stop_index + 1) % len(stops)]
+        distance = distance_m(location.coordinate, Coordinate(latitude=next_stop.lat, longitude=next_stop.lon))
         time_to = timedelta(seconds=distance / AVERAGE_VAN_SPEED_MPS)
-        return VanState(location=latest_location, stop=next_stop, time_to=time_to)
+        return VanState(location=location, stop=next_stop, time_to_next_stop=time_to)
 
-    def push_location(self, van_id: int, location: Coordinate):
-        state = self.cache.get_van_state(van_id)
-        if state is None:
-            return
+    def push_location(self, van_id: int, location: Location):
+        if van_id not in self.cache:
+            return None
         self.cache.push_location(van_id, location)
-        subsequent_stops = state.stop[state.current_stop_index + 1 :]
+        stops = self.cache.get_stops(van_id)
+        current_stop_index = self.cache.get_current_stop_index(van_id)
+        subsequent_stops = stops[current_stop_index + 1 :]
         for i, stop in enumerate(subsequent_stops):
-            distances = [
-                (time, distance_m(location, stop.location))
-                for time, location in state.locations
-            ]
-            longest_subset_time_delta = self.__get_longest_subset_time_delta(distances)
-            if longest_subset_time_delta >= THRESHOLD_TIME:
-                state.current_stop_index = i
+            longest_subset = []
+            current_subset = []
+            locations = self.cache.get_locations(van_id)
+            for location in locations:
+                distance = distance_m(location.coordinate, Coordinate(latitude=stop.lat, longitude=stop.lon))
+                if distance < THRESHOLD_RADIUS_M:
+                    current_subset.append(location.timestamp)
+                else:
+                    if len(current_subset) > len(longest_subset):
+                        longest_subset = current_subset
+                    current_subset = []
+            if len(current_subset) > len(longest_subset):
+                longest_subset = current_subset
+            if longest_subset:
+                duration = longest_subset[-1] - longest_subset[0]
+            else:
+                duration = 0
+            if duration >= THRESHOLD_TIME:
+                self.cache.set_current_stop_index(i)
                 break
 
-    def __get_longest_subset_time_delta(self, distances: list[tuple[datetime, float]]):
-        longest_subset = []
-        current_subset = []
-        for t, distance in distances:
-            if distance < THRESHOLD_RADIUS_M:
-                current_subset.append(t)
-            else:
-                if len(current_subset) > len(longest_subset):
-                    longest_subset = current_subset
-                current_subset = []
-        if len(current_subset) > len(longest_subset):
-            longest_subset = current_subset
-        if longest_subset:
-            return longest_subset[-1] - longest_subset[0]
-        else:
-            return 0
 
 def van_manager():
     config = {}
@@ -103,8 +102,8 @@ def van_manager():
         raise ValueError("type not in config")
 
     if config["type"] == "ttl":
-        return CachetoolsVanStateCache(config)
+        return VanManager(CachetoolsVanStateCache(config))
     elif config["type"] == "memcached":
-        return MemcachedVanStateCache(config)
+        return VanManager(MemcachedVanStateCache(config))
     else:
         raise ValueError("Invalid cache type")

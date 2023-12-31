@@ -28,6 +28,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@database:5432/postgres
       - CACHE_TYPE=ttl
+      - CACHE_TTL=120
+      - CACHE_MAXSIZE=1000
   frontend-admin:
     container_name: orecart-frontend-admin
     build: ./frontend-admin
