@@ -1,6 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
-from math import radians, sqrt
+from math import radians, sqrt, cos
 from typing import Optional
 
 from pydantic import BaseModel
@@ -11,8 +11,8 @@ from src.vans.cachetools import CachetoolsVanStateCache
 from src.vans.memcached import MemcachedVanStateCache
 from src.vans.state import Coordinate, Location
 
-THRESHOLD_RADIUS_M = 1000
-THRESHOLD_TIME = timedelta(minutes=2)
+THRESHOLD_RADIUS_M = 30.48 # 100 ft
+THRESHOLD_TIME = timedelta(minutes=1)
 AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
 
 
@@ -27,15 +27,15 @@ def distance_m(a: Coordinate, b: Coordinate) -> float:
     Calculate the Euclidean distance in meters between two points
     on the earth (specified in decimal degrees)
     """
-    # Earth’s radius, sphere
-    EARTH_RADIUS = 6371
-
     # distances
-    dlat = radians(b.latitude - a.latitude)
-    dlon = radians(b.longitude - a.longitude)
+    dlat = b.latitude - a.latitude
+    dlon = b.longitude - a.longitude
+
+    dlatkm = dlat * 111.32
+    dlonkm = dlon * 40075 * cos(radians(a.latitude)) / 360
 
     # convert to meters
-    return sqrt(dlat**2 + dlon**2) * EARTH_RADIUS * 1000
+    return sqrt(dlatkm**2 + dlonkm**2) * 1000
 
 
 class VanManager:
@@ -68,7 +68,7 @@ class VanManager:
         self.cache.push_location(van_id, location)
         stops = self.cache.get_stops(van_id)
         current_stop_index = self.cache.get_current_stop_index(van_id)
-        subsequent_stops = stops[current_stop_index + 1 :]
+        subsequent_stops = stops[current_stop_index + 1:] + stops[:current_stop_index + 1]
         for i, stop in enumerate(subsequent_stops):
             longest_subset = []
             current_subset = []
@@ -84,11 +84,11 @@ class VanManager:
             if len(current_subset) > len(longest_subset):
                 longest_subset = current_subset
             if longest_subset:
-                duration = longest_subset[-1] - longest_subset[0]
+                duration = longest_subset[0] - longest_subset[-1]
             else:
-                duration = 0
+                duration = timedelta(seconds=0)
             if duration >= THRESHOLD_TIME:
-                self.cache.set_current_stop_index(i)
+                self.cache.set_current_stop_index(van_id, i)
                 break
 
 

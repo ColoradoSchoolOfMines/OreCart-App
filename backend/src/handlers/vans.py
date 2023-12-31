@@ -244,13 +244,15 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
         with req.app.state.db.session() as session:
             # Query van by ID while joining with the list of stops on the van's route in order of
             # their position. The ordering is required as it allows us to determine what the next
-            # stop should be in time estimates.
+            # stop should be in time estimates. We also want to make sure we don't include an inactive
+            # stops since the vans likely aren't going to show up there.
             stops = (
                 session.query(Stop)
                 .join(RouteStop, Stop.id == RouteStop.stop_id)
                 .order_by(RouteStop.position)
                 .join(Van, Van.route_id == RouteStop.route_id)
                 .filter(Van.id == van_id)
+                .filter(Stop.active == True)
                 .all()
             )
 
