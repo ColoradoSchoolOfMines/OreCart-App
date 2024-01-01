@@ -14,7 +14,7 @@ import { type Coordinate, useLocation } from "../location/locationSlice";
 import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
 import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
 import { estimateTime } from "../vans/util";
-import { useGetVansQuery } from "../vans/vansSlice";
+import { VanLocation, useGetVansQuery } from "../vans/vansSlice";
 
 import { type Route } from "./routesSlice";
 
@@ -105,10 +105,10 @@ function useClosestStop(to: Route): ClosestStop | undefined {
     return undefined;
   }
 
-  const vansWithLocation = vans
-    .filter((van) => van.location !== undefined)
-    .map((van) => van.location) as Coordinate[];
-  const closestRouteStopVan = closest(vansWithLocation, closestRouteStop.inner);
+  const arrivingVans = vans
+    .filter((van) => van.location !== undefined && van.location.nextStopId === closestRouteStop.inner.id)
+    .map((van) => van.location) as VanLocation[];
+  const closestRouteStopVan = closest(arrivingVans, location);
   if (closestRouteStopVan === undefined) {
     return undefined;
   }
@@ -118,8 +118,16 @@ function useClosestStop(to: Route): ClosestStop | undefined {
     distanceFromUser: formatMiles(
       geoDistanceToMiles(closestRouteStop.distance),
     ),
-    vanArrivalTime: estimateTime(closestRouteStopVan?.distance),
+    vanArrivalTime: formatSecondsAsMinutes(closestRouteStopVan.inner.timeToNextStop),
   };
+}
+
+function formatSecondsAsMinutes(seconds: number): string {
+  if (seconds < 60) {
+    return `<1 min`;
+  } else {
+    return `${Math.round(seconds / 60)} min`
+  }
 }
 
 /**
