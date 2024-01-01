@@ -1,6 +1,6 @@
 import time
 from collections import deque
-from typing import Optional, Any
+from typing import Any, Optional
 
 from cachetools import FIFOCache
 from src.model.stop import Stop
