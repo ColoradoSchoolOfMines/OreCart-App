@@ -23,27 +23,28 @@ class VanStateCache(ABC):
     def get_locations(self, van_id: int) -> list[Location]:
         """
         Get the current location list tied to the van ID (if it exists). The location list will be
-        ordered from oldest to newest location.
+        ordered from oldest to newest location. Should throw an exception if the van state does not exist.
         """
 
     @abstractmethod
     def push_location(self, van_id: int, location: Location):
         """
         Push a new location to the van state tied to the van ID (if it exists). This will extend the
-        lifespan of the van state in the cache.
+        lifespan of the van state in the cache. Should throw an exception if the van state does not exist.
         """
 
     @abstractmethod
     def get_stops(self, van_id: int) -> list[Stop]:
         """
-        Get the current stop list tied to the van ID (if it exists).
+        Get the current stop list tied to the van ID (if it exists). Should throw an exception if
+        the van state does not exist.
         """
 
     @abstractmethod
-    def get_current_stop_index(self, van_id: int) -> Optional[int]:
+    def get_current_stop_index(self, van_id: int) -> int:
         """
         Get the current stop of the van state (as the index of the van state's stop list) tied to
-        the van ID (if it exists).
+        the van ID (if it exists). Should throw an exception if the van state does not exist.
         """
 
     @abstractmethod
@@ -51,4 +52,5 @@ class VanStateCache(ABC):
         """
         Update the current stop of the van state (as the index of the van state's stop list) tied to
         the van ID (if it exists). This will extend the lifespan of the van state in the cache.
+        Should throw an exception if the van state does not exist.
         """

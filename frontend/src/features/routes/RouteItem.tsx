@@ -10,11 +10,10 @@ import {
 } from "react-native";
 
 import Color from "../../common/style/color";
-import { type Coordinate, useLocation } from "../location/locationSlice";
+import { useLocation } from "../location/locationSlice";
 import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
 import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
-import { estimateTime } from "../vans/util";
-import { VanLocation, useGetVansQuery } from "../vans/vansSlice";
+import { type VanLocation, useGetVansQuery } from "../vans/vansSlice";
 
 import { type Route } from "./routesSlice";
 

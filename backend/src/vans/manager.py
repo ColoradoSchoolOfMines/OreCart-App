@@ -94,8 +94,8 @@ class VanManager:
         )
         locations = self.cache.get_locations(van_id)
         for i, stop in enumerate(subsequent_stops):
-            longest_subset = []
-            current_subset = []
+            longest_subset: list[datetime] = []
+            current_subset: list[datetime] = []
 
             # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
             # van locations is consistently within this stop's radius.
@@ -145,7 +145,7 @@ def _distance_m(a: Coordinate, b: Coordinate) -> float:
     return sqrt(dlatkm**2 + dlonkm**2) * 1000
 
 
-def van_manager():
+def van_manager() -> VanManager:
     """
     Create a new van manager from the environment variable configuration. This will raise a ValueError if the
     configuration is invalid.

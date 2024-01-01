@@ -6,6 +6,9 @@ from src.vans.state import Location
 
 
 class MemcachedVanStateCache(VanStateCache):
+    def __init__(self, config={}):
+        raise NotImplementedError()
+
     def __contains__(self, van_id: int):
         raise NotImplementedError()
 
@@ -21,7 +24,7 @@ class MemcachedVanStateCache(VanStateCache):
     def get_stops(self, van_id: int) -> list[Stop]:
         raise NotImplementedError()
 
-    def get_current_stop_index(self, van_id: int) -> Optional[int]:
+    def get_current_stop_index(self, van_id: int) -> int:
         raise NotImplementedError()
 
     def set_current_stop_index(self, van_id: int, index: int):

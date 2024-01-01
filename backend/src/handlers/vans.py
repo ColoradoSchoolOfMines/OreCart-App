@@ -191,13 +191,10 @@ def get_location_for_vans(
 
 def get_location_for_van(
     req: Union[Request, WebSocket], van_id: int
-) -> Dict[int, dict[str, Union[str, int]]]:
-    if van_id not in req.app.state.van_locations:
-        return None
-
+) -> dict[str, Union[str, int]]:
     state = req.app.state.van_manager.get_van(van_id)
     if state is None:
-        return None
+        return {}
     return {
         "timestamp": int(state.location.timestamp.timestamp()),
         "latitude": state.location.coordinate.latitude,

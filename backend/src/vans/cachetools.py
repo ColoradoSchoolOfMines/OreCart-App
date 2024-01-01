@@ -1,6 +1,6 @@
 import time
 from collections import deque
-from typing import Optional
+from typing import Optional, Any
 
 from cachetools import FIFOCache
 from src.model.stop import Stop
@@ -14,7 +14,7 @@ class TTL:
     defined by the class containing an instance of this.
     """
 
-    def __init__(self, value: any):
+    def __init__(self, value: Any):
         # It's best to use monotonic time for this to avoid accidentally expiring items due to
         # system clock changes.
         self.timestamp = time.monotonic()
@@ -43,7 +43,7 @@ class TTLQueue:
 
     def __init__(self, ttl: int):
         self.ttl = ttl
-        self.queue = deque()
+        self.queue: deque = deque()
 
     def __contains__(self, key):
         for item in self.queue:
@@ -57,7 +57,7 @@ class TTLQueue:
             filter(lambda item: not item.expired(self.ttl), self.queue),
         )
 
-    def push(self, value):
+    def push(self, value: Any):
         """
         Pushes a new item to the front of the queue while removing any expired items from the back of the
         queue.
@@ -116,7 +116,7 @@ class CachetoolsVanStateCache(VanStateCache):
     def get_locations(self, van_id: int) -> list[Location]:
         entry = self.cache.get(van_id)
         if entry is None:
-            return []
+            raise KeyError("Van state does not exist")
         # We aren't working with a location list, must convert it first.
         return list(iter(entry.value.locations))
 
@@ -126,7 +126,7 @@ class CachetoolsVanStateCache(VanStateCache):
         self.__expire()
         entry = self.cache[van_id]
         if entry is None:
-            return
+            raise KeyError("Van state does not exist")
         entry.value.locations.push(location)
         # This van state is still being updated by something, so we should extend its lifespan.
         entry.refresh()
@@ -134,13 +134,13 @@ class CachetoolsVanStateCache(VanStateCache):
     def get_stops(self, van_id: int) -> list[Stop]:
         entry = self.cache.get(van_id)
         if entry is None:
-            return []
+            raise KeyError("Van state does not exist")
         return entry.value.stops
 
-    def get_current_stop_index(self, van_id: int) -> Optional[int]:
+    def get_current_stop_index(self, van_id: int) -> int:
         entry = self.cache.get(van_id)
         if entry is None:
-            return None
+            raise KeyError("Van state does not exist")
         return entry.value.current_stop_index
 
     def set_current_stop_index(self, van_id: int, index: int):
@@ -149,7 +149,7 @@ class CachetoolsVanStateCache(VanStateCache):
         self.__expire()
         entry = self.cache[van_id]
         if entry is None:
-            return
+            raise KeyError("Van state does not exist")
         entry.value.current_stop_index = index
         # This van state is still being updated by something, so we should extend its lifespan.
         entry.refresh()
