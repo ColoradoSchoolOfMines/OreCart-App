@@ -175,17 +175,15 @@ def get_location_for_vans(
 ) -> Dict[int, dict[str, Union[str, int]]]:
     locations_json: Dict[int, dict[str, Union[str, int]]] = {}
     for van_id in van_ids:
-        if van_id not in req.app.state.van_locations:
-            continue
-
         state = req.app.state.van_manager.get_van(van_id)
         if state is None:
             continue
         locations_json[van_id] = {
-            "timestamp": int(state.timestamp.timestamp()),
-            "latitude": state.latitude,
-            "longitude": state.longitude,
-            "time_to_next_stop": int(state.time_to_next_stop.total_seconds()),
+            "timestamp": int(state.location.timestamp.timestamp()),
+            "latitude": state.location.coordinate.latitude,
+            "longitude": state.location.coordinate.longitude,
+            "nextStopId": state.next_stop.id,
+            "timeToNextStop": int(state.time_to_next_stop.total_seconds()),
         }
 
     return locations_json
@@ -201,9 +199,10 @@ def get_location_for_van(
         return None
     return {
         "timestamp": int(state.location.timestamp.timestamp()),
-        "latitude": state.location.latitude,
-        "longitude": state.location.longitude,
-        "time_to_next_stop": int(state.next_stop.time_to_next_stop.total_seconds()),
+        "latitude": state.location.coordinate.latitude,
+        "longitude": state.location.coordinate.longitude,
+        "nextStopId": state.next_stop.id,
+        "timeToNextStop": int(state.next_stop.time_to_next_stop.total_seconds()),
     }
 
 @router.post("/location/{van_id}")
