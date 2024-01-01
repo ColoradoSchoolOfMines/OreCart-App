@@ -12,7 +12,7 @@ from src.vans.memcached import MemcachedVanStateCache
 from src.vans.state import Coordinate, Location
 
 THRESHOLD_RADIUS_M = 30.48  # 100 ft
-THRESHOLD_TIME = timedelta(minutes=1)
+THRESHOLD_TIME = timedelta(seconds=30)
 AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
 
 
@@ -62,7 +62,7 @@ class VanManager:
         # Assuming that the route loops, find the next stop this van is assumed to be going to. This is what
         # we will estimate the time to.
         next_stop = stops[(current_stop_index + 1) % len(stops)]
-        distance = __distance_m(
+        distance = _distance_m(
             location.coordinate,
             Coordinate(latitude=next_stop.lat, longitude=next_stop.lon),
         )
@@ -88,19 +88,20 @@ class VanManager:
         stops = self.cache.get_stops(van_id)
         current_stop_index = self.cache.get_current_stop_index(van_id)
         # We want to consider all of the stops that are coming up for this van, as that allows to handle cases where a
-        # stop is erroneously skipped. Also make sure we include subsequent stops that wrap around.
+        # stop is erroneously skipped. Also make sure we include subsequent stops that wrap around. The wrap around slice
+        # needs to be bounded to 0 to prevent a negative index causing weird slicing behavior.
         subsequent_stops = (
-            stops[current_stop_index + 1 :] + stops[: current_stop_index + 1]
+            stops[current_stop_index + 1 :] + stops[: max(current_stop_index - 1, 0)]
         )
+        locations = self.cache.get_locations(van_id)
         for i, stop in enumerate(subsequent_stops):
             longest_subset = []
             current_subset = []
-            locations = self.cache.get_locations(van_id)
 
             # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
             # van locations is consistently within this stop's radius.
             for location in locations:
-                distance = __distance_m(
+                distance = _distance_m(
                     location.coordinate,
                     Coordinate(latitude=stop.lat, longitude=stop.lon),
                 )
@@ -124,11 +125,10 @@ class VanManager:
             if duration >= THRESHOLD_TIME:
                 # We were at this stop for long enough, move to it. It's possible that the van was at another stop's radius
                 # for even longer, but this is not considered until real-world testing shows this edge case to be important.
-                self.cache.set_current_stop_index(van_id, i)
+                self.cache.set_current_stop_index(van_id, (current_stop_index + i + 1) % len(stops))
                 break
 
-
-def __distance_m(a: Coordinate, b: Coordinate) -> float:
+def _distance_m(a: Coordinate, b: Coordinate) -> float:
     dlat = b.latitude - a.latitude
     dlon = b.longitude - a.longitude
 
