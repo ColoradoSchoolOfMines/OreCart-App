@@ -106,7 +106,11 @@ function useClosestStop(to: Route): ClosestStop | undefined {
   }
 
   const arrivingVans = vans
-    .filter((van) => van.location !== undefined && van.location.nextStopId === closestRouteStop.inner.id)
+    .filter(
+      (van) =>
+        van.location !== undefined &&
+        van.location.nextStopId === closestRouteStop.inner.id,
+    )
     .map((van) => van.location) as VanLocation[];
   const closestRouteStopVan = closest(arrivingVans, location);
   if (closestRouteStopVan === undefined) {
@@ -118,7 +122,9 @@ function useClosestStop(to: Route): ClosestStop | undefined {
     distanceFromUser: formatMiles(
       geoDistanceToMiles(closestRouteStop.distance),
     ),
-    vanArrivalTime: formatSecondsAsMinutes(closestRouteStopVan.inner.timeToNextStop),
+    vanArrivalTime: formatSecondsAsMinutes(
+      closestRouteStopVan.inner.timeToNextStop,
+    ),
   };
 }
 
@@ -126,7 +132,7 @@ function formatSecondsAsMinutes(seconds: number): string {
   if (seconds < 60) {
     return `<1 min`;
   } else {
-    return `${Math.round(seconds / 60)} min`
+    return `${Math.round(seconds / 60)} min`;
   }
 }
 

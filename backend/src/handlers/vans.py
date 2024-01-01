@@ -9,13 +9,12 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
-from src.model.van import Van
-from src.request import process_include
-from src.vans.manager import VanManager
 from src.model.route import Route
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
-from src.vans.manager import Coordinate, Location
+from src.model.van import Van
+from src.request import process_include
+from src.vans.manager import Coordinate, Location, VanManager
 from starlette.responses import Response
 
 
@@ -165,6 +164,7 @@ async def subscribe_location(websocket: WebSocket, van_id: int) -> None:
         await websocket.send_json(location_json)
         await asyncio.sleep(2)
 
+
 def get_all_van_ids(req: Union[Request, WebSocket]) -> List[int]:
     with req.app.state.db.session() as session:
         return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
@@ -188,6 +188,7 @@ def get_location_for_vans(
 
     return locations_json
 
+
 def get_location_for_van(
     req: Union[Request, WebSocket], van_id: int
 ) -> Dict[int, dict[str, Union[str, int]]]:
@@ -204,6 +205,7 @@ def get_location_for_van(
         "nextStopId": state.next_stop.id,
         "timeToNextStop": int(state.next_stop.time_to_next_stop.total_seconds()),
     }
+
 
 @router.post("/location/{van_id}")
 async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
@@ -235,7 +237,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
         )
-    
+
     # The van may be starting up for the first time, in which we need to initialize it's
     # cache entry and stop list. It's better to do this once rather than coupling it with
     # push_location due to the very expensive stop query we have to do.
@@ -261,11 +263,17 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
                 raise HardwareHTTPException(
                     status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
                 )
-            
+
             req.app.state.van_manager.init_van(van_id, stops)
 
     req.app.state.van_manager.push_location(
-        van_id, Location(timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon))
+        van_id,
+        Location(
+            timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon)
+        ),
     )
+
+    state = req.app.state.van_manager.get_van(van_id)
+    print(state.next_stop.name, state.time_to_next_stop.total_seconds())
 
     return HardwareOKResponse()

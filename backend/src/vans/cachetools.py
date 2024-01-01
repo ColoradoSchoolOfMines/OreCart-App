@@ -1,13 +1,12 @@
+import time
 from collections import deque
 from typing import Optional
 
 from cachetools import FIFOCache
-
 from src.model.stop import Stop
 from src.vans.cache import VanStateCache
 from src.vans.state import Location
 
-import time
 
 class TTL:
     """
@@ -32,7 +31,8 @@ class TTL:
         Returns whether this item has expired based on the TTL value specified.
         """
         return self.timestamp < time.monotonic() - ttl
-    
+
+
 class TTLQueue:
     """
     A queue-like data structure with time-to-live (TTL) functionality. Items are appended to the front, and
@@ -52,7 +52,10 @@ class TTLQueue:
         return False
 
     def __iter__(self):
-        return map(lambda item: item.value, filter(lambda item: not item.expired(self.ttl), self.queue))
+        return map(
+            lambda item: item.value,
+            filter(lambda item: not item.expired(self.ttl), self.queue),
+        )
 
     def push(self, value):
         """
@@ -70,11 +73,13 @@ class TTLQueue:
             else:
                 break
 
+
 class CachedVanState:
     def __init__(self, locations: TTLQueue, stops: list[Stop], current_stop_index: int):
         self.locations = locations
         self.stops = stops
         self.current_stop_index = current_stop_index
+
 
 class CachetoolsVanStateCache(VanStateCache):
     """

@@ -1,10 +1,9 @@
 import os
 from datetime import datetime, timedelta, timezone
-from math import radians, sqrt, cos
+from math import cos, radians, sqrt
 from typing import Optional
 
 from pydantic import BaseModel
-
 from src.model.stop import Stop
 from src.vans.cache import VanStateCache
 from src.vans.cachetools import CachetoolsVanStateCache
@@ -123,10 +122,16 @@ class VanManager:
                 duration = timedelta(seconds=0)
 
             if duration >= THRESHOLD_TIME:
-                # We were at this stop for long enough, move to it. It's possible that the van was at another stop's radius
-                # for even longer, but this is not considered until real-world testing shows this edge case to be important.
-                self.cache.set_current_stop_index(van_id, (current_stop_index + i + 1) % len(stops))
+                # We were at this stop for long enough, move to it. Since the stops iterated through are relative to the
+                # current stop, we have to add the current stop index to the current index in the loop to get the actual
+                # stop index.
+                # Note: It's possible that the van was at another stop's radius for even longer, but this is not considered
+                # until real-world testing shows this edge case to be important.
+                self.cache.set_current_stop_index(
+                    van_id, (current_stop_index + i + 1) % len(stops)
+                )
                 break
+
 
 def _distance_m(a: Coordinate, b: Coordinate) -> float:
     dlat = b.latitude - a.latitude

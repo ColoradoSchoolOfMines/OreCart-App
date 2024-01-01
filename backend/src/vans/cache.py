@@ -1,10 +1,10 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
+from typing import Iterable, Optional
 
 from src.model.stop import Stop
-from src.vans.state import Location, Coordinate
+from src.vans.state import Coordinate, Location
 
-from typing import Iterable, Optional
 
 class VanStateCache(ABC):
     @abstractmethod
@@ -18,7 +18,6 @@ class VanStateCache(ABC):
         estimates, so it should be in the exact order the van will visit each stop. The van state
         must be consistently updated or it will be removed from the cache.
         """
-        pass
 
     @abstractmethod
     def get_locations(self, van_id: int) -> list[Location]:
@@ -26,7 +25,6 @@ class VanStateCache(ABC):
         Get the current location list tied to the van ID (if it exists). The location list will be
         ordered from oldest to newest location.
         """
-        pass
 
     @abstractmethod
     def push_location(self, van_id: int, location: Location):
@@ -34,14 +32,12 @@ class VanStateCache(ABC):
         Push a new location to the van state tied to the van ID (if it exists). This will extend the
         lifespan of the van state in the cache.
         """
-        pass
 
     @abstractmethod
     def get_stops(self, van_id: int) -> list[Stop]:
         """
         Get the current stop list tied to the van ID (if it exists).
         """
-        pass
 
     @abstractmethod
     def get_current_stop_index(self, van_id: int) -> Optional[int]:
@@ -49,7 +45,6 @@ class VanStateCache(ABC):
         Get the current stop of the van state (as the index of the van state's stop list) tied to
         the van ID (if it exists).
         """
-        pass
 
     @abstractmethod
     def set_current_stop_index(self, van_id: int, index: int):
@@ -57,4 +52,3 @@ class VanStateCache(ABC):
         Update the current stop of the van state (as the index of the van state's stop list) tied to
         the van ID (if it exists). This will extend the lifespan of the van state in the cache.
         """
-        pass

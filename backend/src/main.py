@@ -3,9 +3,9 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import DBWrapper
-from .vans.manager import VanManager, van_manager
 from .handlers import alert, ridership, routes, stops, vans
 from .hardware import HardwareExceptionMiddleware
+from .vans.manager import VanManager, van_manager
 
 load_dotenv()
 
