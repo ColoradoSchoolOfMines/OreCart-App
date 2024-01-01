@@ -38,6 +38,7 @@ class HardwareErrorCode(Enum):
     TIMESTAMP_IN_FUTURE = 1
     VAN_NOT_ACTIVE = 2
     TIMESTAMP_NOT_MOST_RECENT = 3
+    VAN_DOESNT_EXIST = 4
 
 
 class HardwareHTTPException(Exception):

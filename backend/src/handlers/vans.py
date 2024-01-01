@@ -242,23 +242,25 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     # push_location due to the very expensive stop query we have to do.
     if van_id not in req.app.state.van_manager:
         with req.app.state.db.session() as session:
-            # Query van by ID while joining with the list of stops on the van's route in order of
-            # their position. The ordering is required as it allows us to determine what the next
-            # stop should be in time estimates. We also want to make sure we don't include an inactive
-            # stops since the vans likely aren't going to show up there.
+            # Need to find the likely list of stops this van will go on. It's assumed that
+            # this will only change between van activations, so we can query once and then
+            # cache this list.
             stops = (
                 session.query(Stop)
                 .join(RouteStop, Stop.id == RouteStop.stop_id)
+                # Make sure all stops will be in order since that's critical for the time estimate
                 .order_by(RouteStop.position)
                 .join(Van, Van.route_id == RouteStop.route_id)
                 .filter(Van.id == van_id)
+                # Ignore inactive stops we won't be going to and thus don't need to estimate times for
                 .filter(Stop.active == True)
                 .all()
             )
 
             if not stops:
+                # No stops implies a van that does not exist
                 raise HardwareHTTPException(
-                    status_code=400, error_code=HardwareErrorCode.VAN_NOT_ACTIVE
+                    status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
                 )
             
             req.app.state.van_manager.init_van(van_id, stops)
