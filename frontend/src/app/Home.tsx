@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { type RouteProp } from "@react-navigation/native";
-import { type NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { type StackNavigationProp } from "@react-navigation/stack";
 import Constants from "expo-constants";
 import React, { useState } from "react";
 import {
@@ -14,9 +14,8 @@ import { Drawer } from "react-native-drawer-layout";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-
-import { type ParamListBase } from "../../common/navTypes";
 import FloatingButton from "../common/components/FloatingButton";
+import { type ParamList } from "../common/navTypes";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
 import AlertBanner from "../features/alert/AlertBanner";
@@ -33,8 +32,8 @@ import RouteList from "../features/routes/RouteList";
 const SHEET_EXTENT = 0.5;
 
 export interface HomeScreenProps {
-  navigation: NativeStackNavigationProp<ParamListBase, "Home">;
-  route: RouteProp<ParamListBase, "Home">;
+  navigation: StackNavigationProp<ParamList, "Home">;
+  route: RouteProp<ParamList, "Home">;
 }
 
 /**

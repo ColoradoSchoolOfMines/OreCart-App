@@ -1,4 +1,4 @@
-import { type ParamListBase } from "@react-navigation/native";
+import { type ParamListBase } from "@react-navigation/core";
 
 export interface ParamList extends ParamListBase {
   Home: undefined;
