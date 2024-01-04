@@ -17,7 +17,7 @@ import { useGetActiveAlertsQuery } from "./alertSlice";
 /**
  * A component that renders a collapsible list of active alerts.
  */
-const AlertList: React.FC = () => {
+const AlertBanner: React.FC = () => {
   const alerts = useGetActiveAlertsQuery().data;
   const [expanded, setExpanded] = useState(false);
 
@@ -117,4 +117,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default AlertList;
+export default AlertBanner;
