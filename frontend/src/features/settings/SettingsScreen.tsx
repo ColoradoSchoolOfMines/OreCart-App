@@ -2,12 +2,12 @@ import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
 import { Text, View } from "react-native";
 
-import { type ParamList } from "../../common/navTypes";
+import { type OuterParamList } from "../../common/navTypes";
 
 
 export interface SettingsScreenProps {
-  navigation: StackNavigationProp<ParamList, "Settings">;
-  route: RouteProp<ParamList, "Settings">;
+  navigation: StackNavigationProp<OuterParamList, "Settings">;
+  route: RouteProp<OuterParamList, "Settings">;
 }
 
 export const SettingsScreen = ({

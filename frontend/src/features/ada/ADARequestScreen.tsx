@@ -2,11 +2,11 @@ import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
 import { Text, View } from "react-native";
 
-import { type ParamList } from "../../common/navTypes";
+import { type OuterParamList } from "../../common/navTypes";
 
 export interface ADARequestScreenProps {
-  navigation: StackNavigationProp<ParamList, "ADARequest">;
-  route: RouteProp<ParamList, "ADARequest">;
+  navigation: StackNavigationProp<OuterParamList, "ADARequest">;
+  route: RouteProp<OuterParamList, "ADARequest">;
 }
 
 export const ADARequestScreen = ({

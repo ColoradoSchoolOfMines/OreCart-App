@@ -1,5 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { NavigationContainer } from "@react-navigation/native";
 import { type RouteProp } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
 import { type StackNavigationProp } from "@react-navigation/stack";
 import Constants from "expo-constants";
 import React, { useState } from "react";
@@ -15,15 +17,18 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../common/components/FloatingButton";
-import { type ParamList } from "../common/navTypes";
+import { type InnerParamList, type OuterParamList } from "../common/navTypes";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
 import AlertBanner from "../features/alert/AlertBanner";
+import { LandingScreen } from "../features/landing/LandingScreen";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import LocationPermissionPrompt from "../features/location/LocationPermissionPrompt";
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
 import RouteList from "../features/routes/RouteList";
+
+const Stack = createStackNavigator<InnerParamList>();
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in
@@ -32,8 +37,8 @@ import RouteList from "../features/routes/RouteList";
 const SHEET_EXTENT = 0.5;
 
 export interface HomeScreenProps {
-  navigation: StackNavigationProp<ParamList, "Home">;
-  route: RouteProp<ParamList, "Home">;
+  navigation: StackNavigationProp<OuterParamList, "Home">;
+  route: RouteProp<OuterParamList, "Home">;
 }
 
 /**
@@ -125,9 +130,13 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
         </View>
         {/* Must inset bottom sheet down by the drawer button (16 + 8 + 48 + 8 + 16) */}
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
-          <LocationPermissionPrompt />
-          <AlertBanner />
-          <RouteList />
+          {/* Should disable headers on these screens since they arent full size. */}
+          <Stack.Navigator screenOptions={{ headerShown: false }}>
+            <Stack.Screen
+              name="Landing"
+              component={LandingScreen}
+            />
+          </Stack.Navigator>
         </Sheet>
       </GestureHandlerRootView>
     </Drawer>

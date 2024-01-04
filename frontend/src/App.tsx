@@ -7,7 +7,7 @@ import { Provider } from "react-redux";
 
 import Home from "./app/Home";
 import store from "./app/store";
-import { type ParamList } from "./common/navTypes";
+import { type OuterParamList } from "./common/navTypes";
 import Color from "./common/style/color";
 import LayoutStyle from "./common/style/layout";
 import { ADARequestScreen } from "./features/ada/ADARequestScreen";
@@ -25,7 +25,7 @@ if (Platform.OS === "android") {
   );
 }
 
-const Stack = createStackNavigator<ParamList>();
+const Stack = createStackNavigator<OuterParamList>();
 
 const App: React.FC<void> = () => (
   <Provider store={store}>
