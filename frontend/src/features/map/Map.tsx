@@ -112,7 +112,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         {vans?.map((van, index) =>
           van.location !== undefined ? (
             <Marker
-              key={index}
+              key={van.id}
               coordinate={van.location}
               tracksViewChanges={false}
               anchor={{ x: 0.5, y: 0.5 }}
@@ -138,7 +138,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         )}
         {routes?.map((route, index) => (
           <Polyline
-            key={index}
+            key={route.id}
             coordinates={route.waypoints}
             strokeColor={Color.orecart.get(route.name)}
             strokeWidth={4}
@@ -148,7 +148,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         ))}
         {stops?.map((stop, index) => (
           <Marker
-            key={vans?.length ?? 0 + index}
+            key={stop.id}
             coordinate={stop}
             tracksViewChanges={false}
             anchor={{ x: 0.5, y: 0.5 }}
