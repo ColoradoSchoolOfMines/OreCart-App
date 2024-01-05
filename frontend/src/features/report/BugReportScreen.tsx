@@ -4,7 +4,6 @@ import { Text, View } from "react-native";
 
 import { type OuterParamList } from "../../common/navTypes";
 
-
 export interface BugReportScreenProps {
   navigation: StackNavigationProp<OuterParamList, "BugReport">;
   route: RouteProp<OuterParamList, "BugReport">;

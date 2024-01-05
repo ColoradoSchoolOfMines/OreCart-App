@@ -1,6 +1,9 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { type RouteProp, type NavigationProp } from "@react-navigation/core";
-import { CardStyleInterpolators , createStackNavigator } from '@react-navigation/stack';
+import {
+  CardStyleInterpolators,
+  createStackNavigator,
+} from "@react-navigation/stack";
 import { type StackNavigationProp } from "@react-navigation/stack";
 import Constants from "expo-constants";
 import React, { useState } from "react";
@@ -25,7 +28,6 @@ import { manageLocationMiddleware } from "../features/location/locationMiddlewar
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
 import { RouteScreen } from "../features/routes/RouteScreen";
-
 
 export interface HomeScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Home">;
@@ -130,23 +132,32 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
               }
             }}
           >
-            <MaterialIcons name={atLanding ? "menu" : "arrow-back"} size={24} color="black" />
+            <MaterialIcons
+              name={atLanding ? "menu" : "arrow-back"}
+              size={24}
+              color="black"
+            />
           </FloatingButton>
         </View>
         {/* Must inset bottom sheet down by the drawer button (16 + 8 + 48 + 8 + 16) */}
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
           {/* Should disable headers on these screens since they arent full size. */}
-          <Stack.Navigator 
-            screenOptions={{ headerShown: false, cardStyle: {backgroundColor: Color.generic.white} }}
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+              cardStyle: { backgroundColor: Color.generic.white },
+            }}
             screenListeners={({ navigation: innerNavigation }) => ({
               state: (_) => {
                 // Outer navigation will still say it can go back (since we can exit the app). So we need to check
                 // the inner navigation. The typecast is necessary so we can indicate that canGoBack will return a
                 // boolean.
-                const typedInnerNavigation = innerNavigation as NavigationProp<InnerParamList>;
-                setAtLanding(!typedInnerNavigation.canGoBack())
+                const typedInnerNavigation =
+                  innerNavigation as NavigationProp<InnerParamList>;
+                setAtLanding(!typedInnerNavigation.canGoBack());
               },
-            })}>
+            })}
+          >
             <Stack.Screen
               name="Landing"
               component={LandingScreen}

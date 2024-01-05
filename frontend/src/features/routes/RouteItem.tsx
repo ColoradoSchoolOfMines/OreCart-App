@@ -31,7 +31,10 @@ interface RouteItemProps {
 /**
  * A component that renders a single route item.
  */
-export const RouteItem = ({ route, onPress }: RouteItemProps): React.JSX.Element => {
+export const RouteItem = ({
+  route,
+  onPress,
+}: RouteItemProps): React.JSX.Element => {
   const closestStop = useClosestStop(route);
   const routeNameColorStyle = {
     color: Color.orecart.get(route.name) ?? Color.generic.black,
@@ -41,7 +44,9 @@ export const RouteItem = ({ route, onPress }: RouteItemProps): React.JSX.Element
 
   return (
     <TouchableHighlight
-      onPress={() => { onPress(route) }}
+      onPress={() => {
+        onPress(route);
+      }}
       underlayColor={Color.generic.selection}
       style={styles.touchableContainer}
     >

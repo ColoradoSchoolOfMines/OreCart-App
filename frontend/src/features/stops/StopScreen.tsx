@@ -5,20 +5,19 @@ import { View, Text } from "react-native";
 
 import { type InnerParamList } from "../../common/navTypes";
 
-export interface RouteScreenProps {
-  navigation: StackNavigationProp<InnerParamList, "Route">;
-  route: RouteProp<InnerParamList, "Route">;
+export interface StopScreenProps {
+  navigation: StackNavigationProp<InnerParamList, "Stop">;
+  stop: RouteProp<InnerParamList, "Stop">;
 }
 
-export const RouteScreen = ({
-  route,
+export const StopScreen = ({
+  stop,
   navigation,
-}: RouteScreenProps): React.JSX.Element => {
-  const { routeId } = route.params;
-
+}: StopScreenProps): React.JSX.Element => {
+  // const { stopId } = stop.params;
   return (
     <View>
-        <Text>Hello!</Text>
+      <Text>Hello!</Text>
     </View>
-  )
-}
+  );
+};

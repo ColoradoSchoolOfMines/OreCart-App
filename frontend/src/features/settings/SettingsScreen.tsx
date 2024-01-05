@@ -4,7 +4,6 @@ import { Text, View } from "react-native";
 
 import { type OuterParamList } from "../../common/navTypes";
 
-
 export interface SettingsScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Settings">;
   route: RouteProp<OuterParamList, "Settings">;
