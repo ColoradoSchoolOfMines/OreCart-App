@@ -122,7 +122,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
                   styles.marker,
                   {
                     backgroundColor: Color.orecart.get(
-                      routesById[van.routeId].name,
+                      routesById[van.routeId]?.name,
                     ),
                   },
                 ]}
@@ -158,7 +158,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
                 styles.marker,
                 {
                   backgroundColor: Color.orecart.get(
-                    routesById[stop.routeIds[0]].name,
+                    routesById[stop.routeIds[0]]?.name,
                   ),
                 },
               ]}
