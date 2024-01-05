@@ -27,7 +27,7 @@ if (Platform.OS === "android") {
 
 const Stack = createStackNavigator<OuterParamList>();
 
-const App: React.FC<void> = () => (
+const App = (): React.JSX.Element => (
   <Provider store={store}>
     <SafeAreaProvider style={LayoutStyle.fill}>
       <View style={LayoutStyle.fill}>

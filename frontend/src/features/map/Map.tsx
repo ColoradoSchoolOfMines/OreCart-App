@@ -27,7 +27,7 @@ interface MapProps extends ViewProps {
 /**
  * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
  */
-const Map: React.FC<MapProps> = ({ insets }) => {
+const Map = ({ insets }: MapProps): React.JSX.Element => {
   const mapRef = useRef<MapView>(null);
   const [followingLocation, setFollowingLocation] = useState<boolean>(true);
   const [lastLocation, setLastLocation] = React.useState<

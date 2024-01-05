@@ -20,13 +20,10 @@ import FloatingButton from "../common/components/FloatingButton";
 import { type InnerParamList, type OuterParamList } from "../common/navTypes";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
-import AlertBanner from "../features/alert/AlertBanner";
 import { LandingScreen } from "../features/landing/LandingScreen";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
-import LocationPermissionPrompt from "../features/location/LocationPermissionPrompt";
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
-import RouteList from "../features/routes/RouteList";
 
 const Stack = createStackNavigator<InnerParamList>();
 

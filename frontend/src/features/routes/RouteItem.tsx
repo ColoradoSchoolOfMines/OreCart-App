@@ -29,7 +29,7 @@ interface RouteItemProps {
 /**
  * A component that renders a single route item.
  */
-export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
+export const RouteItem = ({ route }: RouteItemProps): React.JSX.Element => {
   const closestStop = useClosestStop(route);
   const routeNameColorStyle = {
     color: Color.orecart.get(route.name) ?? Color.generic.black,
@@ -125,7 +125,7 @@ function useClosestStop(to: Route): ClosestStop | undefined {
 /**
  * A skeleton component that mimics the {@interface RouteItem} component.
  */
-export const RouteItemSkeleton: React.FC<ViewProps> = ({ style }) => {
+export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
   const width = Dimensions.get("window").width;
 
   const routeNameWidthStyle = {

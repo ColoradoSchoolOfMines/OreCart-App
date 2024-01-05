@@ -19,7 +19,7 @@ import { useGetRoutesQuery } from "./routesSlice";
 /**
  * Screen that displays a list of routes.
  */
-const RouteList: React.FC<ViewProps> = () => {
+const RouteList = (_: ViewProps): React.JSX.Element => {
   const {
     data: routes,
     isLoading,
