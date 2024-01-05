@@ -24,12 +24,14 @@ import { type Route } from "./routesSlice";
 interface RouteItemProps {
   /** The route to display. */
   route: Route;
+  /** Called when the route item is clicked on. */
+  onPress: (route: Route) => void;
 }
 
 /**
  * A component that renders a single route item.
  */
-export const RouteItem = ({ route }: RouteItemProps): React.JSX.Element => {
+export const RouteItem = ({ route, onPress }: RouteItemProps): React.JSX.Element => {
   const closestStop = useClosestStop(route);
   const routeNameColorStyle = {
     color: Color.orecart.get(route.name) ?? Color.generic.black,
@@ -39,7 +41,7 @@ export const RouteItem = ({ route }: RouteItemProps): React.JSX.Element => {
 
   return (
     <TouchableHighlight
-      onPress={() => {}}
+      onPress={() => { onPress(route) }}
       underlayColor={Color.generic.selection}
       style={styles.touchableContainer}
     >

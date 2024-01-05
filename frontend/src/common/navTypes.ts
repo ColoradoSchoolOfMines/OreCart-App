@@ -8,4 +8,7 @@ export interface OuterParamList extends ParamListBase {
   Settings: undefined;
 }
 
-export interface InnerParamList extends ParamListBase {}
+export interface InnerParamList extends ParamListBase {
+  Landing: undefined;
+  Route: { routeId: number };
+}

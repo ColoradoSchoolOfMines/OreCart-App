@@ -1,7 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { NavigationContainer } from "@react-navigation/native";
-import { type RouteProp } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import { type RouteProp } from "@react-navigation/core";
+import { CardStyleInterpolators , createStackNavigator } from '@react-navigation/stack';
 import { type StackNavigationProp } from "@react-navigation/stack";
 import Constants from "expo-constants";
 import React, { useState } from "react";
@@ -18,12 +17,20 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../common/components/FloatingButton";
 import { type InnerParamList, type OuterParamList } from "../common/navTypes";
+import Color from "../common/style/color";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
 import { LandingScreen } from "../features/landing/LandingScreen";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
+import { RouteScreen } from "../features/routes/RouteScreen";
+
+
+export interface HomeScreenProps {
+  navigation: StackNavigationProp<OuterParamList, "Home">;
+  route: RouteProp<OuterParamList, "Home">;
+}
 
 const Stack = createStackNavigator<InnerParamList>();
 
@@ -32,11 +39,6 @@ const Stack = createStackNavigator<InnerParamList>();
  * it's collapsed state.
  */
 const SHEET_EXTENT = 0.5;
-
-export interface HomeScreenProps {
-  navigation: StackNavigationProp<OuterParamList, "Home">;
-  route: RouteProp<OuterParamList, "Home">;
-}
 
 /**
  * The main screen containing the map and sheet components.
@@ -128,10 +130,20 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
         {/* Must inset bottom sheet down by the drawer button (16 + 8 + 48 + 8 + 16) */}
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
           {/* Should disable headers on these screens since they arent full size. */}
-          <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: {backgroundColor: Color.generic.white} }}>
             <Stack.Screen
               name="Landing"
               component={LandingScreen}
+              options={{
+                cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+              }}
+            />
+            <Stack.Screen
+              name="Route"
+              component={RouteScreen}
+              options={{
+                cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+              }}
             />
           </Stack.Navigator>
         </Sheet>

@@ -15,11 +15,17 @@ import LayoutStyle from "../../common/style/layout";
 
 import { RouteItem, RouteItemSkeleton } from "./RouteItem";
 import { useGetRoutesQuery } from "./routesSlice";
+import { type Route } from "./routesSlice";
+
+interface RouteListProps extends ViewProps {
+  /** Called when the route item is clicked on. */
+  onPress: (route: Route) => void;
+}
 
 /**
  * Screen that displays a list of routes.
  */
-const RouteList = (_: ViewProps): React.JSX.Element => {
+const RouteList = ({ onPress }: RouteListProps): React.JSX.Element => {
   const {
     data: routes,
     isLoading,
@@ -43,7 +49,9 @@ const RouteList = (_: ViewProps): React.JSX.Element => {
         <FlatList
           style={styles.routeContainer}
           data={routes}
-          renderItem={({ item }) => <RouteItem route={item} />}
+          renderItem={({ item }) => (
+            <RouteItem route={item} onPress={onPress} />
+          )}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={Divider}
         />
