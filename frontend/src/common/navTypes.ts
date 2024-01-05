@@ -11,4 +11,5 @@ export interface OuterParamList extends ParamListBase {
 export interface InnerParamList extends ParamListBase {
   Landing: undefined;
   Route: { routeId: number };
+  Stop: { stopId: number };
 }
