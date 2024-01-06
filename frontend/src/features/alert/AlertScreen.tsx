@@ -1,6 +1,6 @@
 import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
-import { Text, View, FlatList, StyleSheet } from "react-native";
+import { Text, View, FlatList, StyleSheet, RefreshControl } from "react-native";
 
 import RetryButton from "../../common/components/RetryButton";
 import SkeletonList from "../../common/components/SkeletonList";
@@ -53,6 +53,14 @@ export const AlertScreen = ({
               <AlertItem alert={item} />
             </View>
           )}
+          refreshControl={
+            // We only want to indicate refreshing when prior data is available.
+            // Otherwise, the skeleton list will indicate loading
+            <RefreshControl
+              refreshing={isLoading && alerts !== undefined}
+              onRefresh={retry}
+            />
+          }
         />
       ) : isError ? (
         <>
