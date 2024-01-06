@@ -122,7 +122,7 @@ function useClosestStop(to: Route): ClosestStop | undefined {
       geoDistanceToMiles(closestRouteStop.distance),
     ),
     vanArrivalTime: formatSecondsAsMinutes(
-      closestRouteStopVan.inner.timeToNextStop,
+      closestRouteStopVan.inner.secondsToNextStop,
     ),
   };
 }

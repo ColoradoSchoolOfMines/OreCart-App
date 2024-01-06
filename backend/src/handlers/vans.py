@@ -184,7 +184,7 @@ def get_location_for_vans(
             "latitude": state.location.coordinate.latitude,
             "longitude": state.location.coordinate.longitude,
             "nextStopId": state.next_stop.id,
-            "timeToNextStop": int(state.time_to_next_stop.total_seconds()),
+            "secondsToNextStop": int(state.seconds_to_next_stop.total_seconds()),
         }
 
     return locations_json
@@ -201,7 +201,7 @@ def get_location_for_van(
         "latitude": state.location.coordinate.latitude,
         "longitude": state.location.coordinate.longitude,
         "nextStopId": state.next_stop.id,
-        "timeToNextStop": int(state.next_stop.time_to_next_stop.total_seconds()),
+        "secondsToNextStop": int(state.seconds_to_next_stop.total_seconds()),
     }
 
 

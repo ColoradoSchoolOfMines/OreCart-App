@@ -22,7 +22,7 @@ type VanLocations = Record<string, VanLocation>;
 
 export interface VanLocation extends Coordinate {
   nextStopId: number;
-  timeToNextStop: number;
+  secondsToNextStop: number;
 }
 
 const vanLocationApiUrl =

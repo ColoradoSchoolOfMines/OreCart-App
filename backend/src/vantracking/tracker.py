@@ -52,13 +52,13 @@ class VanTracker:
         # Assuming that the route loops, find the next stop this van is assumed to be going to. This is what
         # we will estimate the time to.
         next_stop = stops[(current_stop_index + 1) % len(stops)]
-        distance = _distance_m(
+        next_stop_distance_meters = _distance_meters(
             location.coordinate,
             Coordinate(latitude=next_stop.lat, longitude=next_stop.lon),
         )
         # Don't be fancy, just divide the difference in distance by the (guessed) average speed of the van.
-        time_to = timedelta(seconds=distance / AVERAGE_VAN_SPEED_MPS)
-        return VanState(location=location, stop=next_stop, time_to_next_stop=time_to)
+        time_to = timedelta(seconds=next_stop_distance_meters / AVERAGE_VAN_SPEED_MPS)
+        return VanState(location=location, stop=next_stop, seconds_to_next_stop=time_to)
 
     def push_location(self, van_id: int, location: Location):
         """
@@ -91,11 +91,11 @@ class VanTracker:
             # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
             # van locations is consistently within this stop's radius.
             for location in locations:
-                distance = _distance_m(
+                stop_distance_meters = _distance_meters(
                     location.coordinate,
                     Coordinate(latitude=stop.lat, longitude=stop.lon),
                 )
-                if distance < THRESHOLD_RADIUS_M:
+                if stop_distance_meters < THRESHOLD_RADIUS_M:
                     current_subset.append(location.timestamp)
                 else:
                     if len(current_subset) > len(longest_subset):
@@ -127,13 +127,13 @@ KM_LAT_RATIO = 111.32 # km/degree latitude
 EARTH_CIRCUFERENCE_KM = 40075 # km
 DEGREES_IN_CIRCLE = 360 # degrees
 
-def _distance_m(a: Coordinate, b: Coordinate) -> float:
+def _distance_meters(a: Coordinate, b: Coordinate) -> float:
     dlat = b.latitude - a.latitude
     dlon = b.longitude - a.longitude
 
     # Simplified distance calculation that assumes the earth is a sphere. This is good enough for our purposes.
     # https://stackoverflow.com/a/39540339
     dlatkm = dlat * KM_LAT_RATIO
-    dlonkm = dlon * EARTH_CIRCUFERENCE_KM * cos(radians(a.latitude)) / DEGREES_IN_CIRCLE
+    dlonkm = dlon * EARTH_CIRCUFERENCE_KM * cos(radians(a.latitude)) / DEGREES_IN_CIRCLE 
 
     return sqrt(dlatkm**2 + dlonkm**2) * 1000
