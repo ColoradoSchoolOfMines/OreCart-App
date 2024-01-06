@@ -123,9 +123,11 @@ class VanTracker:
                 )
                 break
 
-KM_LAT_RATIO = 111.32 # km/degree latitude
-EARTH_CIRCUFERENCE_KM = 40075 # km
-DEGREES_IN_CIRCLE = 360 # degrees
+
+KM_LAT_RATIO = 111.32  # km/degree latitude
+EARTH_CIRCUFERENCE_KM = 40075  # km
+DEGREES_IN_CIRCLE = 360  # degrees
+
 
 def _distance_meters(a: Coordinate, b: Coordinate) -> float:
     dlat = b.latitude - a.latitude
@@ -134,6 +136,6 @@ def _distance_meters(a: Coordinate, b: Coordinate) -> float:
     # Simplified distance calculation that assumes the earth is a sphere. This is good enough for our purposes.
     # https://stackoverflow.com/a/39540339
     dlatkm = dlat * KM_LAT_RATIO
-    dlonkm = dlon * EARTH_CIRCUFERENCE_KM * cos(radians(a.latitude)) / DEGREES_IN_CIRCLE 
+    dlonkm = dlon * EARTH_CIRCUFERENCE_KM * cos(radians(a.latitude)) / DEGREES_IN_CIRCLE
 
     return sqrt(dlatkm**2 + dlonkm**2) * 1000

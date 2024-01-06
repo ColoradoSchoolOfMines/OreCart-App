@@ -133,7 +133,7 @@ const formatSecondsAsMinutes = (seconds: number): string => {
   } else {
     return `${Math.round(seconds / 60)} min`;
   }
-}
+};
 
 /**
  * A skeleton component that mimics the {@interface RouteItem} component.
