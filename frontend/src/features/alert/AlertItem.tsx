@@ -15,7 +15,7 @@ interface AlertProps extends ViewProps {
  * A component that displays a single alert's text description and
  * end date/time.
  */
-const AlertItem: React.FC<AlertProps> = ({ style, alert }) => {
+const AlertItem = ({ style, alert }: AlertProps): React.JSX.Element => {
   const now = new Date().getTime() / 1000;
 
   // If more than a week, use the date

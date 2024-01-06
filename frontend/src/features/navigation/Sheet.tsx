@@ -20,11 +20,11 @@ export interface SheetProps extends ViewProps {
 /**
  * Wraps the bottom sheet component with a simplified interface.
  */
-const Sheet: React.FC<SheetProps> = ({
+const Sheet = ({
   collapsedFraction,
   expandedInset,
   children,
-}) => {
+}: SheetProps): React.JSX.Element => {
   // BottomSheet does have a topInset property, but that causes the shadow of the bottom
   // sheet to become clipped at the top for some reason. Instead, we manually recreate it
   // by adjusting our snap points such that they will cause the sheet to never overlap the

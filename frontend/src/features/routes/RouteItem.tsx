@@ -24,12 +24,17 @@ import { type Route } from "./routesSlice";
 interface RouteItemProps {
   /** The route to display. */
   route: Route;
+  /** Called when the route item is clicked on. */
+  onPress: (route: Route) => void;
 }
 
 /**
  * A component that renders a single route item.
  */
-export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
+export const RouteItem = ({
+  route,
+  onPress,
+}: RouteItemProps): React.JSX.Element => {
   const closestStop = useClosestStop(route);
   const routeNameColorStyle = {
     color: Color.orecart.get(route.name) ?? Color.generic.black,
@@ -39,7 +44,9 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
 
   return (
     <TouchableHighlight
-      onPress={() => {}}
+      onPress={() => {
+        onPress(route);
+      }}
       underlayColor={Color.generic.selection}
       style={styles.touchableContainer}
     >
@@ -125,7 +132,7 @@ function useClosestStop(to: Route): ClosestStop | undefined {
 /**
  * A skeleton component that mimics the {@interface RouteItem} component.
  */
-export const RouteItemSkeleton: React.FC<ViewProps> = ({ style }) => {
+export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
   const width = Dimensions.get("window").width;
 
   const routeNameWidthStyle = {

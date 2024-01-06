@@ -6,7 +6,7 @@ import Color from "../style/color";
 /**
  * A generic divider component. Always use this when a divider is needed.
  */
-const Divider: React.FC = () => {
+const Divider = (): React.JSX.Element => {
   return <View style={styles.divider} />;
 };
 
