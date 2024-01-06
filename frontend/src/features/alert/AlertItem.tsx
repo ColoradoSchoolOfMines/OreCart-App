@@ -26,9 +26,12 @@ const daysOfWeek = [
  * A component that displays a single alert's text description and
  * end date/time.
  */
-export const AlertItem = ({ alert, ...rest }: AlertProps): React.JSX.Element => {
+export const AlertItem = ({
+  alert,
+  ...rest
+}: AlertProps): React.JSX.Element => {
   const now = new Date().getTime() / 1000;
-  
+
   let startTimestamp;
   let endTimestamp;
   if (alert.startDateTime > now) {
@@ -36,8 +39,14 @@ export const AlertItem = ({ alert, ...rest }: AlertProps): React.JSX.Element => 
     // and when it ends in exact datetimes.
     const startDate = new Date(alert.startDateTime * 1000);
     const endDate = new Date(alert.endDateTime * 1000);
-    startTimestamp = `${startDate.toLocaleDateString()} at ${startDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
-    endTimestamp = `${endDate.toLocaleDateString()} at ${endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+    startTimestamp = `${startDate.toLocaleDateString()} at ${startDate.toLocaleTimeString(
+      [],
+      { hour: "2-digit", minute: "2-digit" },
+    )}`;
+    endTimestamp = `${endDate.toLocaleDateString()} at ${endDate.toLocaleTimeString(
+      [],
+      { hour: "2-digit", minute: "2-digit" },
+    )}`;
   } else {
     // This is an ongoing alert, so we want to indicate only when it ends in a more
     // human-readable format.
@@ -58,11 +67,12 @@ export const AlertItem = ({ alert, ...rest }: AlertProps): React.JSX.Element => 
       endDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
-
   return (
     <View {...rest}>
       <Text style={styles.alertText}>{alert.text}</Text>
-      {startTimestamp !== undefined ? <Text style={styles.alertSubtext}>Starts {startTimestamp}</Text> : null}
+      {startTimestamp !== undefined ? (
+        <Text style={styles.alertSubtext}>Starts {startTimestamp}</Text>
+      ) : null}
       <Text style={styles.alertSubtext}>Ends {endTimestamp}</Text>
     </View>
   );
@@ -71,21 +81,14 @@ export const AlertItem = ({ alert, ...rest }: AlertProps): React.JSX.Element => 
 /**
  * A skeleton component that mimics the {@interface AlertItem} component.
  */
-export const AlertItemSkeleton = ({ ...rest }: ViewProps): React.JSX.Element => {
+export const AlertItemSkeleton = ({
+  ...rest
+}: ViewProps): React.JSX.Element => {
   return (
     <View {...rest}>
-      <TextSkeleton
-        widthFraction={0.6}
-        style={styles.alertText}
-      />
-      <TextSkeleton
-        widthFraction={0.4}
-        style={styles.alertSubtext}
-      />
-      <TextSkeleton
-        widthFraction={0.4}
-        style={styles.alertSubtext}
-      />
+      <TextSkeleton widthFraction={0.6} style={styles.alertText} />
+      <TextSkeleton widthFraction={0.4} style={styles.alertSubtext} />
+      <TextSkeleton widthFraction={0.4} style={styles.alertSubtext} />
     </View>
   );
 };
@@ -102,4 +105,3 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
 });
-

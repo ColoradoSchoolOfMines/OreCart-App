@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  FlatList,
-  StyleSheet,
-  Text,
-  View,
-  type ViewProps,
-} from "react-native";
+import { FlatList, StyleSheet, Text, View, type ViewProps } from "react-native";
 
 import Divider from "../../common/components/Divider";
 import RetryButton from "../../common/components/RetryButton";

@@ -5,10 +5,10 @@ import {
   View,
   StyleSheet,
   TouchableHighlight,
-  type ViewProps,
-  Dimensions,
+  type ViewProps
 } from "react-native";
 
+import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
 import { type Coordinate, useLocation } from "../location/locationSlice";
 import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
@@ -17,7 +17,6 @@ import { estimateTime } from "../vans/util";
 import { useGetVansQuery } from "../vans/vansSlice";
 
 import { type Route } from "./routesSlice";
-import TextSkeleton from "../../common/components/TextSkeleton";
 
 /**
  * The props for the {@interface RouteItem} component.
@@ -124,7 +123,7 @@ function useClosestStop(to: Route): ClosestStop | undefined {
   return {
     ...closestRouteStop.inner,
     distanceFromUser: formatMiles(
-      geoDistanceToMiles(closestRouteStop.distance)
+      geoDistanceToMiles(closestRouteStop.distance),
     ),
     vanArrivalTime: estimateTime(closestRouteStopVan?.distance),
   };
