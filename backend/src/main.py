@@ -5,7 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .db import DBWrapper
 from .handlers import alert, ridership, routes, stops, vans
 from .hardware import HardwareExceptionMiddleware
-from .vans.manager import VanManager, van_manager
+from .vantracking.tracker import VanTracker
+from .vantracking.factory import van_tracker
 
 load_dotenv()
 
@@ -30,4 +31,4 @@ app.include_router(vans.router)
 @app.on_event("startup")
 def startup_event():
     app.state.db = DBWrapper()
-    app.state.van_manager: VanManager = van_manager()
+    app.state.van_tracker: VanTracker = van_tracker()

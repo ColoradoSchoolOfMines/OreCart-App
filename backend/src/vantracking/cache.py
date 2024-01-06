@@ -1,9 +1,7 @@
 from abc import ABC, abstractmethod
-from datetime import datetime
-from typing import Iterable, Optional
 
 from src.model.stop import Stop
-from src.vans.state import Coordinate, Location
+from src.vantracking.location import Location
 
 
 class VanStateCache(ABC):

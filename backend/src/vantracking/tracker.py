@@ -1,32 +1,23 @@
-import os
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from math import cos, radians, sqrt
 from typing import Optional
 
-from pydantic import BaseModel
 from src.model.stop import Stop
-from src.vans.cache import VanStateCache
-from src.vans.cachetools import CachetoolsVanStateCache
-from src.vans.memcached import MemcachedVanStateCache
-from src.vans.state import Coordinate, Location
+from src.vantracking.cache import VanStateCache
+from src.vantracking.coordinate import Coordinate
+from src.vantracking.location import Location
+from src.vantracking.state import VanState
 
 THRESHOLD_RADIUS_M = 30.48  # 100 ft
 THRESHOLD_TIME = timedelta(seconds=30)
 AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
 
 
-class VanState:
-    def __init__(self, location: Location, stop: Stop, time_to_next_stop: timedelta):
-        self.location = location
-        self.next_stop = stop
-        self.time_to_next_stop = time_to_next_stop
-
-
-class VanManager:
+class VanTracker:
     """
     General class for managing the current location and time estimates of all vans. This is transient state,
     hence why it's kept separate from the stateless route handlers and database. Create an instance with
-    van_manager().
+    factory.van_tracker().
     """
 
     def __init__(self, cache: VanStateCache):
@@ -143,25 +134,3 @@ def _distance_m(a: Coordinate, b: Coordinate) -> float:
     dlonkm = dlon * 40075 * cos(radians(a.latitude)) / 360
 
     return sqrt(dlatkm**2 + dlonkm**2) * 1000
-
-
-def van_manager() -> VanManager:
-    """
-    Create a new van manager from the environment variable configuration. This will raise a ValueError if the
-    configuration is invalid.
-    """
-
-    config = {}
-    for key in os.environ:
-        if key.startswith("CACHE_"):
-            config[key[6:].lower()] = os.environ[key]
-
-    if "type" not in config:
-        raise ValueError("type not in config")
-
-    if config["type"] == "ttl":
-        return VanManager(CachetoolsVanStateCache(config))
-    elif config["type"] == "memcached":
-        return VanManager(MemcachedVanStateCache(config))
-    else:
-        raise ValueError("Invalid cache type")

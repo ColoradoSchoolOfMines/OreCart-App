@@ -1,8 +1,8 @@
 from typing import Optional
 
 from src.model.stop import Stop
-from src.vans.cache import VanStateCache
-from src.vans.state import Location
+from src.vantracking.cache import VanStateCache
+from src.vantracking.state import Location
 
 
 class MemcachedVanStateCache(VanStateCache):

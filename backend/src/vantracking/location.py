@@ -2,11 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel
 
-
-class Coordinate(BaseModel):
-    latitude: float
-    longitude: float
-
+from src.vantracking.coordinate import Coordinate
 
 class Location(BaseModel):
     timestamp: datetime

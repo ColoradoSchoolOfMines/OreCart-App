@@ -14,7 +14,8 @@ from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.van import Van
 from src.request import process_include
-from src.vans.manager import Coordinate, Location, VanManager
+from src.vantracking.coordinate import Coordinate
+from src.vantracking.location import Location
 from starlette.responses import Response
 
 
@@ -175,7 +176,7 @@ def get_location_for_vans(
 ) -> Dict[int, dict[str, Union[str, int]]]:
     locations_json: Dict[int, dict[str, Union[str, int]]] = {}
     for van_id in van_ids:
-        state = req.app.state.van_manager.get_van(van_id)
+        state = req.app.state.van_tracker.get_van(van_id)
         if state is None:
             continue
         locations_json[van_id] = {
@@ -192,7 +193,7 @@ def get_location_for_vans(
 def get_location_for_van(
     req: Union[Request, WebSocket], van_id: int
 ) -> dict[str, Union[str, int]]:
-    state = req.app.state.van_manager.get_van(van_id)
+    state = req.app.state.van_tracker.get_van(van_id)
     if state is None:
         return {}
     return {
@@ -229,7 +230,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
 
     # Check that the timestamp is the most recent one for the van. This prevents
     # updates from being sent out of order.
-    van_state = req.app.state.van_manager.get_van(van_id)
+    van_state = req.app.state.van_tracker.get_van(van_id)
     if van_state is not None and timestamp < van_state.location.timestamp:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
@@ -238,7 +239,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     # The van may be starting up for the first time, in which we need to initialize it's
     # cache entry and stop list. It's better to do this once rather than coupling it with
     # push_location due to the very expensive stop query we have to do.
-    if van_id not in req.app.state.van_manager:
+    if van_id not in req.app.state.van_tracker:
         with req.app.state.db.session() as session:
             # Need to find the likely list of stops this van will go on. It's assumed that
             # this will only change between van activations, so we can query once and then
@@ -261,16 +262,13 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
                     status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
                 )
 
-            req.app.state.van_manager.init_van(van_id, stops)
+            req.app.state.van_tracker.init_van(van_id, stops)
 
-    req.app.state.van_manager.push_location(
+    req.app.state.van_tracker.push_location(
         van_id,
         Location(
             timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon)
         ),
     )
-
-    state = req.app.state.van_manager.get_van(van_id)
-    print(state.next_stop.name, state.time_to_next_stop.total_seconds())
 
     return HardwareOKResponse()
