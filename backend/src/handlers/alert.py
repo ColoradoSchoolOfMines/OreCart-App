@@ -6,6 +6,10 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from src.model.alert import Alert
 
+from fastapi import HTTPException
+
+from typing import Optional
+
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
 
@@ -21,12 +25,17 @@ class AlertModel(BaseModel):
 
 
 @router.get("/")
-def get_alerts(req: Request, active: bool = False) -> List[Dict[str, Union[str, int]]]:
+def get_alerts(req: Request, filter: Optional[str] = None) -> List[Dict[str, Union[str, int]]]:
     with req.app.state.db.session() as session:
         query = session.query(Alert)
-        if active:
+        if filter == "active":
             now = datetime.now(timezone.utc)
             query = query.filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
+        elif filter == "future":
+            now = datetime.now(timezone.utc)
+            query = query.filter(Alert.start_datetime > now)
+        elif filter is not None: 
+            raise HTTPException(status_code=400, detail=f"Invalid filter {filter}")
         alerts = query.all()
 
     alerts_json: List[Dict[str, Union[str, int]]] = []
