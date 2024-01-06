@@ -127,7 +127,7 @@ function useClosestStop(to: Route): ClosestStop | undefined {
   };
 }
 
-function formatSecondsAsMinutes(seconds: number): string {
+const formatSecondsAsMinutes = (seconds: number): string => {
   if (seconds < 60) {
     return `<1 min`;
   } else {
