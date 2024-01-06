@@ -17,6 +17,7 @@ import { estimateTime } from "../vans/util";
 import { useGetVansQuery } from "../vans/vansSlice";
 
 import { type Route } from "./routesSlice";
+import TextSkeleton from "../../common/components/TextSkeleton";
 
 /**
  * The props for the {@interface RouteItem} component.
@@ -123,7 +124,7 @@ function useClosestStop(to: Route): ClosestStop | undefined {
   return {
     ...closestRouteStop.inner,
     distanceFromUser: formatMiles(
-      geoDistanceToMiles(closestRouteStop.distance),
+      geoDistanceToMiles(closestRouteStop.distance)
     ),
     vanArrivalTime: estimateTime(closestRouteStopVan?.distance),
   };
@@ -133,18 +134,6 @@ function useClosestStop(to: Route): ClosestStop | undefined {
  * A skeleton component that mimics the {@interface RouteItem} component.
  */
 export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
-  const width = Dimensions.get("window").width;
-
-  const routeNameWidthStyle = {
-    width: width * 0.4,
-  };
-  const routeStatusWidthStyle = {
-    width: width * 0.6,
-  };
-  const routeContextWidthStyle = {
-    width: width * 0.5,
-  };
-
   return (
     <View style={[styles.innerContainer, style]}>
       {/* We want to make sure the placeholders have the same height as real text elements, so we simply
@@ -152,23 +141,9 @@ export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
       RN, this results in a text element that takes up the height needed without having to put any
       placeholder text content. */}
       <View style={styles.routeInfoContainer}>
-        <Text
-          style={[styles.routeName, styles.textSkeleton, routeNameWidthStyle]}
-        />
-        <Text
-          style={[
-            styles.routeStatus,
-            styles.textSkeleton,
-            routeStatusWidthStyle,
-          ]}
-        />
-        <Text
-          style={[
-            styles.routeContext,
-            styles.textSkeleton,
-            routeContextWidthStyle,
-          ]}
-        />
+        <TextSkeleton widthFraction={0.4} style={[styles.routeName]} />
+        <TextSkeleton widthFraction={0.6} style={[styles.routeStatus]} />
+        <TextSkeleton widthFraction={0.5} style={[styles.routeContext]} />
       </View>
     </View>
   );
@@ -199,10 +174,5 @@ const styles = StyleSheet.create({
   },
   routeContext: {
     fontSize: 12,
-  },
-  textSkeleton: {
-    backgroundColor: Color.generic.skeleton,
-    borderRadius: 32,
-    color: "transparent",
   },
 });

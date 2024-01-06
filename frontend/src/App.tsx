@@ -32,7 +32,11 @@ const App = (): React.JSX.Element => (
     <SafeAreaProvider style={LayoutStyle.fill}>
       <View style={LayoutStyle.fill}>
         <NavigationContainer>
-          <Stack.Navigator>
+          <Stack.Navigator
+            screenOptions={{
+              cardStyle: { backgroundColor: Color.generic.white },
+            }}
+          >
             <Stack.Screen
               name="Home"
               component={Home}
