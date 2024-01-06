@@ -5,8 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from .db import DBWrapper
 from .handlers import alert, ridership, routes, stops, vans
 from .hardware import HardwareExceptionMiddleware
-from .vantracking.tracker import VanTracker
 from .vantracking.factory import van_tracker
+from .vantracking.tracker import VanTracker
 
 load_dotenv()
 

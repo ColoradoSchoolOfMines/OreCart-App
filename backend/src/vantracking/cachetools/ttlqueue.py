@@ -1,8 +1,8 @@
 from collections import deque
-
 from typing import Any
 
 from src.vantracking.cachetools.ttl import TTL
+
 
 class TTLQueue:
     """
@@ -43,4 +43,3 @@ class TTLQueue:
                 self.queue.popleft()
             else:
                 break
-

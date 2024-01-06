@@ -1,6 +1,6 @@
 import time
-
 from typing import Any
+
 
 class TTL:
     """

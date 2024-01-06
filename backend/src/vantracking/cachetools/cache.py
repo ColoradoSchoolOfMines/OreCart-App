@@ -5,11 +5,10 @@ from typing import Any, Optional
 from cachetools import FIFOCache
 from src.model.stop import Stop
 from src.vantracking.cache import VanStateCache
-from src.vantracking.state import Location
 from src.vantracking.cachetools.ttl import TTL
 from src.vantracking.cachetools.ttlqueue import TTLQueue
 from src.vantracking.cachetools.ttlvanstate import TTLVanState
-
+from src.vantracking.state import Location
 
 
 class CachetoolsVanStateCache(VanStateCache):

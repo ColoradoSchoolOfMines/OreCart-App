@@ -1,9 +1,9 @@
 import os
 
-from src.vantracking.tracker import VanTracker
-
 from src.vantracking.cachetools.cache import CachetoolsVanStateCache
 from src.vantracking.memcached.cache import MemcachedVanStateCache
+from src.vantracking.tracker import VanTracker
+
 
 def van_tracker() -> VanTracker:
     """
