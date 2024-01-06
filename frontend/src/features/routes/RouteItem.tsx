@@ -5,7 +5,7 @@ import {
   View,
   StyleSheet,
   TouchableHighlight,
-  type ViewProps
+  type ViewProps,
 } from "react-native";
 
 import TextSkeleton from "../../common/components/TextSkeleton";

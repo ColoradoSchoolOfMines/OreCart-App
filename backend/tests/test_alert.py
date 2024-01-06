@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import MagicMock
-from fastapi import HTTPException
 
 import pytest
+from fastapi import HTTPException
 from src.handlers.alert import (
     AlertModel,
     delete_alert,
@@ -75,6 +75,7 @@ def test_get_alerts(mock_route_args, mock_alerts):
         for mock_alert in mock_alerts
     ]
 
+
 def test_get_active_alerts(mock_route_args, mock_alerts):
     mock_route_args.session.add_all(mock_alerts)
     mock_route_args.session.commit()
@@ -92,6 +93,7 @@ def test_get_active_alerts(mock_route_args, mock_alerts):
         }
     ]
 
+
 def test_get_future_alerts(mock_route_args, mock_alerts):
     mock_route_args.session.add_all(mock_alerts)
     mock_route_args.session.commit()
@@ -108,6 +110,7 @@ def test_get_future_alerts(mock_route_args, mock_alerts):
             "endDateTime": int(mock_alerts[2].end_datetime.timestamp()),
         }
     ]
+
 
 def test_get_alerts_invalid_filter(mock_route_args, mock_alerts):
     mock_route_args.session.add_all(mock_alerts)
