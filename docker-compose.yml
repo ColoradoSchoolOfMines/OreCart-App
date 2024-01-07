@@ -15,16 +15,14 @@ services:
       - 5432:5432
     volumes:
       - orecart-db-volume:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=postgres
+    env_file:
+      - .env
   migration:
     container_name: orecart-migration
     build: ./backend
     command: alembic upgrade head
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@database:5432/postgres
+    env_file:
+      - .env
     depends_on:
       database:
         condition: service_healthy
@@ -34,11 +32,8 @@ services:
     restart: always
     ports:
       - 8000:8000
-    environment:
-      - DATABASE_URL=postgresql://postgres:password@database:5432/postgres
-      - CACHE_TYPE=ttl
-      - CACHE_TTL=120
-      - CACHE_MAXSIZE=1000
+    env_file:
+      - .env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 30s
@@ -54,10 +49,8 @@ services:
     restart: always
     ports:
       - 5173:5173
-    environment:
-      - VITE_BACKEND_URL=localhost:8000
-      - REACT_APP_ADMIN_URL=http://localhost:3000
-      - REACT_APP_ADMIN=true
+    env_file:
+      - .env
     depends_on:
       backend:
         condition: service_healthy
