@@ -6,8 +6,10 @@ import EditRouteForm from './edit-route-form';
 import { Route, RouteEditFormRef } from './route-types';
 import './routes-page.scss';
 
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
 const fetchRoutes = async () => {
-  const response = await fetch('http://localhost:8000/routes/');
+  const response = await fetch(`${baseUrl}/routes/`);
   const data = await response.json();
   const route_data = data as Route[];
   return route_data;
@@ -23,7 +25,7 @@ const RoutesPage: React.FC = () => {
 
   const handleFormSubmit = async (formData: FormData) => {
     try {
-      const response = await fetch('http://localhost:8000/routes/', {
+      const response = await fetch(`${baseUrl}/routes/`, {
         method: 'POST',
         body: formData, // FormData is directly sent without setting Content-Type header
       });
@@ -50,7 +52,7 @@ const RoutesPage: React.FC = () => {
 
   const handleEditFormSubmit = async (formData: FormData) => {
     try {
-      const response = await fetch(`http://localhost:8000/routes/${currentRouteId}`, {
+      const response = await fetch(`${baseUrl}/routes/${currentRouteId}`, {
         method: 'PUT',
         body: formData, // FormData is directly sent without setting Content-Type header
       });
@@ -68,7 +70,7 @@ const RoutesPage: React.FC = () => {
 
   const handleDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/routes/${currentRouteId}`, {
+      const response = await fetch(`${baseUrl}/routes/${currentRouteId}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
