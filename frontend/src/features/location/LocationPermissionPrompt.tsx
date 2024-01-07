@@ -11,7 +11,7 @@ import { useLocationStatus } from "./locationSlice";
  * A banner component that requests the user to grant location permissions to
  * the app.
  */
-const LocationPermissionPrompt: React.FC = () => {
+const LocationPermissionPrompt = (): React.JSX.Element | null => {
   const dispatch = useAppDispatch();
   const locationStatus = useLocationStatus();
 

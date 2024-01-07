@@ -27,7 +27,7 @@ interface MapProps extends ViewProps {
 /**
  * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
  */
-const Map: React.FC<MapProps> = ({ insets }) => {
+const Map = ({ insets }: MapProps): React.JSX.Element => {
   const mapRef = useRef<MapView>(null);
   const [followingLocation, setFollowingLocation] = useState<boolean>(true);
   const [lastLocation, setLastLocation] = React.useState<
@@ -112,7 +112,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         {vans?.map((van, index) =>
           van.location !== undefined ? (
             <Marker
-              key={index}
+              key={van.id}
               coordinate={van.location}
               tracksViewChanges={false}
               anchor={{ x: 0.5, y: 0.5 }}
@@ -122,7 +122,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
                   styles.marker,
                   {
                     backgroundColor: Color.orecart.get(
-                      routesById[van.routeId].name,
+                      routesById[van.routeId]?.name,
                     ),
                   },
                 ]}
@@ -138,7 +138,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         )}
         {routes?.map((route, index) => (
           <Polyline
-            key={index}
+            key={route.id}
             coordinates={route.waypoints}
             strokeColor={Color.orecart.get(route.name)}
             strokeWidth={4}
@@ -148,7 +148,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
         ))}
         {stops?.map((stop, index) => (
           <Marker
-            key={vans?.length ?? 0 + index}
+            key={stop.id}
             coordinate={stop}
             tracksViewChanges={false}
             anchor={{ x: 0.5, y: 0.5 }}
@@ -158,7 +158,7 @@ const Map: React.FC<MapProps> = ({ insets }) => {
                 styles.marker,
                 {
                   backgroundColor: Color.orecart.get(
-                    routesById[stop.routeIds[0]].name,
+                    routesById[stop.routeIds[0]]?.name,
                   ),
                 },
               ]}

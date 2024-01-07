@@ -5,15 +5,15 @@ import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { Provider } from "react-redux";
 
-import Main from "./app/Main";
+import Home from "./app/Home";
 import store from "./app/store";
-import { type ParamListBase } from "./common/navTypes";
+import { type OuterParamList } from "./common/navTypes";
 import Color from "./common/style/color";
 import LayoutStyle from "./common/style/layout";
-import { ADARequest } from "./features/screens/ADARequest";
-import { Alerts } from "./features/screens/Alerts";
-import { BugReport } from "./features/screens/BugReport";
-import { Settings } from "./features/screens/Settings";
+import { ADARequestScreen } from "./features/ada/ADARequestScreen";
+import { AlertScreen } from "./features/alert/AlertScreen";
+import { BugReportScreen } from "./features/report/BugReportScreen";
+import { SettingsScreen } from "./features/settings/SettingsScreen";
 
 // -----
 // DO NOT PUT ANY SUBSTANTIAL UI OR LOGIC INTO THIS FILE. ONLY INCLUDE SYSTEM CONFIGURATION.
@@ -25,9 +25,9 @@ if (Platform.OS === "android") {
   );
 }
 
-const Stack = createStackNavigator<ParamListBase>();
+const Stack = createStackNavigator<OuterParamList>();
 
-const App: React.FC<void> = () => (
+const App = (): React.JSX.Element => (
   <Provider store={store}>
     <SafeAreaProvider style={LayoutStyle.fill}>
       <View style={LayoutStyle.fill}>
@@ -35,13 +35,13 @@ const App: React.FC<void> = () => (
           <Stack.Navigator>
             <Stack.Screen
               name="Home"
-              component={Main}
+              component={Home}
               options={{ headerShown: false }}
             />
-            <Stack.Screen name="Alerts" component={Alerts} />
-            <Stack.Screen name="ADARequest" component={ADARequest} />
-            <Stack.Screen name="BugReport" component={BugReport} />
-            <Stack.Screen name="Settings" component={Settings} />
+            <Stack.Screen name="Alerts" component={AlertScreen} />
+            <Stack.Screen name="ADARequest" component={ADARequestScreen} />
+            <Stack.Screen name="BugReport" component={BugReportScreen} />
+            <Stack.Screen name="Settings" component={SettingsScreen} />
           </Stack.Navigator>
         </NavigationContainer>
       </View>

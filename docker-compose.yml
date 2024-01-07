@@ -19,6 +19,15 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
+  migration:
+    container_name: orecart-migration
+    build: ./backend
+    command: alembic upgrade head
+    environment:
+      - DATABASE_URL=postgresql://postgres:password@database:5432/postgres
+    depends_on:
+      database:
+        condition: service_healthy
   backend:
     container_name: orecart-backend
     build: ./backend
@@ -30,6 +39,15 @@ services:
       - CACHE_TYPE=ttl
       - CACHE_TTL=120
       - CACHE_MAXSIZE=1000
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    depends_on:
+      migration:
+        condition: service_completed_successfully
   frontend-admin:
     container_name: orecart-frontend-admin
     build: ./frontend-admin
@@ -40,5 +58,8 @@ services:
       - REACT_APP_API_URL=http://localhost:8000
       - REACT_APP_ADMIN_URL=http://localhost:3000
       - REACT_APP_ADMIN=true
+    depends_on:
+      backend:
+        condition: service_healthy
 volumes:
   orecart-db-volume: {}

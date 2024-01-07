@@ -1,7 +1,6 @@
-import { type RouteProp } from "@react-navigation/native";
-import { type NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { type ParamListBase } from "@react-navigation/core";
 
-export interface ParamListBase {
+export interface OuterParamList extends ParamListBase {
   Home: undefined;
   ADARequest: undefined;
   Alerts: undefined;
@@ -9,27 +8,8 @@ export interface ParamListBase {
   Settings: undefined;
 }
 
-export interface MainScreenProps {
-  navigation: NativeStackNavigationProp<ParamListBase, "Home">;
-  route: RouteProp<ParamListBase, "Home">;
-}
-
-export interface ADARequestScreenProps {
-  navigation: NativeStackNavigationProp<ParamListBase, "ADARequest">;
-  route: RouteProp<ParamListBase, "ADARequest">;
-}
-
-export interface AlertsScreenProps {
-  navigation: NativeStackNavigationProp<ParamListBase, "Alerts">;
-  route: RouteProp<ParamListBase, "Alerts">;
-}
-
-export interface BugReportScreenProps {
-  navigation: NativeStackNavigationProp<ParamListBase, "BugReport">;
-  route: RouteProp<ParamListBase, "BugReport">;
-}
-
-export interface SettingsScreenProps {
-  navigation: NativeStackNavigationProp<ParamListBase, "Settings">;
-  route: RouteProp<ParamListBase, "Settings">;
+export interface InnerParamList extends ParamListBase {
+  Landing: undefined;
+  Route: { routeId: number };
+  Stop: { stopId: number };
 }
