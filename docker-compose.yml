@@ -16,13 +16,13 @@ services:
     volumes:
       - orecart-db-volume:/var/lib/postgresql/data
     env_file:
-      - .env
+      - database.env
   migration:
     container_name: orecart-migration
     build: ./backend
     command: alembic upgrade head
     env_file:
-      - .env
+      - backend.env
     depends_on:
       database:
         condition: service_healthy
@@ -33,7 +33,7 @@ services:
     ports:
       - 8000:8000
     env_file:
-      - .env
+      - backend.env
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 30s
@@ -50,7 +50,7 @@ services:
     ports:
       - 5173:5173
     env_file:
-      - .env
+      - frontend-admin.env
     depends_on:
       backend:
         condition: service_healthy
