@@ -6,7 +6,7 @@ import VanEditForm from './edit-van-form.tsx';
 import { Van, VanData, VanEditFormMethods } from './van-types.tsx';
 import './vans-page.scss';
 
-const baseUrl = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "http://localhost:8000";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchVans = async () => {
   const response = await fetch(baseUrl + '/vans/');

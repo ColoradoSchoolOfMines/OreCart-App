@@ -6,7 +6,7 @@ import { Alert, AlertData, AlertEditFormMethods } from './alert-types';
 import './alerts-page.scss';
 import EditAlertForm from './edit-alert-form';
 
-const baseUrl = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "http://localhost:8000";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchAlerts = async () => {
   const response = await fetch(baseUrl + '/alerts/');

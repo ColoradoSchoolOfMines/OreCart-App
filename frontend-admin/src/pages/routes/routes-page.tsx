@@ -6,7 +6,7 @@ import EditRouteForm from './edit-route-form';
 import { Route, RouteEditFormRef } from './route-types';
 import './routes-page.scss';
 
-const baseUrl = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "http://localhost:8000";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchRoutes = async () => {
   const response = await fetch(baseUrl + '/routes/');

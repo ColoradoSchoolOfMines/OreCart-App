@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Route } from '../routes/route-types.tsx';
 import { AddVanFormProps, VanData } from './van-types.tsx';
 
-const baseUrl = process.env.REACT_APP_API_URL ? process.env.REACT_APP_API_URL : "http://localhost:8000";
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchRoutes = async () => {
     const response = await fetch(baseUrl + '/routes/');

@@ -55,7 +55,7 @@ services:
     ports:
       - 5173:5173
     environment:
-      - REACT_APP_API_URL=http://localhost:8000
+      - VITE_BACKEND_URL=localhost:8000
       - REACT_APP_ADMIN_URL=http://localhost:3000
       - REACT_APP_ADMIN=true
     depends_on:
