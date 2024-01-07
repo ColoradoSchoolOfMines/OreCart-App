@@ -9,7 +9,6 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable

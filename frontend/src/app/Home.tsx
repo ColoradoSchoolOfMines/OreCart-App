@@ -1,4 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import { type RouteProp, type NavigationProp } from "@react-navigation/core";
+import {
+  CardStyleInterpolators,
+  createStackNavigator,
+} from "@react-navigation/stack";
+import { type StackNavigationProp } from "@react-navigation/stack";
 import Constants from "expo-constants";
 import React, { useState } from "react";
 import {
@@ -13,14 +19,22 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../common/components/FloatingButton";
-import { type MainScreenProps } from "../common/navTypes";
+import { type InnerParamList, type OuterParamList } from "../common/navTypes";
+import Color from "../common/style/color";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
-import AlertList from "../features/alert/AlertList";
+import { LandingScreen } from "../features/landing/LandingScreen";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
-import RouteList from "../features/routes/RouteList";
+import { RouteScreen } from "../features/routes/RouteScreen";
+
+export interface HomeScreenProps {
+  navigation: StackNavigationProp<OuterParamList, "Home">;
+  route: RouteProp<OuterParamList, "Home">;
+}
+
+const Stack = createStackNavigator<InnerParamList>();
 
 /**
  * Controls the percentage of the screen taken up by the bottom sheet in
@@ -31,7 +45,7 @@ const SHEET_EXTENT = 0.5;
 /**
  * The main screen containing the map and sheet components.
  */
-const Main = ({ route, navigation }: MainScreenProps): React.JSX.Element => {
+const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
   // The bottom sheet extends halfway across the screen, with the map
   // being inset accordingly.
   const screenHeight = Dimensions.get("window").height;
@@ -40,6 +54,7 @@ const Main = ({ route, navigation }: MainScreenProps): React.JSX.Element => {
   const insets = useSafeAreaInsets();
   const drawerInsets = { top: insets.top };
   const expoVersion = Constants.expoConfig?.version;
+  const [atLanding, setAtLanding] = useState<boolean>(true);
 
   manageLocationMiddleware();
 
@@ -109,16 +124,55 @@ const Main = ({ route, navigation }: MainScreenProps): React.JSX.Element => {
         <View style={[LayoutStyle.overlay, SpacingStyle.pad(drawerInsets, 16)]}>
           <FloatingButton
             onPress={() => {
-              setOpen((prevOpen: boolean) => !prevOpen);
+              // Open the drawer if were at the landing page, pop the inner navigation stack otherwis
+              if (atLanding) {
+                setOpen((prevOpen: boolean) => !prevOpen);
+              } else {
+                navigation.goBack();
+              }
             }}
           >
-            <MaterialIcons name="menu" size={24} color="black" />
+            <MaterialIcons
+              name={atLanding ? "menu" : "arrow-back"}
+              size={24}
+              color="black"
+            />
           </FloatingButton>
         </View>
         {/* Must inset bottom sheet down by the drawer button (16 + 8 + 48 + 8 + 16) */}
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
-          <AlertList />
-          <RouteList />
+          {/* Should disable headers on these screens since they arent full size. */}
+          <Stack.Navigator
+            screenOptions={{
+              headerShown: false,
+              cardStyle: { backgroundColor: Color.generic.white },
+            }}
+            screenListeners={({ navigation: innerNavigation }) => ({
+              state: (_) => {
+                // Outer navigation will still say it can go back (since we can exit the app). So we need to check
+                // the inner navigation. The typecast is necessary so we can indicate that canGoBack will return a
+                // boolean.
+                const typedInnerNavigation =
+                  innerNavigation as NavigationProp<InnerParamList>;
+                setAtLanding(!typedInnerNavigation.canGoBack());
+              },
+            })}
+          >
+            <Stack.Screen
+              name="Landing"
+              component={LandingScreen}
+              options={{
+                cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+              }}
+            />
+            <Stack.Screen
+              name="Route"
+              component={RouteScreen}
+              options={{
+                cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+              }}
+            />
+          </Stack.Navigator>
         </Sheet>
       </GestureHandlerRootView>
     </Drawer>
@@ -137,4 +191,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Main;
+export default Home;

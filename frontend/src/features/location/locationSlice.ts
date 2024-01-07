@@ -14,7 +14,12 @@ export interface Coordinate {
 /**
  * The status of location updates.
  */
-export type LocationStatus = Active | Inactive | NotGranted | Error;
+export type LocationStatus =
+  | Active
+  | Inactive
+  | Initializing
+  | NotGranted
+  | Error;
 
 /**
  * Location updates are currently being sent.
@@ -22,6 +27,13 @@ export type LocationStatus = Active | Inactive | NotGranted | Error;
 export interface Active {
   type: "active";
   location: Coordinate;
+}
+
+/**
+ * Location updates are being initialized.
+ */
+export interface Initializing {
+  type: "initializing";
 }
 
 /**
