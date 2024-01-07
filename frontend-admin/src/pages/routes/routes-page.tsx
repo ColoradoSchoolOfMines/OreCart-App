@@ -9,7 +9,7 @@ import './routes-page.scss';
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchRoutes = async () => {
-  const response = await fetch(baseUrl + '/routes/');
+  const response = await fetch(`${baseUrl}/routes/`);
   const data = await response.json();
   const route_data = data as Route[];
   return route_data;
@@ -25,7 +25,7 @@ const RoutesPage: React.FC = () => {
 
   const handleFormSubmit = async (formData: FormData) => {
     try {
-      const response = await fetch(baseUrl + '/routes/', {
+      const response = await fetch(`${baseUrl}/routes/`, {
         method: 'POST',
         body: formData, // FormData is directly sent without setting Content-Type header
       });

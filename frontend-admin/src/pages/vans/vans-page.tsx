@@ -9,7 +9,7 @@ import './vans-page.scss';
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchVans = async () => {
-  const response = await fetch(baseUrl + '/vans/');
+  const response = await fetch(`${baseUrl}/vans/`);
   const data = await response.json();
   const van_data = data["vans"] as Van[] || [];
   return van_data;
@@ -30,7 +30,7 @@ const VanPage: React.FC = () => {
   const createVan = async (vanData: VanData) => {
     // Convert the routeId to an integer
     try {
-      await fetch(baseUrl + '/vans/', {
+      await fetch(`${baseUrl}/vans/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

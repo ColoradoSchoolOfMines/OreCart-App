@@ -5,7 +5,7 @@ import { AddVanFormProps, VanData } from './van-types.tsx';
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchRoutes = async () => {
-    const response = await fetch(baseUrl + '/routes/');
+    const response = await fetch(`${baseUrl}/routes/`);
     const data = await response.json();
     const route_data = data as Route[];
     return route_data;

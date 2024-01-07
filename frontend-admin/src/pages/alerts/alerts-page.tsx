@@ -9,7 +9,7 @@ import EditAlertForm from './edit-alert-form';
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchAlerts = async () => {
-  const response = await fetch(baseUrl + '/alerts/');
+  const response = await fetch(`${baseUrl}/alerts/`);
   const data = await response.json();
   const alert_data = data as Alert[];
   return alert_data;
@@ -29,7 +29,7 @@ const AlertsPage: React.FC = () => {
 
   const handleFormSubmit = async (formData: AlertData) => {
     try {
-      const response = await fetch(baseUrl + '/alerts/', {
+      const response = await fetch(`${baseUrl}/alerts/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
