@@ -110,6 +110,7 @@ def query_route_stop_ids(route_id: int, session):
 
     stops = (
         session.query(RouteStop)
+        .order_by(RouteStop.position)
         .filter(route_id == Route.id)
         .with_entities(RouteStop.stop_id)
         .all()

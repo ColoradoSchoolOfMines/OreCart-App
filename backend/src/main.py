@@ -1,12 +1,12 @@
-from cachetools import TTLCache
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .caching import cache, cache_factory
 from .db import DBWrapper
 from .handlers import alert, ridership, routes, stops, vans
 from .hardware import HardwareExceptionMiddleware
+from .vantracking.factory import van_tracker
+from .vantracking.tracker import VanTracker
 
 load_dotenv()
 
@@ -31,4 +31,4 @@ app.include_router(vans.router)
 @app.on_event("startup")
 def startup_event():
     app.state.db = DBWrapper()
-    app.state.van_locations: cache.Cache = cache_factory.get_cache()
+    app.state.van_tracker: VanTracker = van_tracker()

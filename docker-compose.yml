@@ -37,6 +37,8 @@ services:
     environment:
       - DATABASE_URL=postgresql://postgres:password@database:5432/postgres
       - CACHE_TYPE=ttl
+      - CACHE_TTL=120
+      - CACHE_MAXSIZE=1000
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
       interval: 30s
@@ -45,7 +47,7 @@ services:
       start_period: 10s
     depends_on:
       migration:
-        condition: service_completed_successfully    
+        condition: service_completed_successfully
   frontend-admin:
     container_name: orecart-frontend-admin
     build: ./frontend-admin
