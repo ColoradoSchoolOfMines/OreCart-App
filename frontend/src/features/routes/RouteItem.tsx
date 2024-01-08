@@ -15,16 +15,16 @@ import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
 import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
 import { type VanLocation, useGetVansQuery } from "../vans/vansSlice";
 
-import { type Route } from "./routesSlice";
+import { type ExtendedRoute } from "./routesSlice";
 
 /**
  * The props for the {@interface RouteItem} component.
  */
 interface RouteItemProps {
   /** The route to display. */
-  route: Route;
+  route: ExtendedRoute;
   /** Called when the route item is clicked on. */
-  onPress: (route: Route) => void;
+  onPress: (route: ExtendedRoute) => void;
 }
 
 /**
@@ -89,7 +89,7 @@ interface ClosestStop extends Stop {
   vanArrivalTime: string;
 }
 
-function useClosestStop(to: Route): ClosestStop | undefined {
+function useClosestStop(to: ExtendedRoute): ClosestStop | undefined {
   const vans = useGetVansQuery().data;
   if (vans === undefined) {
     return undefined;
