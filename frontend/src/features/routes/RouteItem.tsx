@@ -11,7 +11,7 @@ import {
 import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
 import { useLocation } from "../location/locationSlice";
-import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
+import { closest, formatMiles, geoDistanceToMiles, formatSecondsAsMinutes } from "../location/util";
 import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
 import { type VanLocation, useGetVansQuery } from "../vans/vansSlice";
 
@@ -134,24 +134,12 @@ function useClosestStop(to: ExtendedRoute): ClosestStop | undefined {
   };
 }
 
-const formatSecondsAsMinutes = (seconds: number): string => {
-  if (seconds < 60) {
-    return `<1 min`;
-  } else {
-    return `${Math.round(seconds / 60)} min`;
-  }
-};
-
 /**
  * A skeleton component that mimics the {@interface RouteItem} component.
  */
 export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
   return (
     <View style={[styles.innerContainer, style]}>
-      {/* We want to make sure the placeholders have the same height as real text elements, so we simply
-      add empty text elements set to the same configuration as the normal text elements. By some quirk of
-      RN, this results in a text element that takes up the height needed without having to put any
-      placeholder text content. */}
       <View style={styles.routeInfoContainer}>
         <TextSkeleton widthFraction={0.4} style={[styles.routeName]} />
         <TextSkeleton widthFraction={0.6} style={[styles.routeStatus]} />
@@ -188,3 +176,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+

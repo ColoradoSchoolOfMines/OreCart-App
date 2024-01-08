@@ -28,6 +28,7 @@ import { manageLocationMiddleware } from "../features/location/locationMiddlewar
 import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
 import { RouteScreen } from "../features/routes/RouteScreen";
+import { StopScreen } from "../features/stops/StopScreen";
 
 export interface HomeScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Home">;
@@ -145,6 +146,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
           <Stack.Navigator
             screenOptions={{
               headerShown: false,
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
               cardStyle: { backgroundColor: Color.generic.white },
             }}
             screenListeners={({ navigation: innerNavigation }) => ({
@@ -161,16 +163,14 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
             <Stack.Screen
               name="Landing"
               component={LandingScreen}
-              options={{
-                cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-              }}
             />
             <Stack.Screen
               name="Route"
               component={RouteScreen}
-              options={{
-                cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
-              }}
+            />
+            <Stack.Screen
+              name="Stop"
+              component={StopScreen}
             />
           </Stack.Navigator>
         </Sheet>
