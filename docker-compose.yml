@@ -26,6 +26,10 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend/
   backend:
     container_name: orecart-backend
     build: ./backend
@@ -43,6 +47,10 @@ services:
     depends_on:
       migration:
         condition: service_completed_successfully
+    develop:
+      watch:
+        - action: rebuild
+          path: ./backend/
   frontend-admin:
     container_name: orecart-frontend-admin
     build: ./frontend-admin
@@ -51,8 +59,18 @@ services:
       - 5173:5173
     env_file:
       - frontend-admin.env
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5173/"]
+      interval: 30s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     depends_on:
       backend:
         condition: service_healthy
+    develop:
+      watch:
+        - action: rebuild
+          path: ./frontend-admin
 volumes:
   orecart-db-volume: {}
