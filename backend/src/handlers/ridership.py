@@ -7,10 +7,10 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.sql import ColumnElement
-from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
+from src.request import require_mtls
+from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse, require_mtls
 from src.model.analytics import Analytics
 from src.model.van import Van
 
@@ -70,6 +70,8 @@ async def post_ridership_stats(req: Request, van_id: int):
     - lat (double-precision float, current latitude of the van at the stop)
     - lon (double-precision float, current longitude of the van at the stop)
     """
+
+    require_mtls(req)
 
     # Unpack the byte body sent by the hardware into their corresponding values
     body = await req.body()

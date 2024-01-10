@@ -1,3 +1,4 @@
+import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,3 +33,6 @@ app.include_router(vans.router)
 def startup_event():
     app.state.db = DBWrapper()
     app.state.van_tracker: VanTracker = van_tracker()
+    app.state.mtls_forward_key = os.environ["MTLS_FORWARD_KEY"]
+    if app.state.mtls_forward_key is None:
+        raise ValueError("FORWARD_KEY must be set")

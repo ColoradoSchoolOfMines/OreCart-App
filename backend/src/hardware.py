@@ -39,6 +39,7 @@ class HardwareErrorCode(Enum):
     VAN_NOT_ACTIVE = 2
     TIMESTAMP_NOT_MOST_RECENT = 3
     VAN_DOESNT_EXIST = 4
+    NEED_MTLS_AUTH = 5
 
 
 class HardwareHTTPException(Exception):
@@ -74,3 +75,12 @@ class HardwareExceptionMiddleware(BaseHTTPMiddleware):
             # Forward exception to base middleware (hopefully the default error handler)
             raise exc
         return response
+
+
+def require_mtls(request):
+    """
+    Validates the X-Forward-Key header of a request, ensuring that it is present and
+    matches the key specified in the environment.
+    """
+    if request.headers.get("X-mTLS-Forward-Key") != request.app.state.mtls_forward_key:
+        raise HardwareHTTPException(status_code=401, error_code=HardwareErrorCode.NEED_MTLS_AUTH)

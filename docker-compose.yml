@@ -43,6 +43,17 @@ services:
     depends_on:
       migration:
         condition: service_completed_successfully
+  mtls-proxy:
+    container_name: orecart-mtls-proxy
+    build: ./mtls-proxy
+    restart: always
+    ports:
+      - 8001:8001
+    env_file:
+      - mtls-proxy.env
+    depends_on:
+      migration:
+        condition: service_completed_successfully
   frontend-admin:
     container_name: orecart-frontend-admin
     build: ./frontend-admin

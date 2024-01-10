@@ -2,6 +2,13 @@ from typing import Optional
 
 from fastapi import HTTPException
 
+def require_mtls(request):
+    """
+    Validates the X-Forward-Key header of a request, ensuring that it is present and
+    matches the key specified in the environment.
+    """
+    if request.headers.get("X-mTLS-Forward-Key") != request.app.state.mtls_forward_key:
+        raise HTTPException(status_code=401, detail="Invalid X-Forward-Key header")
 
 def process_include(include: Optional[list[str]], allowed: set[str]):
     """
