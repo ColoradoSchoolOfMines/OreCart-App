@@ -1,14 +1,14 @@
 import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Linking, Platform, StyleSheet, Text, View } from "react-native";
 import { TouchableHighlight } from "react-native-gesture-handler";
 
 import ErrorMessage from "../../common/components/ErrorMessage";
 import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
 import Color from "../../common/style/color";
-import { useLocationStatus } from "../location/locationSlice";
+import { Coordinate, useLocationStatus } from "../location/locationSlice";
 import { distance, formatMiles, geoDistanceToMiles } from "../location/util";
 import RouteList from "../routes/RouteList";
 import { useGetRoutesQuery } from "../routes/routesSlice";
@@ -89,7 +89,6 @@ export const StopScreen = ({
 };
 
 const StopHeader = ({ stop }: { stop: Stop }): React.JSX.Element => {
-  console.log(stop);
   const status = useLocationStatus();
   let stopDistance;
   if (status.type === "active") {
@@ -110,7 +109,7 @@ const StopHeader = ({ stop }: { stop: Stop }): React.JSX.Element => {
         underlayColor={Color.generic.location_highlight}
         style={[styles.button, styles.locationButton]}
         onPress={() => {
-          // Add your logic here
+          openDirections(stop);
         }}
       >
         <Text style={styles.buttonText}>Get Directions</Text>
@@ -131,6 +130,25 @@ const StopSkeleton = (): React.JSX.Element => {
   );
 };
 
+const openDirections = (coordinate: Coordinate): void => {
+  const location = `${coordinate.latitude},${coordinate.longitude}`;
+  const url = Platform.select({
+    ios: `http://maps.apple.com/?daddr=${location}`,
+    android: `google.navigation:q=${location}`,
+  });
+
+  Linking.canOpenURL(url)
+    .then((supported) => {
+      if (supported) {
+        return Linking.openURL(url);
+      } else {
+        console.log(`Don't know how to open URI: ${url}`);
+      }
+    })
+    .catch((err) => {
+      console.error("Can't launch directions", err);
+    });
+};
 const styles = StyleSheet.create({
   container: {
     padding: 16,
