@@ -11,7 +11,7 @@ const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const fetchVans = async () => {
   const response = await fetch(`${baseUrl}/vans/`);
   const data = await response.json();
-  const van_data = data["vans"] as Van[] || [];
+  const van_data = data as Van[] || [];
   return van_data;
 };
 
