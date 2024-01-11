@@ -1,8 +1,8 @@
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View, ViewProps } from "react-native";
 import RetryButton from "./RetryButton";
 
-interface ErrorComponentProps {
+interface ErrorComponentProps extends ViewProps {
   message: string;
   retry: () => void;
 }
@@ -18,14 +18,11 @@ const ErrorMessage: React.FC<ErrorComponentProps> = ({ message, retry }) => {
 
 const styles = StyleSheet.create({
   loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    padding: 16,
   },
   header: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 16,
+    alignSelf: "center",
   },
 });
 
