@@ -1,14 +1,16 @@
 import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
+import ErrorMessage from "../../common/components/ErrorMessage";
+import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
 import Color from "../../common/style/color";
 import StopList from "../stops/StopList";
 import { useGetStopsQuery } from "../stops/stopsSlice";
 
-import { type BasicRoute, useGetRouteQuery } from "./routesSlice";
+import { useGetRouteQuery, type BasicRoute } from "./routesSlice";
 
 export interface RouteScreenProps {
   navigation: StackNavigationProp<InnerParamList, "Route">;
@@ -20,36 +22,79 @@ export const RouteScreen = ({
   navigation,
 }: RouteScreenProps): React.JSX.Element => {
   const { routeId } = navRoute.params;
-  const { data: route } = useGetRouteQuery(routeId);
-  const { data: stops } = useGetStopsQuery();
+  const {
+    data: route,
+    isSuccess: routeSuccess,
+    isLoading: routeLoading,
+    isError: routeError,
+    refetch: refetchRoute,
+  } = useGetRouteQuery(routeId);
+  const {
+    data: stops,
+    isError: stopsError,
+    refetch: refetchStops,
+  } = useGetStopsQuery();
 
   const routeStops = stops?.filter((stop) => stop.routeIds.includes(routeId));
 
-  if (route === undefined) {
-    // TODO: Add a loading indicator
-    return (
-      <View style={styles.container}>
-        <Text>Loading...</Text>
-      </View>
-    );
+  function retryRoute(): void {
+    refetchRoute().catch(console.error);
   }
 
-  const routeNameColorStyle = { color: Color.orecart.get(route?.name) };
+  function retryStops(): void {
+    refetchStops().catch(console.error);
+  }
 
   return (
     <View>
-      <View style={styles.container}>
-        <Text style={[styles.routeName, routeNameColorStyle]}>
-          {route?.name}
-        </Text>
-        <Text style={styles.routeDesc}>{getDescriptionWorkaround(route)}</Text>
-      </View>
-      <StopList
-        stops={routeStops}
-        onPress={(stop) => {
-          navigation.push("Stop", { stopId: stop.id });
-        }}
-      />
+      {routeSuccess ? (
+        <RouteHeader route={route} />
+      ) : routeLoading ? (
+        <RouteSkeleton />
+      ) : routeError ? (
+        <ErrorMessage
+          message="We couldn't fetch this route right now. Try again later."
+          retry={() => {
+            retryRoute();
+          }}
+        />
+      ) : null}
+
+      {stopsError ? (
+        <ErrorMessage
+          message="We couldn't fetch the stops right now. Try again later."
+          retry={() => {
+            retryStops();
+          }}
+        />
+      ) : (
+        <StopList
+          stops={routeStops}
+          onPress={(stop) => {
+            navigation.push("Stop", { stopId: stop.id });
+          }}
+        />
+      )}
+    </View>
+  );
+};
+
+const RouteHeader = ({ route }: { route: BasicRoute }): React.JSX.Element => {
+  const routeNameColorStyle = { color: Color.orecart.get(route?.name) };
+
+  return (
+    <View style={styles.container}>
+      <Text style={[styles.routeName, routeNameColorStyle]}>{route?.name}</Text>
+      <Text style={styles.routeDesc}>{getDescriptionWorkaround(route)}</Text>
+    </View>
+  );
+};
+
+const RouteSkeleton = (): React.JSX.Element => {
+  return (
+    <View style={styles.container}>
+      <TextSkeleton style={styles.routeName} widthFraction={0.4} />
+      <TextSkeleton style={styles.routeDesc} widthFraction={0.6} />
     </View>
   );
 };
