@@ -1,5 +1,6 @@
 import apiSlice from "../../app/apiSlice";
 import { type Coordinate } from "../location/locationSlice";
+import { BasicRoute } from "../routes/routesSlice";
 
 /**
  * A list of stops, as defined by the backend.
@@ -29,10 +30,14 @@ const stopsApiSlice = apiSlice.injectEndpoints({
       query: () => "/stops/?include=routeIds&include=isActive",
       providesTags: ["Stops"],
     }),
+    getStop: builder.query<BasicRoute, number>({
+      query: (id) => `/stops/${id}`,
+      providesTags: (_, __, id) => [{ type: "Stop", id }],
+    }),
   }),
 });
 
 /**
  * Hook for querying the list of stops.
  */
-export const { useGetStopsQuery } = stopsApiSlice;
+export const { useGetStopsQuery, useGetStopQuery } = stopsApiSlice;
