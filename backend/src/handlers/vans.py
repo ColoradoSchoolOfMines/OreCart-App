@@ -14,11 +14,8 @@ from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.van import Van
 from src.request import process_include
-<<<<<<< HEAD
-=======
 from src.vantracking.coordinate import Coordinate
 from src.vantracking.location import Location
->>>>>>> main
 from starlette.responses import Response
 
 
