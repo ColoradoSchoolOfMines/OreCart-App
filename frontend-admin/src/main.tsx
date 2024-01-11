@@ -8,6 +8,7 @@ import {
 import "./index.css";
 import AccommodationsPage from './pages/accommodations/accommodations-page';
 import AlertsPage from './pages/alerts/alerts-page';
+import AuthPage from './pages/auth/auth-page';
 import RidershipPage from './pages/ridership/ridership-page';
 import RoutesPage from './pages/routes/routes-page';
 import VanPage from './pages/vans/vans-page';
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: "/accommodations",
         element: <AccommodationsPage />
+      },
+      {
+        path: "/auth",
+        element: <AuthPage />
       },
       {
         path: "alerts",
