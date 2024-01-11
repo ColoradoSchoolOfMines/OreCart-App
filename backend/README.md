@@ -1,8 +1,24 @@
 # Ore Cart Backend
 
+The backend will be used to store locations of the shuttles, serve that data to the frontend, and make statistics about the Ore Cart queryable.
+
 ## Development Overview 🌟
 
-The backend will be used to store locations of the shuttles, serve that data to the frontend, and make statistics about the Ore Cart queryable.
+The backend is a Python based project. It uses FastAPI, SQLAlchemy and Alembic.  
+
+The structure of the project is fairily simple. The tests are in the tests folder and the main source code is in the source folder. The database schema is defined in the alembic folder, but it should not be changed without first discussing with a member of the [OreCart/leads](https://github.com/orgs/OreCart/teams/leads) team. At that time, they will assist in updating the alembic models.
+
+### Src Folder Tour
+
+Inside the source folder you will find some other folders and some standalone files. 
+
+The standalone files are general utilities and the main server code. The main server code handles starting up: connecting to the database, creating the cache, and connecting the routers.
+
+The handlers folder contains all of the separate routers. These routers allow us to segment the backend api into chunks. Each one is given a prefix and then handles all requests to route `/prefix/blah`.
+
+The model folder is the next important folder. The model folder contains all the sqlalchemy models that match our database schema, which is managed with alembic.
+
+The last folder, as of January 2024, is vantracking which provides all the code for the cache we use for tracking the van. 
 
 ## Development Expectations 📌
 
@@ -15,6 +31,8 @@ One side note regarding updating the `requirements.txt`, please do not add anyth
 ---
 
 ### Use a Python Virtual Environment 🐍
+
+**This is only needed if you plan on running the backend on your machine outside of the docker container.**
 
 For consistency in our development experience we will be using a python virtual environment (venv). Venv's are useful because python packages have conflicts ocassionally and venvs isolate packages. 👩‍💻
 
@@ -38,7 +56,7 @@ deactivate
 
 ---
 
-### Running the server
+### Running the server locally
 
 Before running the backend, generate the database:
 ```

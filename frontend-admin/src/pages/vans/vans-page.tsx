@@ -6,8 +6,10 @@ import VanEditForm from './edit-van-form.tsx';
 import { Van, VanData, VanEditFormMethods } from './van-types.tsx';
 import './vans-page.scss';
 
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
 const fetchVans = async () => {
-  const response = await fetch('http://localhost:8000/vans/');
+  const response = await fetch(`${baseUrl}/vans/`);
   const data = await response.json();
   const van_data = data["vans"] as Van[] || [];
   return van_data;
@@ -28,7 +30,7 @@ const VanPage: React.FC = () => {
   const createVan = async (vanData: VanData) => {
     // Convert the routeId to an integer
     try {
-      await fetch('http://localhost:8000/vans/', {
+      await fetch(`${baseUrl}/vans/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -56,7 +58,7 @@ const VanPage: React.FC = () => {
   const editVanSubmit = async (vanData: VanData) => {
     // Convert the routeId to an integer
     try {
-      await fetch(`http://localhost:8000/vans/${currentVanId}`, {
+      await fetch(`${baseUrl}/vans/${currentVanId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +76,7 @@ const VanPage: React.FC = () => {
 
   const deleteVan = async () => {
     try {
-      await fetch(`http://localhost:8000/vans/${currentVanId}`, {
+      await fetch(`${baseUrl}/vans/${currentVanId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

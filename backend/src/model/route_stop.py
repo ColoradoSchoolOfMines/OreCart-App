@@ -15,6 +15,7 @@ class RouteStop(Base):
     )
     route_id: Mapped[int] = mapped_column(nullable=False)
     stop_id: Mapped[int] = mapped_column(nullable=False)
+    position: Mapped[int] = mapped_column(nullable=False)
 
     def __eq__(self, __value: object) -> bool:
         # Exclude ID since it'll always differ, only compare on content

@@ -23,6 +23,7 @@ def upgrade() -> None:
 	        id serial PRIMARY KEY,
 	        route_id int NOT NULL,
 	        stop_id int NOT NULL,
+            position int NOT NULL,
 	        UNIQUE (route_id, stop_id),
 	        FOREIGN KEY (route_id)
 		        REFERENCES routes (id)

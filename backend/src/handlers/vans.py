@@ -9,8 +9,16 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
+from src.model.route import Route
+from src.model.route_stop import RouteStop
+from src.model.stop import Stop
 from src.model.van import Van
 from src.request import process_include
+<<<<<<< HEAD
+=======
+from src.vantracking.coordinate import Coordinate
+from src.vantracking.location import Location
+>>>>>>> main
 from starlette.responses import Response
 
 
@@ -144,12 +152,7 @@ def get_location(req: Request, van_id: int) -> JSONResponse:
     if van_id not in req.app.state.van_locations:
         raise HTTPException(detail="Van not found", status_code=404)
 
-    location = req.app.state.van_locations[van_id]
-    location_json = {
-        "timestamp": int(location.timestamp.timestamp()),
-        "latitude": location.latitude,
-        "longitude": location.longitude,
-    }
+    location_json = get_location_for_van(req, van_id)
     return JSONResponse(content=location_json)
 
 
@@ -161,14 +164,48 @@ async def subscribe_location(websocket: WebSocket, van_id: int) -> None:
     await websocket.accept()
 
     while True:
-        location = websocket.app.state.van_locations[van_id]
-        location_json = {
-            "timestamp": int(location.timestamp.timestamp()),
-            "latitude": location.latitude,
-            "longitude": location.longitude,
-        }
+        location_json = get_location_for_van(websocket, van_id)
         await websocket.send_json(location_json)
         await asyncio.sleep(2)
+
+
+def get_all_van_ids(req: Union[Request, WebSocket]) -> List[int]:
+    with req.app.state.db.session() as session:
+        return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
+
+
+def get_location_for_vans(
+    req: Union[Request, WebSocket], van_ids: List[int]
+) -> Dict[int, dict[str, Union[str, int]]]:
+    locations_json: Dict[int, dict[str, Union[str, int]]] = {}
+    for van_id in van_ids:
+        state = req.app.state.van_tracker.get_van(van_id)
+        if state is None:
+            continue
+        locations_json[van_id] = {
+            "timestamp": int(state.location.timestamp.timestamp()),
+            "latitude": state.location.coordinate.latitude,
+            "longitude": state.location.coordinate.longitude,
+            "nextStopId": state.next_stop.id,
+            "secondsToNextStop": int(state.seconds_to_next_stop.total_seconds()),
+        }
+
+    return locations_json
+
+
+def get_location_for_van(
+    req: Union[Request, WebSocket], van_id: int
+) -> dict[str, Union[str, int]]:
+    state = req.app.state.van_tracker.get_van(van_id)
+    if state is None:
+        return {}
+    return {
+        "timestamp": int(state.location.timestamp.timestamp()),
+        "latitude": state.location.coordinate.latitude,
+        "longitude": state.location.coordinate.longitude,
+        "nextStopId": state.next_stop.id,
+        "secondsToNextStop": int(state.seconds_to_next_stop.total_seconds()),
+    }
 
 
 @router.post("/location/{van_id}")
@@ -196,37 +233,45 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
 
     # Check that the timestamp is the most recent one for the van. This prevents
     # updates from being sent out of order.
-    last_location = req.app.state.van_locations.get(van_id)
-    if last_location is not None and timestamp < last_location.timestamp:
+    van_state = req.app.state.van_tracker.get_van(van_id)
+    if van_state is not None and timestamp < van_state.location.timestamp:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
         )
 
-    req.app.state.van_locations[van_id] = VanLocation(
-        timestamp=timestamp, latitude=lat, longitude=lon
+    # The van may be starting up for the first time, in which we need to initialize it's
+    # cache entry and stop list. It's better to do this once rather than coupling it with
+    # push_location due to the very expensive stop query we have to do.
+    if van_id not in req.app.state.van_tracker:
+        with req.app.state.db.session() as session:
+            # Need to find the likely list of stops this van will go on. It's assumed that
+            # this will only change between van activations, so we can query once and then
+            # cache this list.
+            stops = (
+                session.query(Stop)
+                .join(RouteStop, Stop.id == RouteStop.stop_id)
+                # Make sure all stops will be in order since that's critical for the time estimate
+                .order_by(RouteStop.position)
+                .join(Van, Van.route_id == RouteStop.route_id)
+                .filter(Van.id == van_id)
+                # Ignore inactive stops we won't be going to and thus don't need to estimate times for
+                .filter(Stop.active == True)
+                .all()
+            )
+
+            if not stops:
+                # No stops implies a van that does not exist
+                raise HardwareHTTPException(
+                    status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
+                )
+
+            req.app.state.van_tracker.init_van(van_id, stops)
+
+    req.app.state.van_tracker.push_location(
+        van_id,
+        Location(
+            timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon)
+        ),
     )
 
     return HardwareOKResponse()
-
-
-def get_all_van_ids(req: Union[Request, WebSocket]) -> List[int]:
-    with req.app.state.db.session() as session:
-        return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
-
-
-def get_location_for_vans(
-    req: Union[Request, WebSocket], van_ids: List[int]
-) -> Dict[int, dict[str, Union[str, int]]]:
-    locations_json: Dict[int, dict[str, Union[str, int]]] = {}
-    for van_id in van_ids:
-        if van_id not in req.app.state.van_locations:
-            continue
-
-        location = req.app.state.van_locations[van_id]
-        locations_json[van_id] = {
-            "timestamp": int(location.timestamp.timestamp()),
-            "latitude": location.latitude,
-            "longitude": location.longitude,
-        }
-
-    return locations_json

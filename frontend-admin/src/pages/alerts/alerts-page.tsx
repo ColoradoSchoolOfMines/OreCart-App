@@ -6,9 +6,10 @@ import { Alert, AlertData, AlertEditFormMethods } from './alert-types';
 import './alerts-page.scss';
 import EditAlertForm from './edit-alert-form';
 
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchAlerts = async () => {
-  const response = await fetch('http://localhost:8000/alerts/');
+  const response = await fetch(`${baseUrl}/alerts/`);
   const data = await response.json();
   const alert_data = data as Alert[];
   return alert_data;
@@ -28,7 +29,7 @@ const AlertsPage: React.FC = () => {
 
   const handleFormSubmit = async (formData: AlertData) => {
     try {
-      const response = await fetch('http://localhost:8000/alerts/', {
+      const response = await fetch(`${baseUrl}/alerts/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,7 +59,7 @@ const AlertsPage: React.FC = () => {
 
   const handleEditSubmit = async (formData: AlertData) => {
     try {
-      const response = await fetch(`http://localhost:8000/alerts/${currentAlertId}`, {
+      const response = await fetch(`${baseUrl}/alerts/${currentAlertId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +80,7 @@ const AlertsPage: React.FC = () => {
 
   const handleDeleteAlert = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/alerts/${currentAlertId}`, {
+      const response = await fetch(`${baseUrl}/alerts/${currentAlertId}`, {
         method: 'DELETE',
       });
       if (!response.ok) {

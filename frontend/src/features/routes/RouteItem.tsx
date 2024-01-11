@@ -10,6 +10,10 @@ import {
 } from "react-native";
 
 import Color from "../../common/style/color";
+import { useLocation } from "../location/locationSlice";
+import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
+import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
+import { type VanLocation, useGetVansQuery } from "../vans/vansSlice";
 
 import { type Route } from "./routesSlice";
 
@@ -19,12 +23,18 @@ import { type Route } from "./routesSlice";
 interface RouteItemProps {
   /** The route to display. */
   route: Route;
+  /** Called when the route item is clicked on. */
+  onPress: (route: Route) => void;
 }
 
 /**
  * A component that renders a single route item.
  */
-export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
+export const RouteItem = ({
+  route,
+  onPress,
+}: RouteItemProps): React.JSX.Element => {
+  const closestStop = useClosestStop(route);
   const routeNameColorStyle = {
     color: Color.orecart.get(route.name) ?? Color.generic.black,
   };
@@ -33,7 +43,9 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
 
   return (
     <TouchableHighlight
-      onPress={() => {}}
+      onPress={() => {
+        onPress(route);
+      }}
       underlayColor={Color.generic.selection}
       style={styles.touchableContainer}
     >
@@ -43,13 +55,21 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
             {route.name}
           </Text>
           {route.isActive ? (
-            <>
-              <Text style={styles.routeStatus}>
-                Next OreCart in{" "}
-                <Text style={styles.routeStatusEmphasis}>5 min</Text>
-              </Text>
-              <Text style={styles.routeContext}>At Jackston Street (1 mi)</Text>
-            </>
+            closestStop !== undefined ? (
+              <>
+                <Text style={styles.routeStatus}>
+                  Next OreCart in{" "}
+                  <Text style={styles.routeStatusEmphasis}>
+                    {closestStop.vanArrivalTime}
+                  </Text>
+                </Text>
+                <Text style={styles.routeContext}>
+                  At {closestStop.name} ({closestStop.distanceFromUser})
+                </Text>
+              </>
+            ) : (
+              <Text style={styles.routeStatus}>Running</Text>
+            )
           ) : (
             <Text style={styles.routeStatus}>Not running</Text>
           )}
@@ -64,10 +84,68 @@ export const RouteItem: React.FC<RouteItemProps> = ({ route }) => {
   );
 };
 
+interface ClosestStop extends Stop {
+  distanceFromUser: string;
+  vanArrivalTime: string;
+}
+
+function useClosestStop(to: Route): ClosestStop | undefined {
+  const vans = useGetVansQuery().data;
+  if (vans === undefined) {
+    return undefined;
+  }
+
+  const stops = useGetStopsQuery().data;
+  if (stops === undefined) {
+    return undefined;
+  }
+
+  const location = useLocation();
+  if (location === undefined) {
+    return undefined;
+  }
+
+  const routeStops = stops.filter((stop) => stop.routeIds.includes(to.id));
+  const closestRouteStop = closest(routeStops, location);
+  if (closestRouteStop === undefined) {
+    return undefined;
+  }
+
+  const arrivingVans = vans
+    .filter(
+      (van) =>
+        van.location !== undefined &&
+        van.location.nextStopId === closestRouteStop.inner.id,
+    )
+    .map((van) => van.location) as VanLocation[];
+  const closestRouteStopVan = closest(arrivingVans, location);
+  if (closestRouteStopVan === undefined) {
+    return undefined;
+  }
+
+  return {
+    ...closestRouteStop.inner,
+    distanceFromUser: formatMiles(
+      geoDistanceToMiles(closestRouteStop.distance),
+    ),
+    vanArrivalTime: formatSecondsAsMinutes(
+      closestRouteStopVan.inner.secondsToNextStop,
+    ),
+  };
+}
+
+const formatSecondsAsMinutes = (seconds: number): string => {
+  if (seconds < 60) {
+    return `<1 min`;
+  } else {
+    return `${Math.round(seconds / 60)} min`;
+  }
+};
+
 /**
  * A skeleton component that mimics the {@interface RouteItem} component.
  */
-export const RouteItemSkeleton: React.FC<ViewProps> = ({ style }) => {
+export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
   const width = Dimensions.get("window").width;
 
   const routeNameWidthStyle = {

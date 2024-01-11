@@ -9,6 +9,9 @@ import { updateLocationStatus } from "./locationSlice";
 const locationMiddleware = createListenerMiddleware();
 const subscribeLocation = createAction<undefined>("location/start");
 const unsubscribeLocation = createAction<undefined>("location/stop");
+export const requestLocationPermissions = createAction<undefined>(
+  "location/requestPermissions",
+);
 
 // This seems to be the only accuracy that's at least somewhat reliable for our purposes. Takes a few seconds
 // to initialize and then updates every second or so.
@@ -39,13 +42,15 @@ locationMiddleware.startListening({
       return;
     }
 
-    const { status } = await Location.requestForegroundPermissionsAsync();
+    const { status } = await Location.getForegroundPermissionsAsync();
     if (status !== "granted") {
       // Permission was not granted, we can't do anything. Send the outcome
       // to the companion slice state.
       listenerApi.dispatch(updateLocationStatus({ type: "not_granted" }));
       return;
     }
+
+    listenerApi.dispatch(updateLocationStatus({ type: "initializing" }));
 
     try {
       // Have to track the current subscription so we can unsubscribe later.
@@ -82,6 +87,19 @@ locationMiddleware.startListening({
     locationSubscription.remove();
     locationSubscription = null;
     listenerApi.dispatch(updateLocationStatus({ type: "inactive" }));
+  },
+});
+
+// Listen for when location permissions should be requested
+locationMiddleware.startListening({
+  // actionCreator specifies the action that when dispatched will trigger the
+  // code below.
+  actionCreator: requestLocationPermissions,
+  effect: async (_, listenerApi) => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
+    if (status === "granted") {
+      listenerApi.dispatch(subscribeLocation());
+    }
   },
 });
 

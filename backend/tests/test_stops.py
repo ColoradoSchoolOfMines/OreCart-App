@@ -59,10 +59,10 @@ def mock_routes():
 @pytest.fixture
 def mock_route_stops():
     return [
-        RouteStop(id=1, route_id=1, stop_id=1),
-        RouteStop(id=2, route_id=2, stop_id=2),
-        RouteStop(id=3, route_id=1, stop_id=2),
-        RouteStop(id=4, route_id=1, stop_id=3),
+        RouteStop(id=1, route_id=1, stop_id=1, position=0),
+        RouteStop(id=2, route_id=2, stop_id=2, position=0),
+        RouteStop(id=3, route_id=1, stop_id=2, position=1),
+        RouteStop(id=4, route_id=1, stop_id=3, position=2),
     ]
 
 

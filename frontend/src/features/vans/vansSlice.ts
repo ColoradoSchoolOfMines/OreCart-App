@@ -13,12 +13,17 @@ export interface Van {
   id: number;
   routeId: number;
   wheelchair: boolean;
-  location?: Coordinate;
+  location?: VanLocation;
 }
 
 // --- API Definition ---
 
-type VanLocations = Record<string, Coordinate>;
+type VanLocations = Record<string, VanLocation>;
+
+export interface VanLocation extends Coordinate {
+  nextStopId: number;
+  secondsToNextStop: number;
+}
 
 const vanLocationApiUrl =
   "ws://" + process.env.EXPO_PUBLIC_API_DOMAIN + "/vans/location/subscribe/";

@@ -111,6 +111,7 @@ def query_route_ids(stop_id: int, session) -> list[int]:
         route_id
         # with_entities returns a tuple we need to unpack for some reason.
         for (route_id,) in session.query(RouteStop)
+        .order_by(RouteStop.position)
         .filter(RouteStop.stop_id == stop_id)
         .with_entities(RouteStop.route_id)
         .all()

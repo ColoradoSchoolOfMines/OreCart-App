@@ -14,7 +14,7 @@ interface SkeletonProps extends ViewProps {
 /**
  * A component that renders a list of skeleton items with decreasing opacity.
  */
-const SkeletonList: React.FC<SkeletonProps> = ({ generator }) => {
+const SkeletonList = ({ generator }: SkeletonProps): React.JSX.Element => {
   return (
     <>
       {/* for (i = 0; i < 3; ++i) */}
