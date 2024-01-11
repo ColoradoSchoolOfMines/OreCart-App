@@ -7,11 +7,11 @@ import { type InnerParamList } from "../../common/navTypes";
 
 export interface StopScreenProps {
   navigation: StackNavigationProp<InnerParamList, "Stop">;
-  stop: RouteProp<InnerParamList, "Stop">;
+  route: RouteProp<InnerParamList, "Stop">;
 }
 
 export const StopScreen = ({
-  stop,
+  route,
   navigation,
 }: StopScreenProps): React.JSX.Element => {
   // const { stopId } = stop.params;

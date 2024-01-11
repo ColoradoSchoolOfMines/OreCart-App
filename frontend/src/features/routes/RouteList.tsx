@@ -8,11 +8,11 @@ import LayoutStyle from "../../common/style/layout";
 
 import { RouteItem, RouteItemSkeleton } from "./RouteItem";
 import { useGetRoutesQuery } from "./routesSlice";
-import { type Route } from "./routesSlice";
+import { type ExtendedRoute } from "./routesSlice";
 
 interface RouteListProps extends ViewProps {
   /** Called when the route item is clicked on. */
-  onPress: (route: Route) => void;
+  onPress: (route: ExtendedRoute) => void;
 }
 
 /**

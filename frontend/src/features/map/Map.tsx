@@ -9,7 +9,7 @@ import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
 import { useLocationStatus, type Coordinate } from "../location/locationSlice";
-import { type Route, useGetRoutesQuery } from "../routes/routesSlice";
+import { type ExtendedRoute, useGetRoutesQuery } from "../routes/routesSlice";
 import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
 
@@ -80,7 +80,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
   const { data: routes } = useGetRoutesQuery();
   const { data: stops } = useGetStopsQuery();
 
-  const routesById: Record<string, Route> = {};
+  const routesById: Record<string, ExtendedRoute> = {};
   routes?.forEach((route) => {
     routesById[route.id] = route;
   });

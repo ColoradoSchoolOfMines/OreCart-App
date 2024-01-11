@@ -1,9 +1,16 @@
 import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
-import { View, Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
+import ErrorMessage from "../../common/components/ErrorMessage";
+import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
+import Color from "../../common/style/color";
+import StopList from "../stops/StopList";
+import { useGetStopsQuery } from "../stops/stopsSlice";
+
+import { useGetRouteQuery, type BasicRoute } from "./routesSlice";
 
 export interface RouteScreenProps {
   navigation: StackNavigationProp<InnerParamList, "Route">;
@@ -11,14 +18,114 @@ export interface RouteScreenProps {
 }
 
 export const RouteScreen = ({
-  route,
+  route: navRoute,
   navigation,
 }: RouteScreenProps): React.JSX.Element => {
-  // const { routeId } = route.params;
+  const { routeId } = navRoute.params;
+  const {
+    data: route,
+    isSuccess: routeSuccess,
+    isLoading: routeLoading,
+    isError: routeError,
+    refetch: refetchRoute,
+  } = useGetRouteQuery(routeId);
+  const {
+    data: stops,
+    isError: stopsError,
+    refetch: refetchStops,
+  } = useGetStopsQuery();
+
+  const routeStops = stops?.filter((stop) => stop.routeIds.includes(routeId));
+
+  function retryRoute(): void {
+    refetchRoute().catch(console.error);
+  }
+
+  function retryStops(): void {
+    refetchStops().catch(console.error);
+  }
 
   return (
     <View>
-      <Text>Hello!</Text>
+      {routeSuccess ? (
+        <RouteHeader route={route} />
+      ) : routeLoading ? (
+        <RouteSkeleton />
+      ) : routeError ? (
+        <ErrorMessage
+          message="We couldn't fetch this route right now. Try again later."
+          retry={() => {
+            retryRoute();
+          }}
+        />
+      ) : null}
+
+      {stopsError ? (
+        <ErrorMessage
+          message="We couldn't fetch the stops right now. Try again later."
+          retry={() => {
+            retryStops();
+          }}
+        />
+      ) : (
+        <StopList
+          stops={routeStops}
+          onPress={(stop) => {
+            navigation.push("Stop", { stopId: stop.id });
+          }}
+        />
+      )}
     </View>
   );
 };
+
+const RouteHeader = ({ route }: { route: BasicRoute }): React.JSX.Element => {
+  const routeNameColorStyle = { color: Color.orecart.get(route?.name) };
+
+  return (
+    <View style={styles.container}>
+      <Text style={[styles.routeName, routeNameColorStyle]}>{route?.name}</Text>
+      <Text style={styles.routeDesc}>{getDescriptionWorkaround(route)}</Text>
+    </View>
+  );
+};
+
+const RouteSkeleton = (): React.JSX.Element => {
+  return (
+    <View style={styles.container}>
+      <TextSkeleton style={styles.routeName} widthFraction={0.4} />
+      <TextSkeleton style={styles.routeDesc} widthFraction={0.6} />
+    </View>
+  );
+};
+
+// TODO: REMOVE AS SOON AS POSSIBLE!!!!
+const getDescriptionWorkaround = (route: BasicRoute): string | undefined => {
+  switch (route.name) {
+    case "Tungsten":
+      return "Travels between campus and the RTD W Line Stop";
+
+    case "Silver":
+      return "Travels between campus and Mines Park";
+
+    case "Gold":
+      return "Travels between campus and downtown Golden";
+
+    default:
+      return undefined;
+  }
+};
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
+  routeName: {
+    fontSize: 32,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  routeDesc: {
+    fontSize: 16,
+  },
+});

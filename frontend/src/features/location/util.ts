@@ -74,3 +74,11 @@ export function formatMiles(distance: number): string {
     return `${distance.toFixed(1)} mi`;
   }
 }
+
+export const formatSecondsAsMinutes = (seconds: number): string => {
+  if (seconds < 60) {
+    return `<1 min`;
+  } else {
+    return `${Math.round(seconds / 60)} min`;
+  }
+};
