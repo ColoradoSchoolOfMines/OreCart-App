@@ -1,5 +1,6 @@
 import React from "react";
-import { StyleSheet, Text, View, ViewProps } from "react-native";
+import { StyleSheet, Text, View, type ViewProps } from "react-native";
+
 import RetryButton from "./RetryButton";
 
 interface ErrorComponentProps extends ViewProps {

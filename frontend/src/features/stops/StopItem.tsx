@@ -53,26 +53,26 @@ export const StopItem = ({
       <View style={styles.innerContainer}>
         <View style={styles.stopInfoContainer}>
           <Text style={styles.stopName}>{stop.name}</Text>
-            {stopState.distanceFromUser !== undefined ? (
-                <Text style={styles.stopStatus}>
-                    <Text style={styles.stopStatusEmphasis}>
-                        {stopState.distanceFromUser}
-                    </Text>{" "}
-                    away
-                </Text>
-            ) : null}
-            {stopState.vanArrivalTime !== undefined ? (
-                <Text style={styles.stopStatus}>
-                    Next OreCart in{" "}
-                    <Text style={styles.stopStatusEmphasis}>
-                        {stopState.vanArrivalTime}
-                    </Text>
-                </Text>
-            ) :  stop.isActive ? (
-                <Text style={styles.stopStatus}>Running</Text>
-            ) : (
-                <Text style={styles.stopStatus}>Not running</Text>
-            )}
+          {stopState.distanceFromUser !== undefined ? (
+            <Text style={styles.stopStatus}>
+              <Text style={styles.stopStatusEmphasis}>
+                {stopState.distanceFromUser}
+              </Text>{" "}
+              away
+            </Text>
+          ) : null}
+          {stopState.vanArrivalTime !== undefined ? (
+            <Text style={styles.stopStatus}>
+              Next OreCart in{" "}
+              <Text style={styles.stopStatusEmphasis}>
+                {stopState.vanArrivalTime}
+              </Text>
+            </Text>
+          ) : stop.isActive ? (
+            <Text style={styles.stopStatus}>Running</Text>
+          ) : (
+            <Text style={styles.stopStatus}>Not running</Text>
+          )}
         </View>
         <MaterialIcons
           name="arrow-forward"
@@ -101,7 +101,7 @@ function useStopState(stop: Stop): StopState {
     const arrivingVans = vans
       .filter(
         (van) =>
-          van.location !== undefined && van.location.nextStopId === stop.id
+          van.location !== undefined && van.location.nextStopId === stop.id,
       )
       .map((van) => van.location) as VanLocation[];
     const closestStopVan = closest(arrivingVans, location);
@@ -112,7 +112,7 @@ function useStopState(stop: Stop): StopState {
 
     if (closestStopVan !== undefined) {
       stopState.vanArrivalTime = formatSecondsAsMinutes(
-        closestStopVan.inner.secondsToNextStop
+        closestStopVan.inner.secondsToNextStop,
       );
     }
   }

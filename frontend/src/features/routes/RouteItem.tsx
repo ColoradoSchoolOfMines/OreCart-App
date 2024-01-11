@@ -11,7 +11,12 @@ import {
 import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
 import { useLocation } from "../location/locationSlice";
-import { closest, formatMiles, geoDistanceToMiles, formatSecondsAsMinutes } from "../location/util";
+import {
+  closest,
+  formatMiles,
+  geoDistanceToMiles,
+  formatSecondsAsMinutes,
+} from "../location/util";
 import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
 import { type VanLocation, useGetVansQuery } from "../vans/vansSlice";
 
@@ -176,4 +181,3 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
-

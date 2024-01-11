@@ -160,18 +160,9 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
               },
             })}
           >
-            <Stack.Screen
-              name="Landing"
-              component={LandingScreen}
-            />
-            <Stack.Screen
-              name="Route"
-              component={RouteScreen}
-            />
-            <Stack.Screen
-              name="Stop"
-              component={StopScreen}
-            />
+            <Stack.Screen name="Landing" component={LandingScreen} />
+            <Stack.Screen name="Route" component={RouteScreen} />
+            <Stack.Screen name="Stop" component={StopScreen} />
           </Stack.Navigator>
         </Sheet>
       </GestureHandlerRootView>

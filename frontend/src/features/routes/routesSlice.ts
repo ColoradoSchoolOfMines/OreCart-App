@@ -7,9 +7,9 @@ import { type Coordinate } from "../location/locationSlice";
 export type Routes = ExtendedRoute[];
 
 export interface BasicRoute {
-  id: number,
-  name: string,
-  stopIds: number[],
+  id: number;
+  name: string;
+  stopIds: number[];
 }
 
 /**
