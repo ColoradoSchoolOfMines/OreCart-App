@@ -9,6 +9,7 @@ import Spacer from "../../common/components/Spacer";
 import Color from "../../common/style/color";
 
 import { type InnerParamList } from "../../common/navTypes";
+import { useGetRoutesQuery } from "../routes/routesSlice";
 import { useGetStopQuery } from "./stopsSlice";
 
 export interface StopScreenProps {
@@ -27,26 +28,26 @@ export const StopScreen = ({
     isError,
     refetch,
   } = useGetStopQuery(route.params.stopId);
+  
+  const {
+    data: routes,
+    isError: routesError,
+    refetch: refetchRoutes,
+  } = useGetRoutesQuery();
+  
+  // Stop.routeIds.includes(route.id) (You need to include routeIds in the stop query)
 
-  // const {
-  //   data: routeItems,
-  //   routesLoading,
-  //   routesSuccess,
-  //   routesError,
-  //   routesRefetch,
-  // } = useGetRoutesQuery();
+  // const routesList = routes?.filter((route) => route.routeIds.includes(routeId));
   
   function retry(): void {
     refetch().catch(console.error);
   }
 
-  // function retryRoutes(): void {
-  //   routesRefetch().catch(console.error);
-  // }
+  function retryRoutes(): void {
+    refetchRoutes().catch(console.error);
+  }
 
 // Stop screen renders stop title, stop distance  and route items 
-
-// query route items
 
   return (
     <View style={[styles.container]}>
@@ -56,8 +57,6 @@ export const StopScreen = ({
           generator={() => (
             <View style={styles.alertItemSkeleton}>
               {/* <AlertItemSkeleton /> */}
-
-              {/* TODO implement skeleton */}
             </View>
           )}
         />
