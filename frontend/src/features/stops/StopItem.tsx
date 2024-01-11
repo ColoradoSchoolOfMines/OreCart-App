@@ -18,17 +18,18 @@ import {
   formatSecondsAsMinutes,
   geoDistanceToMiles,
 } from "../location/util";
-import { type Stop } from "../stops/stopsSlice";
 import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
+
+import { type ExtendedStop } from "./stopsSlice";
 
 /**
  * The props for the {@interface StopItem} component.
  */
 interface StopItemProps {
   /** The stop to display. */
-  stop: Stop;
+  stop: ExtendedStop;
   /** Called when the stop item is clicked on. */
-  onPress: (stop: Stop) => void;
+  onPress: (stop: ExtendedStop) => void;
 }
 
 /**
@@ -89,7 +90,7 @@ interface StopState {
   vanArrivalTime?: string;
 }
 
-function useStopState(stop: Stop): StopState {
+function useStopState(stop: ExtendedStop): StopState {
   const location = useLocation();
   const vans = useGetVansQuery().data;
 
@@ -101,7 +102,7 @@ function useStopState(stop: Stop): StopState {
     const arrivingVans = vans
       .filter(
         (van) =>
-          van.location !== undefined && van.location.nextStopId === stop.id
+          van.location !== undefined && van.location.nextStopId === stop.id,
       )
       .map((van) => van.location) as VanLocation[];
     const closestStopVan = closest(arrivingVans, location);
@@ -112,7 +113,7 @@ function useStopState(stop: Stop): StopState {
 
     if (closestStopVan !== undefined) {
       stopState.vanArrivalTime = formatSecondsAsMinutes(
-        closestStopVan.inner.secondsToNextStop
+        closestStopVan.inner.secondsToNextStop,
       );
     }
   }

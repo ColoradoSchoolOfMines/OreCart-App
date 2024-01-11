@@ -8,7 +8,7 @@ import ErrorMessage from "../../common/components/ErrorMessage";
 import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
 import Color from "../../common/style/color";
-import { Coordinate, useLocationStatus } from "../location/locationSlice";
+import { type Coordinate, useLocationStatus } from "../location/locationSlice";
 import { distance, formatMiles, geoDistanceToMiles } from "../location/util";
 import RouteList from "../routes/RouteList";
 import { useGetRoutesQuery } from "../routes/routesSlice";
@@ -93,7 +93,7 @@ const StopHeader = ({ stop }: { stop: Stop }): React.JSX.Element => {
   let stopDistance;
   if (status.type === "active") {
     stopDistance = formatMiles(
-      geoDistanceToMiles(distance(stop, status.location))
+      geoDistanceToMiles(distance(stop, status.location)),
     );
   }
 
@@ -138,9 +138,9 @@ const openDirections = (coordinate: Coordinate): void => {
   });
 
   Linking.canOpenURL(url)
-    .then((supported) => {
+    .then(async (supported) => {
       if (supported) {
-        return Linking.openURL(url);
+        return await Linking.openURL(url);
       } else {
         console.log(`Don't know how to open URI: ${url}`);
       }
