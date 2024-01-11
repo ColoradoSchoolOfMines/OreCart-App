@@ -1,10 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
-  Text,
-  View,
   StyleSheet,
+  Text,
   TouchableHighlight,
+  View,
   type ViewProps,
 } from "react-native";
 
@@ -12,14 +12,14 @@ import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
 import { useLocation } from "../location/locationSlice";
 import {
-  formatSecondsAsMinutes,
   closest,
   distance,
   formatMiles,
+  formatSecondsAsMinutes,
   geoDistanceToMiles,
 } from "../location/util";
-import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
-import { type VanLocation, useGetVansQuery } from "../vans/vansSlice";
+import { type Stop } from "../stops/stopsSlice";
+import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
 
 /**
  * The props for the {@interface StopItem} component.
