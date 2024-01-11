@@ -9,6 +9,7 @@ import Spacer from "../../common/components/Spacer";
 import Color from "../../common/style/color";
 
 import { type InnerParamList } from "../../common/navTypes";
+import { RouteItem, RouteItemSkeleton } from "../routes/RouteItem";
 import { useGetRoutesQuery } from "../routes/routesSlice";
 import { useGetStopQuery } from "./stopsSlice";
 
@@ -22,32 +23,28 @@ export const StopScreen = ({
   navigation,
 }: StopScreenProps): React.JSX.Element => {
   const {
-    data: stops,
+    data: stop,
     isLoading,
     isSuccess,
     isError,
     refetch,
   } = useGetStopQuery(route.params.stopId);
-  
+
   const {
     data: routes,
     isError: routesError,
     refetch: refetchRoutes,
   } = useGetRoutesQuery();
-  
-  // Stop.routeIds.includes(route.id) (You need to include routeIds in the stop query)
 
-  // const routesList = routes?.filter((route) => route.routeIds.includes(routeId));
-  
   function retry(): void {
     refetch().catch(console.error);
   }
-
+  
   function retryRoutes(): void {
     refetchRoutes().catch(console.error);
   }
 
-// Stop screen renders stop title, stop distance  and route items 
+  const filteredRoutes = routes?.filter((route) => stop?.stopIds.includes(route.id));
 
   return (
     <View style={[styles.container]}>
@@ -55,31 +52,38 @@ export const StopScreen = ({
         <SkeletonList
           divider={false}
           generator={() => (
-            <View style={styles.alertItemSkeleton}>
-              {/* <AlertItemSkeleton /> */}
+            <View style={styles.routeItemSkeleton}>
+              <RouteItemSkeleton />
             </View>
           )}
         />
       ) : isSuccess ? (
-        <FlatList
-          data={stops}
-          keyExtractor={(item) => item.id.toString()}
-          ItemSeparatorComponent={Spacer}
-          renderItem={({ item }) => (
-            <View style={[styles.alertItem]}>
-              {/* <StopItem stop={item} onPress={ navigation.push('') } /> */}
-              {/* onpress, navigate to route screen */}
-            </View>
-          )}
-          refreshControl={
-            // We only want to indicate refreshing when prior data is available.
-            // Otherwise, the skeleton list will indicate loading
-            <RefreshControl
-              refreshing={isLoading && stops !== undefined}
-              onRefresh={retry}
-            />
-          }
-        />
+        <View>
+          <Text>{stop.name}</Text>
+          <FlatList
+            data={filteredRoutes}
+            keyExtractor={(item) => item.id.toString()}
+            ItemSeparatorComponent={Spacer}
+            renderItem={({ item }) => (
+              <View style={[styles.routeItem]}>
+                <RouteItem 
+                  route={item} 
+                  onPress={() => { 
+                    navigation.push("Route", { routeId: item.id }) 
+                  }} 
+                  />
+              </View>
+            )}
+            refreshControl={
+              // We only want to indicate refreshing when prior data is available.
+              // Otherwise, the skeleton list will indicate loading
+              <RefreshControl
+                refreshing={isLoading && filteredRoutes !== undefined}
+                onRefresh={retry}
+              />
+            }
+          />
+        </View>
       ) : isError ? (
         <>
           <Text style={styles.header}>
@@ -97,12 +101,12 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  alertItemSkeleton: {
+  routeItemSkeleton: {
     padding: 16,
     backgroundColor: Color.generic.selection,
     borderRadius: 16,
   },
-  alertItem: {
+  routeItem: {
     backgroundColor: Color.generic.alert.primary,
     borderRadius: 16,
     padding: 16,

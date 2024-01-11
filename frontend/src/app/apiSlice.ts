@@ -39,6 +39,7 @@ export default createApi({
     "Routes",
     "Route",
     "Stops",
+    "Stop",
     "Vans",
   ],
   endpoints: () => ({}), // All endpoints are injected by other files

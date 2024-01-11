@@ -1,6 +1,6 @@
 import apiSlice from "../../app/apiSlice";
 import { type Coordinate } from "../location/locationSlice";
-import { BasicRoute } from "../routes/routesSlice";
+import { type BasicRoute } from "../routes/routesSlice";
 
 /**
  * A list of stops, as defined by the backend.
