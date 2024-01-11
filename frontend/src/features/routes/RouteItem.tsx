@@ -1,10 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
-  Text,
-  View,
   StyleSheet,
+  Text,
   TouchableHighlight,
+  View,
   type ViewProps,
 } from "react-native";
 
@@ -14,21 +14,17 @@ import { useLocation } from "../location/locationSlice";
 import {
   closest,
   formatMiles,
-  geoDistanceToMiles,
   formatSecondsAsMinutes,
+  geoDistanceToMiles,
 } from "../location/util";
-import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
-import { type VanLocation, useGetVansQuery } from "../vans/vansSlice";
+import { useGetStopsQuery, type ExtendedStop } from "../stops/stopsSlice";
+import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
 
-import { type ExtendedRoute } from "./routesSlice";
+import { type BasicRoute, type ExtendedRoute } from "./routesSlice";
 
-/**
- * The props for the {@interface RouteItem} component.
- */
 interface RouteItemProps {
-  /** The route to display. */
+  mode: "basic" | "extended";
   route: ExtendedRoute;
-  /** Called when the route item is clicked on. */
   onPress: (route: ExtendedRoute) => void;
 }
 
@@ -36,6 +32,7 @@ interface RouteItemProps {
  * A component that renders a single route item.
  */
 export const RouteItem = ({
+  mode,
   route,
   onPress,
 }: RouteItemProps): React.JSX.Element => {
@@ -68,9 +65,11 @@ export const RouteItem = ({
                     {closestStop.vanArrivalTime}
                   </Text>
                 </Text>
-                <Text style={styles.routeContext}>
-                  At {closestStop.name} ({closestStop.distanceFromUser})
-                </Text>
+                {mode === "extended" ? (
+                  <Text style={styles.routeContext}>
+                    At {closestStop.name} ({closestStop.distanceFromUser})
+                  </Text>
+                ) : null}
               </>
             ) : (
               <Text style={styles.routeStatus}>Running</Text>
@@ -89,12 +88,12 @@ export const RouteItem = ({
   );
 };
 
-interface ClosestStop extends Stop {
+interface ClosestStop extends ExtendedStop {
   distanceFromUser: string;
   vanArrivalTime: string;
 }
 
-function useClosestStop(to: ExtendedRoute): ClosestStop | undefined {
+function useClosestStop(to: BasicRoute): ClosestStop | undefined {
   const vans = useGetVansQuery().data;
   if (vans === undefined) {
     return undefined;
@@ -120,7 +119,7 @@ function useClosestStop(to: ExtendedRoute): ClosestStop | undefined {
     .filter(
       (van) =>
         van.location !== undefined &&
-        van.location.nextStopId === closestRouteStop.inner.id,
+        van.location.nextStopId === closestRouteStop.inner.id
     )
     .map((van) => van.location) as VanLocation[];
   const closestRouteStopVan = closest(arrivingVans, location);
@@ -131,10 +130,10 @@ function useClosestStop(to: ExtendedRoute): ClosestStop | undefined {
   return {
     ...closestRouteStop.inner,
     distanceFromUser: formatMiles(
-      geoDistanceToMiles(closestRouteStop.distance),
+      geoDistanceToMiles(closestRouteStop.distance)
     ),
     vanArrivalTime: formatSecondsAsMinutes(
-      closestRouteStopVan.inner.secondsToNextStop,
+      closestRouteStopVan.inner.secondsToNextStop
     ),
   };
 }

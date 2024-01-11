@@ -101,7 +101,7 @@ function useStopState(stop: Stop): StopState {
     const arrivingVans = vans
       .filter(
         (van) =>
-          van.location !== undefined && van.location.nextStopId === stop.id,
+          van.location !== undefined && van.location.nextStopId === stop.id
       )
       .map((van) => van.location) as VanLocation[];
     const closestStopVan = closest(arrivingVans, location);
@@ -112,7 +112,7 @@ function useStopState(stop: Stop): StopState {
 
     if (closestStopVan !== undefined) {
       stopState.vanArrivalTime = formatSecondsAsMinutes(
-        closestStopVan.inner.secondsToNextStop,
+        closestStopVan.inner.secondsToNextStop
       );
     }
   }

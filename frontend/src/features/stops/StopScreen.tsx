@@ -1,17 +1,19 @@
 import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
 import React from "react";
-import { FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { TouchableHighlight } from "react-native-gesture-handler";
 
-import RetryButton from "../../common/components/RetryButton";
-import SkeletonList from "../../common/components/SkeletonList";
-import Spacer from "../../common/components/Spacer";
-import Color from "../../common/style/color";
-
+import ErrorMessage from "../../common/components/ErrorMessage";
+import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
-import { RouteItem, RouteItemSkeleton } from "../routes/RouteItem";
+import Color from "../../common/style/color";
+import { useLocationStatus } from "../location/locationSlice";
+import { distance, formatMiles, geoDistanceToMiles } from "../location/util";
+import RouteList from "../routes/RouteList";
 import { useGetRoutesQuery } from "../routes/routesSlice";
-import { useGetStopQuery } from "./stopsSlice";
+
+import { useGetStopQuery, type Stop } from "./stopsSlice";
 
 export interface StopScreenProps {
   navigation: StackNavigationProp<InnerParamList, "Stop">;
@@ -22,12 +24,14 @@ export const StopScreen = ({
   route,
   navigation,
 }: StopScreenProps): React.JSX.Element => {
+  console.log(route.params.stopId);
+
   const {
     data: stop,
-    isLoading,
-    isSuccess,
-    isError,
-    refetch,
+    isSuccess: stopSuccess,
+    isLoading: stopLoading,
+    isError: stopError,
+    refetch: refetchStops,
   } = useGetStopQuery(route.params.stopId);
 
   const {
@@ -36,70 +40,108 @@ export const StopScreen = ({
     refetch: refetchRoutes,
   } = useGetRoutesQuery();
 
-  function retry(): void {
-    refetch().catch(console.error);
+  function retryStop(): void {
+    refetchStops().catch(console.error);
   }
-  
+
   function retryRoutes(): void {
     refetchRoutes().catch(console.error);
   }
 
-  const filteredRoutes = routes?.filter((route) => stop?.stopIds.includes(route.id));
+  let stopRoutes;
+  if (routes !== undefined && stop !== undefined) {
+    stopRoutes = routes.filter((route) => stop.routeIds.includes(route.id));
+  }
 
   return (
-    <View style={[styles.container]}>
-      {isLoading ? (
-        <SkeletonList
-          divider={false}
-          generator={() => (
-            <View style={styles.routeItemSkeleton}>
-              <RouteItemSkeleton />
-            </View>
-          )}
+    <View>
+      {stopSuccess ? (
+        <StopHeader stop={stop} />
+      ) : stopLoading ? (
+        <StopSkeleton />
+      ) : stopError ? (
+        <ErrorMessage
+          message="We couldn't fetch this stop right now. Try again later."
+          retry={() => {
+            retryStop();
+          }}
         />
-      ) : isSuccess ? (
-        <View>
-          <Text>{stop.name}</Text>
-          <FlatList
-            data={filteredRoutes}
-            keyExtractor={(item) => item.id.toString()}
-            ItemSeparatorComponent={Spacer}
-            renderItem={({ item }) => (
-              <View style={[styles.routeItem]}>
-                <RouteItem 
-                  route={item} 
-                  onPress={() => { 
-                    navigation.push("Route", { routeId: item.id }) 
-                  }} 
-                  />
-              </View>
-            )}
-            refreshControl={
-              // We only want to indicate refreshing when prior data is available.
-              // Otherwise, the skeleton list will indicate loading
-              <RefreshControl
-                refreshing={isLoading && filteredRoutes !== undefined}
-                onRefresh={retry}
-              />
-            }
-          />
-        </View>
-      ) : isError ? (
-        <>
-          <Text style={styles.header}>
-            We couldn't fetch stops right now. Try again later.
-          </Text>
-          <RetryButton retry={retry} />
-        </>
       ) : null}
+
+      {routesError ? (
+        <ErrorMessage
+          message="We couldn't fetch the routes right now. Try again later."
+          retry={() => {
+            retryRoutes();
+          }}
+        />
+      ) : (
+        <RouteList
+          mode="basic"
+          routes={stopRoutes}
+          onPress={(route) => {
+            navigation.push("Route", { routeId: route.id });
+          }}
+        />
+      )}
+    </View>
+  );
+};
+
+const StopHeader = ({ stop }: { stop: Stop }): React.JSX.Element => {
+  console.log(stop);
+  const status = useLocationStatus();
+  let stopDistance;
+  if (status.type === "active") {
+    stopDistance = formatMiles(
+      geoDistanceToMiles(distance(stop, status.location))
+    );
+  }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.stopName}>{stop.name}</Text>
+      {status.type === "active" ? (
+        <Text style={styles.stopDesc}>{stopDistance} away</Text>
+      ) : status.type === "initializing" ? (
+        <TextSkeleton style={styles.stopDesc} widthFraction={0.3} />
+      ) : null}
+      <TouchableHighlight
+        underlayColor={Color.generic.location_highlight}
+        style={[styles.button, styles.locationButton]}
+        onPress={() => {
+          // Add your logic here
+        }}
+      >
+        <Text style={styles.buttonText}>Get Directions</Text>
+      </TouchableHighlight>
+    </View>
+  );
+};
+
+const StopSkeleton = (): React.JSX.Element => {
+  return (
+    <View style={styles.container}>
+      <TextSkeleton style={styles.stopName} widthFraction={0.4} />
+      <TextSkeleton style={styles.stopDesc} widthFraction={0.3} />
+      <View style={[styles.button, styles.buttonSkeleton]}>
+        <Text style={styles.buttonText}></Text>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     padding: 16,
+  },
+  stopName: {
+    fontSize: 32,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  stopDesc: {
+    fontSize: 16,
   },
   routeItemSkeleton: {
     padding: 16,
@@ -114,5 +156,22 @@ const styles = StyleSheet.create({
   header: {
     textAlign: "center",
     paddingBottom: 16,
+  },
+  button: {
+    borderRadius: 100,
+    padding: 10,
+    marginTop: 16,
+    alignItems: "center",
+  },
+  locationButton: {
+    backgroundColor: Color.generic.location,
+  },
+  buttonSkeleton: {
+    backgroundColor: Color.generic.skeleton,
+  },
+  buttonText: {
+    color: "white",
+    fontWeight: "500",
+    fontSize: 16,
   },
 });
