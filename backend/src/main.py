@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .db import DBWrapper
-from .handlers import alert, ridership, routes, stops, vans
+from .handlers import alert, auth, ridership, routes, stops, vans
 from .hardware import HardwareExceptionMiddleware
 from .vantracking.factory import van_tracker
 from .vantracking.tracker import VanTracker
@@ -24,6 +24,7 @@ app.add_middleware(HardwareExceptionMiddleware)
 app.include_router(routes.router)
 app.include_router(stops.router)
 app.include_router(alert.router)
+app.include_router(auth.router)
 app.include_router(ridership.router)
 app.include_router(vans.router)
 
