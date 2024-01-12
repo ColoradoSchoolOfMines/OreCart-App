@@ -1,62 +1,46 @@
 import React from "react";
-import { FlatList, StyleSheet, Text, View, type ViewProps } from "react-native";
+import { FlatList, StyleSheet, View } from "react-native";
 
 import Divider from "../../common/components/Divider";
-import RetryButton from "../../common/components/RetryButton";
 import SkeletonList from "../../common/components/SkeletonList";
 import LayoutStyle from "../../common/style/layout";
 
 import { RouteItem, RouteItemSkeleton } from "./RouteItem";
-import { useGetRoutesQuery } from "./routesSlice";
 import { type ExtendedRoute } from "./routesSlice";
 
-interface RouteListProps extends ViewProps {
-  /** Called when the route item is clicked on. */
+interface RouteListProps {
+  mode: "basic" | "extended";
+  routes: ExtendedRoute[] | undefined;
   onPress: (route: ExtendedRoute) => void;
 }
 
 /**
  * Screen that displays a list of routes.
  */
-const RouteList = ({ onPress }: RouteListProps): React.JSX.Element => {
-  const {
-    data: routes,
-    isLoading,
-    isSuccess,
-    isError,
-    refetch,
-  } = useGetRoutesQuery();
-
-  function retry(): void {
-    refetch().catch(console.error);
-  }
-
+const RouteList = ({
+  mode,
+  routes,
+  onPress,
+}: RouteListProps): React.JSX.Element => {
   return (
     <View style={[LayoutStyle.fill]}>
-      {isLoading ? (
+      {routes === undefined ? (
         <SkeletonList
           style={styles.routeContainer}
           divider={true}
           generator={() => <RouteItemSkeleton />}
         />
-      ) : isSuccess ? (
+      ) : (
         <FlatList
           style={styles.routeContainer}
           data={routes}
           renderItem={({ item }) => (
-            <RouteItem route={item} onPress={onPress} />
+            <RouteItem mode={mode} route={item} onPress={onPress} />
           )}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={Divider}
         />
-      ) : isError ? (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.header}>
-            We couldn't fetch the routes right now. Try again later.
-          </Text>
-          <RetryButton retry={retry} />
-        </View>
-      ) : null}
+      )}
     </View>
   );
 };
