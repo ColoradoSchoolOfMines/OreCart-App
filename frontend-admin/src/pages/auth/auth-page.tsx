@@ -19,6 +19,9 @@ const AuthPage: React.FC = () => {
         `${baseUrl}/auth/`,
         {
           method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
           body: JSON.stringify(json),
         }
       );
