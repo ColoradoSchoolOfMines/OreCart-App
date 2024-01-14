@@ -15,8 +15,8 @@ const AuthPage: React.FC = () => {
     var json = {};
     (new FormData(e.currentTarget)).forEach((value, key) => json[key] = value);
     try {
-      const response = await fetch(
-        `${baseUrl}/auth/`,
+      await fetch(
+        `${baseUrl}/auth/login`,
         {
           method: 'POST',
           headers: {
@@ -24,10 +24,18 @@ const AuthPage: React.FC = () => {
           },
           body: JSON.stringify(json),
         }
-      );
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
+      )
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response;
+        })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log("Received the following JWT:");
+          console.log(data.jwt);
+        });
 
       //await queryClient.invalidateQueries({ queryKey: ['auth'] });
     } catch (error) {
