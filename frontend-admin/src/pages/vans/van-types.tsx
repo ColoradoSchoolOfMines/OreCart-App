@@ -1,5 +1,5 @@
 export interface Van {
-  vanId: number;
+  id: number;
   routeId: number;
   wheelchair: boolean;
 }

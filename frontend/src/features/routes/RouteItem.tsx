@@ -1,36 +1,38 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
-  Text,
-  View,
   StyleSheet,
+  Text,
   TouchableHighlight,
+  View,
   type ViewProps,
-  Dimensions,
 } from "react-native";
 
+import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
 import { useLocation } from "../location/locationSlice";
-import { closest, formatMiles, geoDistanceToMiles } from "../location/util";
-import { type Stop, useGetStopsQuery } from "../stops/stopsSlice";
-import { type VanLocation, useGetVansQuery } from "../vans/vansSlice";
+import {
+  closest,
+  formatMiles,
+  formatSecondsAsMinutes,
+  geoDistanceToMiles,
+} from "../location/util";
+import { useGetStopsQuery, type ExtendedStop } from "../stops/stopsSlice";
+import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
 
-import { type Route } from "./routesSlice";
+import { type BasicRoute, type ExtendedRoute } from "./routesSlice";
 
-/**
- * The props for the {@interface RouteItem} component.
- */
 interface RouteItemProps {
-  /** The route to display. */
-  route: Route;
-  /** Called when the route item is clicked on. */
-  onPress: (route: Route) => void;
+  mode: "basic" | "extended";
+  route: ExtendedRoute;
+  onPress: (route: ExtendedRoute) => void;
 }
 
 /**
  * A component that renders a single route item.
  */
 export const RouteItem = ({
+  mode,
   route,
   onPress,
 }: RouteItemProps): React.JSX.Element => {
@@ -63,9 +65,11 @@ export const RouteItem = ({
                     {closestStop.vanArrivalTime}
                   </Text>
                 </Text>
-                <Text style={styles.routeContext}>
-                  At {closestStop.name} ({closestStop.distanceFromUser})
-                </Text>
+                {mode === "extended" ? (
+                  <Text style={styles.routeContext}>
+                    At {closestStop.name} ({closestStop.distanceFromUser})
+                  </Text>
+                ) : null}
               </>
             ) : (
               <Text style={styles.routeStatus}>Running</Text>
@@ -84,12 +88,12 @@ export const RouteItem = ({
   );
 };
 
-interface ClosestStop extends Stop {
+interface ClosestStop extends ExtendedStop {
   distanceFromUser: string;
   vanArrivalTime: string;
 }
 
-function useClosestStop(to: Route): ClosestStop | undefined {
+function useClosestStop(to: BasicRoute): ClosestStop | undefined {
   const vans = useGetVansQuery().data;
   if (vans === undefined) {
     return undefined;
@@ -134,54 +138,16 @@ function useClosestStop(to: Route): ClosestStop | undefined {
   };
 }
 
-const formatSecondsAsMinutes = (seconds: number): string => {
-  if (seconds < 60) {
-    return `<1 min`;
-  } else {
-    return `${Math.round(seconds / 60)} min`;
-  }
-};
-
 /**
  * A skeleton component that mimics the {@interface RouteItem} component.
  */
 export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
-  const width = Dimensions.get("window").width;
-
-  const routeNameWidthStyle = {
-    width: width * 0.4,
-  };
-  const routeStatusWidthStyle = {
-    width: width * 0.6,
-  };
-  const routeContextWidthStyle = {
-    width: width * 0.5,
-  };
-
   return (
     <View style={[styles.innerContainer, style]}>
-      {/* We want to make sure the placeholders have the same height as real text elements, so we simply
-      add empty text elements set to the same configuration as the normal text elements. By some quirk of
-      RN, this results in a text element that takes up the height needed without having to put any
-      placeholder text content. */}
       <View style={styles.routeInfoContainer}>
-        <Text
-          style={[styles.routeName, styles.textSkeleton, routeNameWidthStyle]}
-        />
-        <Text
-          style={[
-            styles.routeStatus,
-            styles.textSkeleton,
-            routeStatusWidthStyle,
-          ]}
-        />
-        <Text
-          style={[
-            styles.routeContext,
-            styles.textSkeleton,
-            routeContextWidthStyle,
-          ]}
-        />
+        <TextSkeleton widthFraction={0.4} style={[styles.routeName]} />
+        <TextSkeleton widthFraction={0.6} style={[styles.routeStatus]} />
+        <TextSkeleton widthFraction={0.5} style={[styles.routeContext]} />
       </View>
     </View>
   );
@@ -212,10 +178,5 @@ const styles = StyleSheet.create({
   },
   routeContext: {
     fontSize: 12,
-  },
-  textSkeleton: {
-    backgroundColor: Color.generic.skeleton,
-    borderRadius: 32,
-    color: "transparent",
   },
 });

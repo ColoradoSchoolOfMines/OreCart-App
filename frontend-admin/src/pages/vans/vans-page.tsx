@@ -11,7 +11,7 @@ const baseUrl = import.meta.env.VITE_BACKEND_URL;
 const fetchVans = async () => {
   const response = await fetch(`${baseUrl}/vans/`);
   const data = await response.json();
-  const van_data = data["vans"] as Van[] || [];
+  const van_data = data as Van[] || [];
   return van_data;
 };
 
@@ -49,7 +49,7 @@ const VanPage: React.FC = () => {
     dialogEditRef.current?.showModal();
     setCurrentVanId(vanId);
     vanEditFormRef.current?.clearForm();
-    const van = vans?.find((van) => van.vanId === vanId);
+    const van = vans?.find((van) => van.id === vanId);
     if (van) {
       vanEditFormRef.current?.setData(van);
     }
@@ -99,7 +99,7 @@ const VanPage: React.FC = () => {
       <h1>Vans</h1>
       <div className="cards-container">
         {vans?.map((van: Van) => (
-          <Card title={`Van #${van.vanId}`} onClick={() => {openVanEditForm(van.vanId)}} key={van.vanId}></Card>
+          <Card title={`Van #${van.id}`} onClick={() => {openVanEditForm(van.id)}} key={van.id}></Card>
         ))}
       </div>
 

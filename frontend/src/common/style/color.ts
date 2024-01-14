@@ -39,6 +39,7 @@ export default {
     selection: "#EEEEEE",
     skeleton: "#DDDDDD",
     location: "#148D00",
+    location_highlight: "#0D5900",
     alert: {
       primary: "#FF5151",
       pressed: "#ED4B4B",
