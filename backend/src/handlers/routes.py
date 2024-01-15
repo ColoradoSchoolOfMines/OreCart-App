@@ -83,8 +83,6 @@ def get_kml(req: Request):
     Gets the KML file for all routes.
     """
 
-    print("test")
-
     with req.app.state.db.session() as session:
         routes = session.query(Route).all()
 
