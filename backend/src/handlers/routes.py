@@ -2,17 +2,23 @@
 Contains routes specific to working with routes.
 """
 
+import base64
 import re
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
+import pygeoif
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
+from fastkml import kml
+from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
+from pygeoif.geometry import Point, Polygon
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
+from src.model.stop import Stop
 from src.model.waypoint import Waypoint
 from src.request import process_include
 
@@ -69,6 +75,71 @@ def get_routes(
             routes_json.append(route_json)
 
         return routes_json
+
+
+@router.get("/kmlfile")
+def get_kml(req: Request):
+    """
+    Gets the KML file for all routes.
+    """
+
+    with req.app.state.db.session() as session:
+        routes = session.query(Route).all()
+
+        stops = session.query(Stop).all()
+
+        route_stops = session.query(RouteStop).all()
+
+        k = kml.KML()
+        ns = "{http://www.opengis.net/kml/2.2}"
+        d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCart app.")
+        k.append(d)
+
+        style = kml.Style(id="route-outline")
+        style.append_style(
+            LineStyle(color="ff0000ff", width=2)
+        )  # Red outline in AABBGGRR hex format
+        style.append_style(PolyStyle(fill=0))  # No fill
+
+        for route in routes:
+            p = kml.Placemark(ns, route.name, route.name, route.name)
+            p.geometry = Polygon([(w.lon, w.lat, 0) for w in route.waypoints])
+
+            p.append_style(style)
+            p.styleUrl = "#route-outline"
+
+            d.append(p)
+
+        for stop in stops:
+            route_ids = [
+                route_stop.route_id
+                for route_stop in route_stops
+                if route_stop.stop_id == stop.id
+            ]
+            routes_divs = "".join(
+                [
+                    f"<div>{route.name}<br></div>"
+                    for route in routes
+                    if route.id in route_ids
+                ]
+            )
+
+            description = f"<![CDATA[{routes_divs}]]>"
+
+            p = kml.Placemark(ns, stop.name, stop.name, description)
+            p.geometry = Point(stop.lon, stop.lat)
+            d.append(p)
+
+        d.append_style(style)
+
+        kml_string = k.to_string().replace("&lt;", "<").replace("&gt;", ">")
+
+        kml_string_bytes = kml_string.encode("ascii")
+        base64_kml_string = base64.b64encode(kml_string_bytes).decode("ascii")
+
+        # return kml_string
+
+        return {"base64": base64_kml_string}
 
 
 @router.get("/{route_id}")
@@ -166,74 +237,82 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
 
 
 @router.post("/")
-async def create_route(
-    req: Request, name: str = Form(...), kml: Optional[UploadFile] = File(None)
-):
+async def create_route(req: Request, kml_file: UploadFile):
     """
     Creates a new route.
     """
 
     with req.app.state.db.session() as session:
-        route = Route(name=name)
-        session.add(route)
-        session.commit()
+        contents: bytes = await kml_file.read()
 
-        if kml:
-            contents = await kml.read()
+        contents = contents.decode("utf-8").encode("ascii")
 
-            latlons = kml_to_waypoints(contents)[:-1]
+        routes = {}
+        stops = {}
 
-            for latlon in latlons:
-                print(latlon)
-                waypoint = Waypoint(route_id=route.id, lat=latlon[0], lon=latlon[1])
+        route_routeid_map = {}
+
+        k = kml.KML()
+        k.from_string(contents)
+
+        for feature_list in k.features():
+            for feature in feature_list.features():
+                if type(feature.geometry) == pygeoif.geometry.Polygon:
+                    routes[feature.name] = feature
+                elif type(feature.geometry) == pygeoif.geometry.Point:
+                    stops[feature.name] = feature
+                else:
+                    return HTTPException(status_code=400, detail="bad kml file")
+
+        for route_name, route in routes.items():
+            route_model = Route(name=route_name)
+            session.add(route_model)
+            session.flush()
+
+            route_routeid_map[route_name] = route_model.id
+
+            added = set()
+
+            for coords in route.geometry.exterior.coords:
+                if coords in added:
+                    print(f"skipping duplicate {coords}")
+                    continue
+                print(f"adding {coords}")
+                added.add(coords)
+                waypoint = Waypoint(
+                    route_id=route_model.id, lat=coords[1], lon=coords[0]
+                )
                 session.add(waypoint)
+                session.flush()
 
-            await kml.close()
+        pos = 0
 
-            session.commit()
-
-    return JSONResponse(status_code=200, content={"message": "OK"})
-
-
-@router.put("/{route_id}")
-async def patch_route(
-    req: Request,
-    route_id: int,
-    name: str = Form(None),
-    kml: Optional[UploadFile] = File(None),
-):
-    """
-    Updates the name of the route with the specified ID.
-    """
-    if not name and not kml:
-        raise HTTPException(status_code=400, detail="No name or KML file provided")
-
-    with req.app.state.db.session() as session:
-        if name:
-            route = session.query(Route).filter(Route.id == route_id).first()
-            if not route:
-                raise HTTPException(status_code=404, detail="Route not found")
-
-            route.name = name
-            session.commit()
-
-        if kml:
-            waypoints = (
-                session.query(Waypoint).filter(Waypoint.route_id == route_id).all()
+        for stop_name, stop in stops.items():
+            stop_model = Stop(
+                name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
             )
-            for waypoint in waypoints:
-                session.delete(waypoint)
-            session.commit()
+            session.add(stop_model)
+            session.flush()
 
-            contents = await kml.read()
+            routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
 
-            latlons = kml_to_waypoints(contents)[:-1]
+            matches = re.findall(routes_regex_pattern, str(stop.description))
 
-            for latlon in latlons:
-                waypoint = Waypoint(route_id=route_id, lat=latlon[0], lon=latlon[1])
-                session.add(waypoint)
+            for match in matches:
+                if match not in route_routeid_map:
+                    return HTTPException(status_code=400, detail="bad kml file")
+                route_stop = RouteStop(
+                    route_id=route_routeid_map[match],
+                    stop_id=stop_model.id,
+                    position=pos,
+                )
+                session.add(route_stop)
+                session.flush()
+                pos += 1
 
-            session.commit()
+        await kml_file.close()
+
+        session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
 
@@ -256,18 +335,17 @@ def kml_to_waypoints(contents: bytes):
     return latlons
 
 
-@router.delete("/{route_id}")
-def delete_route(req: Request, route_id: int):
+@router.delete("/")
+def delete_route(req: Request):
     """
-    Deletes the route with the specified ID.
+    Deletes everything in Routes, Waypoint, Stops, and Route-Stop.
     """
 
     with req.app.state.db.session() as session:
-        route = session.query(Route).filter(Route.id == route_id).first()
-        if not route:
-            raise HTTPException(status_code=404, detail="Route not found")
-
-        session.delete(route)
+        session.query(Route).delete()
+        session.query(Waypoint).delete()
+        session.query(Stop).delete()
+        session.query(RouteStop).delete()
         session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
@@ -296,41 +374,3 @@ def get_route_stops(req: Request, route_id: int):
         )
 
         return [stop_id for (stop_id,) in stops]
-
-
-@router.post("/{route_id}/stops")
-def create_route_stop(req: Request, route_id: int, route_stop_model: RouteStopModel):
-    """
-    Creates a new route stop.
-    """
-
-    with req.app.state.db.session() as session:
-        route_stop = RouteStop(route_id=route_id, stop_id=route_stop_model.stop_id)
-        session.add(route_stop)
-        session.commit()
-
-    return JSONResponse(status_code=200, content={"message": "OK"})
-
-
-@router.delete("/{route_id}/stops")
-def delete_route_stop(req: Request, route_id: int, route_stop_model: RouteStopModel):
-    """
-    Deletes a route stop.
-    """
-
-    with req.app.state.db.session() as session:
-        route_stop = (
-            session.query(RouteStop)
-            .filter(
-                RouteStop.route_id == route_id,
-                RouteStop.stop_id == route_stop_model.stop_id,
-            )
-            .first()
-        )
-        if not route_stop:
-            raise HTTPException(status_code=404, detail="Route stop not found")
-
-        session.delete(route_stop)
-        session.commit()
-
-    return JSONResponse(status_code=200, content={"message": "OK"})

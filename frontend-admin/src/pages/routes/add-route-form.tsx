@@ -12,10 +12,8 @@ const AddRouteForm: React.FC<AddRouteFormProps> = ({ onSubmit, onCancel }) => {
   return (
     <form className="add-form" onSubmit={handleSubmit}>
       <h2>Add Route</h2>
-      <label htmlFor="name">Name</label>
-      <input type="text" id="name" name="name" />
-      <label htmlFor="kml">KML File</label>
-      <input type="file" id="kml" name="kml" />
+      <label htmlFor="kml_file">KML File</label>
+      <input type="file" id="kml_file" name="kml_file" />
       <button type="submit">Submit</button>
       <button type="button" onClick={onCancel}>Cancel</button>
     </form>
