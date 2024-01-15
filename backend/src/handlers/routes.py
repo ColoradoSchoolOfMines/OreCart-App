@@ -6,11 +6,13 @@ import re
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
+import base64
 import pygeoif
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
 from pydantic import BaseModel
+from pygeoif.geometry import Polygon,Point
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
@@ -72,6 +74,48 @@ def get_routes(
             routes_json.append(route_json)
 
         return routes_json
+
+@router.get("/kmlfile")
+def get_kml(req: Request):
+    """
+    Gets the KML file for all routes.
+    """
+
+    print("test")
+
+    with req.app.state.db.session() as session:
+        routes = session.query(Route).all()
+
+        stops = session.query(Stop).all()
+
+        route_stops = session.query(RouteStop).all()
+
+        k = kml.KML()
+        ns = "{http://www.opengis.net/kml/2.2}"
+        d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCart app.")
+        k.append(d)
+
+        for route in routes:
+            p = kml.Placemark(ns, route.name, route.name, route.name)
+            p.geometry = Polygon([(w.lon, w.lat,0) for w in route.waypoints])
+            d.append(p)
+
+        for stop in stops:
+            route_ids = [route_stop.route_id for route_stop in route_stops if route_stop.stop_id == stop.id]
+            routes_divs = "".join([f"<div>{route.name}<br></div>" for route in routes if route.id in route_ids])
+
+            description = f"<![CDATA[{routes_divs}]]>"
+
+            p = kml.Placemark(ns, stop.name, stop.name, description)
+            p.geometry = Point(stop.lon, stop.lat)
+            d.append(p)
+
+        kml_string = k.to_string().replace("&lt;", "<").replace("&gt;", ">")
+
+        kml_string_bytes = kml_string.encode("ascii")
+        base64_kml_string = base64.b64encode(kml_string_bytes).decode("ascii")
+
+        return {"base64":base64_kml_string}
 
 
 @router.get("/{route_id}")
@@ -279,7 +323,6 @@ def delete_route(req: Request):
         session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
-
 
 class RouteStopModel(BaseModel):
     """
