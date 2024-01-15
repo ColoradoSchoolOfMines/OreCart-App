@@ -2,18 +2,18 @@
 Contains routes specific to working with routes.
 """
 
+import base64
 import re
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
-import base64
 import pygeoif
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
 from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
-from pygeoif.geometry import Polygon,Point
+from pygeoif.geometry import Point, Polygon
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
@@ -76,6 +76,7 @@ def get_routes(
 
         return routes_json
 
+
 @router.get("/kmlfile")
 def get_kml(req: Request):
     """
@@ -97,13 +98,14 @@ def get_kml(req: Request):
         k.append(d)
 
         style = kml.Style(id="route-outline")
-        style.append_style( LineStyle(color='ff0000ff', width=2) ) # Red outline in AABBGGRR hex format
-        style.append_style( PolyStyle(fill=0) ) # No fill
+        style.append_style(
+            LineStyle(color="ff0000ff", width=2)
+        )  # Red outline in AABBGGRR hex format
+        style.append_style(PolyStyle(fill=0))  # No fill
 
         for route in routes:
             p = kml.Placemark(ns, route.name, route.name, route.name)
-            p.geometry = Polygon([(w.lon, w.lat,0) for w in route.waypoints])
-
+            p.geometry = Polygon([(w.lon, w.lat, 0) for w in route.waypoints])
 
             p.append_style(style)
             p.styleUrl = "#route-outline"
@@ -111,8 +113,18 @@ def get_kml(req: Request):
             d.append(p)
 
         for stop in stops:
-            route_ids = [route_stop.route_id for route_stop in route_stops if route_stop.stop_id == stop.id]
-            routes_divs = "".join([f"<div>{route.name}<br></div>" for route in routes if route.id in route_ids])
+            route_ids = [
+                route_stop.route_id
+                for route_stop in route_stops
+                if route_stop.stop_id == stop.id
+            ]
+            routes_divs = "".join(
+                [
+                    f"<div>{route.name}<br></div>"
+                    for route in routes
+                    if route.id in route_ids
+                ]
+            )
 
             description = f"<![CDATA[{routes_divs}]]>"
 
@@ -129,7 +141,7 @@ def get_kml(req: Request):
 
         # return kml_string
 
-        return {"base64":base64_kml_string}
+        return {"base64": base64_kml_string}
 
 
 @router.get("/{route_id}")
@@ -292,7 +304,9 @@ async def create_route(req: Request, kml_file: UploadFile):
                 if match not in route_routeid_map:
                     return HTTPException(status_code=400, detail="bad kml file")
                 route_stop = RouteStop(
-                    route_id=route_routeid_map[match], stop_id=stop_model.id, position=pos
+                    route_id=route_routeid_map[match],
+                    stop_id=stop_model.id,
+                    position=pos,
                 )
                 session.add(route_stop)
                 session.flush()
@@ -338,6 +352,7 @@ def delete_route(req: Request):
 
     return JSONResponse(status_code=200, content={"message": "OK"})
 
+
 class RouteStopModel(BaseModel):
     """
     Represents a route stop.
@@ -361,4 +376,3 @@ def get_route_stops(req: Request, route_id: int):
         )
 
         return [stop_id for (stop_id,) in stops]
-
