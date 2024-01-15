@@ -203,12 +203,21 @@ async def create_route(req: Request, kml_file: UploadFile):
 
             route_routeid_map[route_name] = route_model.id
 
+            added = set()
+
             for coords in route.geometry.exterior.coords:
+                if coords in added:
+                    print(f"skipping duplicate {coords}")
+                    continue
+                print(f"adding {coords}")
+                added.add(coords)
                 waypoint = Waypoint(
                     route_id=route_model.id, lat=coords[1], lon=coords[0]
                 )
                 session.add(waypoint)
                 session.flush()
+
+        pos = 0
 
         for stop_name, stop in stops.items():
             stop_model = Stop(
@@ -217,17 +226,19 @@ async def create_route(req: Request, kml_file: UploadFile):
             session.add(stop_model)
             session.flush()
 
-            routes_regex_pattern = r"<div>(.*?)<br><\/div>"
+            routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
+            
             matches = re.findall(routes_regex_pattern, str(stop.description))
 
             for match in matches:
                 if match not in route_routeid_map:
                     return HTTPException(status_code=400, detail="bad kml file")
                 route_stop = RouteStop(
-                    route_id=route_routeid_map[match], stop_id=stop_model.id
+                    route_id=route_routeid_map[match], stop_id=stop_model.id, position=pos
                 )
                 session.add(route_stop)
                 session.flush()
+                pos += 1
 
         await kml_file.close()
 
