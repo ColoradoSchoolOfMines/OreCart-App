@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
-import { StyleSheet, View, type ViewProps } from "react-native";
+import { Image, StyleSheet, View, type ViewProps } from "react-native";
 import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -9,7 +9,7 @@ import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
 import { useLocationStatus, type Coordinate } from "../location/locationSlice";
-import { type ExtendedRoute, useGetRoutesQuery } from "../routes/routesSlice";
+import { useGetRoutesQuery, type ExtendedRoute } from "../routes/routesSlice";
 import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
 
@@ -114,27 +114,25 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
             <Marker
               key={van.id}
               coordinate={van.location}
-              tracksViewChanges={false}
               anchor={{ x: 0.5, y: 0.5 }}
             >
               <View
                 style={[
                   styles.marker,
                   {
-                    backgroundColor: Color.orecart.get(
-                      routesById[van.routeId]?.name,
+                    borderColor: Color.orecart.get(
+                      routesById[van.routeId]?.name
                     ),
                   },
                 ]}
               >
-                <MaterialIcons
-                  name="directions-bus"
-                  size={20}
-                  color={Color.generic.white}
+                <Image
+                  style={styles.indicator}
+                  source={require("../../../assets/van_indicator.png")}
                 />
               </View>
             </Marker>
-          ) : null,
+          ) : null
         )}
         {routes?.map((route, index) => (
           <Polyline
@@ -157,16 +155,16 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
               style={[
                 styles.marker,
                 {
-                  backgroundColor: Color.orecart.get(
-                    routesById[stop.routeIds[0]]?.name,
+                  borderColor: Color.orecart.get(
+                    routesById[stop.routeIds[0]]?.name
                   ),
                 },
               ]}
             >
               <MaterialIcons
                 name="hail"
-                size={20}
-                color={Color.generic.white}
+                size={16}
+                color={Color.generic.black}
               />
             </View>
           </Marker>
@@ -212,9 +210,17 @@ const styles = StyleSheet.create({
     alignItems: "flex-end",
   },
   marker: {
-    backgroundColor: Color.orecart.tungsten,
+    backgroundColor: Color.generic.white,
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 100,
     padding: 4,
+    borderWidth: 4,
+  },
+  indicator: {
+    width: 16,
+    height: 16,
+    borderRadius: 100,
   },
 });
 
