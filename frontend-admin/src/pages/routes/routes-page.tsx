@@ -1,8 +1,8 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import Card from '../../components/card/card';
 import AddRouteForm from './add-route-form';
-import { Route, RouteEditFormRef } from './route-types';
+import { Route } from './route-types';
 import './routes-page.scss';
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
@@ -17,9 +17,6 @@ const fetchRoutes = async () => {
 const RoutesPage: React.FC = () => {
   const { data: routes, isLoading, error } = useQuery({ queryKey: ['routes'], queryFn: fetchRoutes });
   const dialogRef = useRef<HTMLDialogElement>(null);
-  const dialogEditRef = useRef<HTMLDialogElement>(null);
-  const [ currentRouteId, setCurrentRouteId ] = useState<number>(-1);
-  const routeEditFormRef = useRef<RouteEditFormRef>(null);
   const queryClient = useQueryClient();
 
   const handleFormSubmit = async (formData: FormData) => {
@@ -54,6 +51,19 @@ const RoutesPage: React.FC = () => {
     }
   }
 
+  const getKML = async () => {
+    const response = await fetch(`${baseUrl}/routes/kmlfile`);
+    const data = await response.json();
+    const kml = atob(data.base64);
+
+    const element = document.createElement("a");
+    const file = new Blob([kml], {type: 'application/vnd.google-earth.kml+xml'});
+    element.href = URL.createObjectURL(file);
+    element.download = "routes.kml";
+    document.body.appendChild(element); // Required for this to work in FireFox
+    element.click();
+  }
+
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {(error as Error).message}</div>;
@@ -73,6 +83,10 @@ const RoutesPage: React.FC = () => {
 
       {
         !(!routes || routes?.length == 0) && <button onClick={() => {clearRoutes()}}>Clear Routes</button>
+      }
+
+{
+        !(!routes || routes?.length == 0) && <button onClick={() => {getKML()}}>Get KML</button>
       }
 
       <dialog ref={dialogRef}>

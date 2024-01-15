@@ -11,6 +11,7 @@ import pygeoif
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
+from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
 from pygeoif.geometry import Polygon,Point
 from src.model.alert import Alert
@@ -95,9 +96,18 @@ def get_kml(req: Request):
         d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCart app.")
         k.append(d)
 
+        style = kml.Style(id="route-outline")
+        style.append_style( LineStyle(color='ff0000ff', width=2) ) # Red outline in AABBGGRR hex format
+        style.append_style( PolyStyle(fill=0) ) # No fill
+
         for route in routes:
             p = kml.Placemark(ns, route.name, route.name, route.name)
             p.geometry = Polygon([(w.lon, w.lat,0) for w in route.waypoints])
+
+
+            p.append_style(style)
+            p.styleUrl = "#route-outline"
+
             d.append(p)
 
         for stop in stops:
@@ -110,10 +120,14 @@ def get_kml(req: Request):
             p.geometry = Point(stop.lon, stop.lat)
             d.append(p)
 
+        d.append_style(style)
+
         kml_string = k.to_string().replace("&lt;", "<").replace("&gt;", ">")
 
         kml_string_bytes = kml_string.encode("ascii")
         base64_kml_string = base64.b64encode(kml_string_bytes).decode("ascii")
+
+        # return kml_string
 
         return {"base64":base64_kml_string}
 
