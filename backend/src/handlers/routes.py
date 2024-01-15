@@ -227,7 +227,7 @@ async def create_route(req: Request, kml_file: UploadFile):
             session.flush()
 
             routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
-            
+
             matches = re.findall(routes_regex_pattern, str(stop.description))
 
             for match in matches:
@@ -243,49 +243,6 @@ async def create_route(req: Request, kml_file: UploadFile):
         await kml_file.close()
 
         session.commit()
-
-    return JSONResponse(status_code=200, content={"message": "OK"})
-
-
-@router.put("/{route_id}")
-async def patch_route(
-    req: Request,
-    route_id: int,
-    name: str = Form(None),
-    kml: Optional[UploadFile] = File(None),
-):
-    """
-    Updates the name of the route with the specified ID.
-    """
-    if not name and not kml:
-        raise HTTPException(status_code=400, detail="No name or KML file provided")
-
-    with req.app.state.db.session() as session:
-        if name:
-            route = session.query(Route).filter(Route.id == route_id).first()
-            if not route:
-                raise HTTPException(status_code=404, detail="Route not found")
-
-            route.name = name
-            session.commit()
-
-        if kml:
-            waypoints = (
-                session.query(Waypoint).filter(Waypoint.route_id == route_id).all()
-            )
-            for waypoint in waypoints:
-                session.delete(waypoint)
-            session.commit()
-
-            contents = await kml.read()
-
-            latlons = kml_to_waypoints(contents)[:-1]
-
-            for latlon in latlons:
-                waypoint = Waypoint(route_id=route_id, lat=latlon[0], lon=latlon[1])
-                session.add(waypoint)
-
-            session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
 
@@ -308,18 +265,17 @@ def kml_to_waypoints(contents: bytes):
     return latlons
 
 
-@router.delete("/{route_id}")
-def delete_route(req: Request, route_id: int):
+@router.delete("/")
+def delete_route(req: Request):
     """
-    Deletes the route with the specified ID.
+    Deletes everything in Routes, Waypoint, Stops, and Route-Stop.
     """
 
     with req.app.state.db.session() as session:
-        route = session.query(Route).filter(Route.id == route_id).first()
-        if not route:
-            raise HTTPException(status_code=404, detail="Route not found")
-
-        session.delete(route)
+        session.query(Route).delete()
+        session.query(Waypoint).delete()
+        session.query(Stop).delete()
+        session.query(RouteStop).delete()
         session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
