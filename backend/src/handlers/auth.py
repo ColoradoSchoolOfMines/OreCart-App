@@ -39,13 +39,11 @@ async def verify(req: Request) -> None:
     auth_head = req.headers["Authorization"]
     print(auth_head.split(" ")[-1])
     try:
-        decoded = jwt.decode(
+        jwt.decode(
             auth_head.split(" ")[-1],
             key=SECRET,
             algorithms=["HS256"],
             options={"verify_aud": False},
         )
-    except jwt.exceptions.DecodeError:
-        raise HTTPException(status_code=400, details="malformed JWT")
-    # TODO: check that the jwt is valid by comparing the locally stored jwt with the incoming one
-    pass
+    except jwt.exceptions.InvalidTokenError as e:
+        raise HTTPException(status_code=400, detail=str(e))
