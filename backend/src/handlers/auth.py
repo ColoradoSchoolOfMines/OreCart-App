@@ -1,8 +1,8 @@
 import time
-from typing import Dict
+from typing import Annotated, Dict
 
 import jwt
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -19,10 +19,6 @@ class AuthModel(BaseModel):
     password: str
 
 
-class VerifyModel(AuthModel):
-    jwt: str
-
-
 @router.post("/login")
 async def post_auth_login(auth_model: AuthModel) -> Dict[str, str]:
     # put something here that checks whether the username and password are valid
@@ -37,18 +33,19 @@ async def post_auth_login(auth_model: AuthModel) -> Dict[str, str]:
     )
     return {"jwt": token}
 
-
-@router.post("/verify")
-async def post_auth_verify(verify_model: VerifyModel) -> None:
-    """Verify a JWT sent from the client."""
-    print(f"{verify_model.username=}")
-    print(f"{verify_model.password=}")
-    print(f"{verify_model.jwt=}")
-    print(
-        jwt.decode(
-            verify_model.jwt,
+async def verify(req: Request) -> None:
+    if "Authorization" not in req.headers:
+        raise HTTPException(status_code=401, details="no Authorization header")
+    auth_head = req.headers["Authorization"]
+    print(auth_head.split(" ")[-1])
+    try:
+        decoded = jwt.decode(
+            auth_head.split(" ")[-1],
             key=SECRET,
             algorithms=["HS256"],
             options={"verify_aud": False},
         )
-    )
+    except jwt.exceptions.DecodeError:
+        raise HTTPException(status_code=400, details="malformed JWT")
+    # TODO: check that the jwt is valid by comparing the locally stored jwt with the incoming one
+    pass

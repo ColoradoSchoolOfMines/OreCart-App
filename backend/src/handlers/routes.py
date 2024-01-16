@@ -6,7 +6,7 @@ import re
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from src.model.alert import Alert
@@ -15,6 +15,8 @@ from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
 from src.model.waypoint import Waypoint
 from src.request import process_include
+
+from . import auth
 
 # JSON field names/include values
 FIELD_ID = "id"
@@ -33,7 +35,7 @@ INCLUDES = {
 router = APIRouter(prefix="/routes", tags=["routes"])
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(auth.verify)])
 def get_routes(
     req: Request,
     include: Annotated[list[str] | None, Query()] = None,
@@ -71,7 +73,7 @@ def get_routes(
         return routes_json
 
 
-@router.get("/{route_id}")
+@router.get("/{route_id}", dependencies=[Depends(auth.verify)])
 def get_route(
     req: Request,
     route_id: int,
@@ -165,7 +167,7 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
     return enabled
 
 
-@router.post("/")
+@router.post("/", dependencies=[Depends(auth.verify)])
 async def create_route(
     req: Request, name: str = Form(...), kml: Optional[UploadFile] = File(None)
 ):
@@ -195,7 +197,7 @@ async def create_route(
     return JSONResponse(status_code=200, content={"message": "OK"})
 
 
-@router.put("/{route_id}")
+@router.put("/{route_id}", dependencies=[Depends(auth.verify)])
 async def patch_route(
     req: Request,
     route_id: int,
@@ -256,7 +258,7 @@ def kml_to_waypoints(contents: bytes):
     return latlons
 
 
-@router.delete("/{route_id}")
+@router.delete("/{route_id}", dependencies=[Depends(auth.verify)])
 def delete_route(req: Request, route_id: int):
     """
     Deletes the route with the specified ID.
@@ -281,7 +283,7 @@ class RouteStopModel(BaseModel):
     stop_id: int
 
 
-@router.get("/{route_id}/stops")
+@router.get("/{route_id}/stops", dependencies=[Depends(auth.verify)])
 def get_route_stops(req: Request, route_id: int):
     """
     Gets all stops for the specified route.
@@ -298,7 +300,7 @@ def get_route_stops(req: Request, route_id: int):
         return [stop_id for (stop_id,) in stops]
 
 
-@router.post("/{route_id}/stops")
+@router.post("/{route_id}/stops", dependencies=[Depends(auth.verify)])
 def create_route_stop(req: Request, route_id: int, route_stop_model: RouteStopModel):
     """
     Creates a new route stop.
@@ -312,7 +314,7 @@ def create_route_stop(req: Request, route_id: int, route_stop_model: RouteStopMo
     return JSONResponse(status_code=200, content={"message": "OK"})
 
 
-@router.delete("/{route_id}/stops")
+@router.delete("/{route_id}/stops", dependencies=[Depends(auth.verify)])
 def delete_route_stop(req: Request, route_id: int, route_stop_model: RouteStopModel):
     """
     Deletes a route stop.

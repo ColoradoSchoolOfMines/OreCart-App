@@ -6,13 +6,15 @@ import struct
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Union
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.sql import ColumnElement
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
 from src.model.van import Van
+
+from . import auth
 
 router = APIRouter(prefix="/analytics/ridership", tags=["analytics", "ridership"])
 
@@ -58,7 +60,7 @@ class RidershipFilterModel(BaseModel):
         return t_filters
 
 
-@router.post("/{van_id}")
+@router.post("/{van_id}", dependencies=[Depends(auth.verify)])
 async def post_ridership_stats(req: Request, van_id: int):
     """
     This route is used by the hardware components to send ridership statistics to be
@@ -130,7 +132,7 @@ async def post_ridership_stats(req: Request, van_id: int):
     return HardwareOKResponse()
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(auth.verify)])
 def get_ridership(
     req: Request, filters: Optional[RidershipFilterModel]
 ) -> List[Dict[str, Union[str, int, float]]]:

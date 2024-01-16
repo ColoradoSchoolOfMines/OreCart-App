@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { Route } from '../routes/route-types.tsx';
 import { AddVanFormProps, VanData } from './van-types.tsx';
+import jwtFetch from '../../jwt-fetch';
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 const fetchRoutes = async () => {
-    const response = await fetch(`${baseUrl}/routes/`);
+    const response = await jwtFetch(`${baseUrl}/routes/`);
     const data = await response.json();
     const route_data = data as Route[];
     return route_data;

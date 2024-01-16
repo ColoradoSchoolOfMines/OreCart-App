@@ -4,7 +4,7 @@ import struct
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Set, Union
 
-from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
@@ -17,6 +17,8 @@ from src.request import process_include
 from src.vantracking.coordinate import Coordinate
 from src.vantracking.location import Location
 from starlette.responses import Response
+
+from . import auth
 
 
 class VanModel(BaseModel):
@@ -46,7 +48,7 @@ INCLUDES: Set[str] = {
 }
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(auth.verify)])
 def get_vans(
     req: Request, include: Union[List[str], None] = Query(default=None)
 ) -> JSONResponse:
@@ -70,7 +72,7 @@ def get_vans(
     return JSONResponse(content=resp)
 
 
-@router.get("/{van_id}")
+@router.get("/{van_id}", dependencies=[Depends(auth.verify)])
 def get_van(
     req: Request, van_id: int, include: Union[List[str], None] = Query(default=None)
 ) -> JSONResponse:
@@ -89,7 +91,7 @@ def get_van(
     return JSONResponse(content=resp)
 
 
-@router.post("/")
+@router.post("/", dependencies=[Depends(auth.verify)])
 def post_van(req: Request, van_model: VanModel) -> JSONResponse:
     with req.app.state.db.session() as session:
         van = Van(route_id=van_model.route_id, wheelchair=van_model.wheelchair)
@@ -100,7 +102,7 @@ def post_van(req: Request, van_model: VanModel) -> JSONResponse:
     return JSONResponse(content={"message": "OK"})
 
 
-@router.put("/{van_id}")
+@router.put("/{van_id}", dependencies=[Depends(auth.verify)])
 def put_van(req: Request, van_id: int, van_model: VanModel) -> JSONResponse:
     with req.app.state.db.session() as session:
         van: Van = session.query(Van).filter_by(id=van_id).first()
@@ -115,7 +117,7 @@ def put_van(req: Request, van_id: int, van_model: VanModel) -> JSONResponse:
     return JSONResponse(content={"message": "OK"})
 
 
-@router.delete("/{van_id}")
+@router.delete("/{van_id}", dependencies=[Depends(auth.verify)])
 def delete_van(req: Request, van_id: int) -> JSONResponse:
     with req.app.state.db.session() as session:
         van: Van = session.query(Van).filter_by(id=van_id).first()
@@ -127,13 +129,13 @@ def delete_van(req: Request, van_id: int) -> JSONResponse:
     return JSONResponse(content={"message": "OK"})
 
 
-@router.get("/location/", response_class=Response)
+@router.get("/location/", response_class=Response, dependencies=[Depends(auth.verify)])
 def get_locations(req: Request):
     vans = get_all_van_ids(req)
     return JSONResponse(content=get_location_for_vans(req, vans))
 
 
-@router.websocket("/location/subscribe/")
+@router.websocket("/location/subscribe/", dependencies=[Depends(auth.verify)])
 async def subscribe_locations(websocket: WebSocket) -> None:
     await websocket.accept()
 
@@ -144,7 +146,7 @@ async def subscribe_locations(websocket: WebSocket) -> None:
         await asyncio.sleep(2)
 
 
-@router.get("/location/{van_id}")
+@router.get("/location/{van_id}", dependencies=[Depends(auth.verify)])
 def get_location(req: Request, van_id: int) -> JSONResponse:
     if van_id not in req.app.state.van_locations:
         raise HTTPException(detail="Van not found", status_code=404)
@@ -153,7 +155,7 @@ def get_location(req: Request, van_id: int) -> JSONResponse:
     return JSONResponse(content=location_json)
 
 
-@router.websocket("/location/{van_id}/subscribe")
+@router.websocket("/location/{van_id}/subscribe", dependencies=[Depends(auth.verify)])
 async def subscribe_location(websocket: WebSocket, van_id: int) -> None:
     if van_id not in websocket.app.state.van_locations:
         raise HTTPException(detail="Van not found", status_code=404)
@@ -205,7 +207,7 @@ def get_location_for_van(
     }
 
 
-@router.post("/location/{van_id}")
+@router.post("/location/{van_id}", dependencies=[Depends(auth.verify)])
 async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     # byte body: long for timestamp, double for lat, double for lon
     body = await req.body()

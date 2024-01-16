@@ -35,6 +35,7 @@ const AuthPage: React.FC = () => {
         .then((data) => {
           console.log("Received the following JWT:");
           console.log(data.jwt);
+          localStorage.setItem("jwt", data.jwt);
         });
 
       //await queryClient.invalidateQueries({ queryKey: ['auth'] });

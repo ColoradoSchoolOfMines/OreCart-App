@@ -5,13 +5,15 @@ Contains routes specific to working with stops.
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from src.model.alert import Alert
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.stop_disable import StopDisable
 from src.request import process_include
+
+from . import auth
 
 # JSON field names/include values
 FIELD_ID = "id"
@@ -28,7 +30,7 @@ INCLUDES = {
 router = APIRouter(prefix="/stops", tags=["stops"])
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(auth.verify)])
 def get_stops(
     req: Request,
     include: Annotated[list[str] | None, Query()] = None,
@@ -68,7 +70,7 @@ def get_stops(
         return stops_json
 
 
-@router.get("/{stop_id}")
+@router.get("/{stop_id}", dependencies=[Depends(auth.verify)])
 def get_stop(
     req: Request,
     stop_id: int,
@@ -165,7 +167,7 @@ class StopModel(BaseModel):
     active: bool
 
 
-@router.post("/")
+@router.post("/", dependencies=[Depends(auth.verify)])
 def create_stop(req: Request, stop_model: StopModel) -> dict[str, str]:
     """
     Creates a new stop.
@@ -184,7 +186,7 @@ def create_stop(req: Request, stop_model: StopModel) -> dict[str, str]:
     return {"message": "OK"}
 
 
-@router.put("/{stop_id}")
+@router.put("/{stop_id}", dependencies=[Depends(auth.verify)])
 def update_stop(
     req: Request,
     stop_id: int,
@@ -208,7 +210,7 @@ def update_stop(
     return {"message": "OK"}
 
 
-@router.delete("/{stop_id}")
+@router.delete("/{stop_id}", dependencies=[Depends(auth.verify)])
 def delete_stop(req: Request, stop_id: int) -> dict[str, str]:
     """
     Deletes the stop with the specified id.

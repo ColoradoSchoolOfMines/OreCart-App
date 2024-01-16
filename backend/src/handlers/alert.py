@@ -1,10 +1,12 @@
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Union
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from src.model.alert import Alert
+
+from . import auth
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
@@ -20,7 +22,7 @@ class AlertModel(BaseModel):
     end_time: int
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(auth.verify)])
 def get_alerts(
     req: Request, filter: Optional[str] = None
 ) -> List[Dict[str, Union[str, int]]]:
@@ -49,7 +51,7 @@ def get_alerts(
     return alerts_json
 
 
-@router.get("/{alert_id}")
+@router.get("/{alert_id}", dependencies=[Depends(auth.verify)])
 def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
     with req.app.state.db.session() as session:
         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
@@ -66,7 +68,7 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
     return alert_json
 
 
-@router.post("/")
+@router.post("/", dependencies=[Depends(auth.verify)])
 def post_alert(req: Request, alert_model: AlertModel) -> Dict[str, str]:
     with req.app.state.db.session() as session:
         dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
@@ -83,7 +85,7 @@ def post_alert(req: Request, alert_model: AlertModel) -> Dict[str, str]:
     return {"message": "OK"}
 
 
-@router.put("/{alert_id}")
+@router.put("/{alert_id}", dependencies=[Depends(auth.verify)])
 def update_alert(
     req: Request, alert_id: int, alert_model: AlertModel
 ) -> Dict[str, str]:
@@ -103,7 +105,7 @@ def update_alert(
     return {"message": "OK"}
 
 
-@router.delete("/{alert_id}")
+@router.delete("/{alert_id}", dependencies=[Depends(auth.verify)])
 def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
     with req.app.state.db.session() as session:
         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
