@@ -64,16 +64,33 @@ const RoutesPage: React.FC = () => {
     element.click();
   }
 
+  const dialogEditRef = useRef<HTMLDialogElement>(null);
+
+  const openRoutePage = (routeId: number) => {
+    dialogEditRef.current?.showModal();
+    // setCurrentVanId(vanId);
+    // const route = routes?.find((route) => route.id === routeId);
+    // if (route) {
+    //   vanEditFormRef.current?.setData(route);
+    // }
+  };
+
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {(error as Error).message}</div>;
 
   return (
     <main className='p-routes-page'>
+      <dialog ref={dialogEditRef}>
+        <p>Popup</p>
+        <button type="button" onClick={() => {dialogEditRef.current?.close()}}>Cancel</button>
+      </dialog>
+
+
       <h1>Routes</h1>
       <div className="cards-container">
         {routes?.map((route: Route) => (
-          <Card title={`${route.name} (${route.id})`} key={route.id}></Card>
+          <Card title={`${route.name} (${route.id})`} onClick={() => {openRoutePage(route.id)}} key={route.id}></Card>
         ))}
       </div>
 
