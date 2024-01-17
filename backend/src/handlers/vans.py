@@ -207,10 +207,10 @@ def get_location_for_van(
 
 @router.post("/location/{van_id}")
 async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
-    # byte body: long for timestamp, double for lat, double for lon
+    # byte body: long long for timestamp, double for lat, double for lon
     body = await req.body()
-    timestamp, lat, lon = struct.unpack("!ldd", body)
-    timestamp = datetime.fromtimestamp(timestamp, timezone.utc)
+    timestamp_ms, lat, lon = struct.unpack("<Qdd", body)
+    timestamp = datetime.fromtimestamp(timestamp_ms / 1000.0, timezone.utc)
 
     current_time = datetime.now(timezone.utc)
 
