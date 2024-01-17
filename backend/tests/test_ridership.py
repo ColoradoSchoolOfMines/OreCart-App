@@ -34,8 +34,8 @@ def new_mock_ridership(time: datetime):
 def mock_analytics_body(analytics: Analytics, time: datetime):
     async def inner():
         return struct.pack(
-            "!lbbdd",
-            int(time.timestamp()),
+            "<Qbbdd",
+            int(time.timestamp() * 1000),
             analytics.entered,
             analytics.exited,
             analytics.lat,
