@@ -1,17 +1,18 @@
-"""create stops table
+"""stops sqlalchemy
 
-Revision ID: 174e5a759f2d
-Revises: dc6fb3eee9e3
-Create Date: 2023-10-04 17:25:22.810006
+Revision ID: e5948f4d075b
+Revises: 03a80025a6fa
+Create Date: 2024-01-16 21:06:39.215529
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
+
 # revision identifiers, used by Alembic.
-revision: str = "174e5a759f2d"
-down_revision: Union[str, None] = "dc6fb3eee9e3"
+revision: str = "e5948f4d075b"
+down_revision: Union[str, None] = "03a80025a6fa"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

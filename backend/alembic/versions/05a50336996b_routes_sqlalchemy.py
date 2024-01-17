@@ -1,28 +1,30 @@
-"""create routes table
+"""routes sqlalchemy
 
-Revision ID: 311f80f8b8dd
-Revises: 174e5a759f2d
-Create Date: 2023-10-04 17:32:02.895752
+Revision ID: 05a50336996b
+Revises: e5948f4d075b
+Create Date: 2024-01-16 21:06:39.374182
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
+
 # revision identifiers, used by Alembic.
-revision: str = "311f80f8b8dd"
-down_revision: Union[str, None] = "174e5a759f2d"
+revision: str = "05a50336996b"
+down_revision: Union[str, None] = "e5948f4d075b"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
     op.drop_table("routes")
-
-
-def downgrade() -> None:
     op.create_table(
         "routes",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("name", sa.String(255), nullable=False, unique=True),
     )
+
+
+def downgrade() -> None:
+    op.drop_table("routes")

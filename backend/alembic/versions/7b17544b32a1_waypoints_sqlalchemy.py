@@ -1,17 +1,18 @@
-"""create waypoints table
+"""waypoints sqlalchemy
 
-Revision ID: 233206860d70
-Revises: 87f033493d8b
-Create Date: 2023-10-04 17:35:37.020567
+Revision ID: 7b17544b32a1
+Revises: 05a50336996b
+Create Date: 2024-01-16 21:06:39.535068
 
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
+from alembic import op
+
 # revision identifiers, used by Alembic.
-revision: str = "233206860d70"
-down_revision: Union[str, None] = "87f033493d8b"
+revision: str = "7b17544b32a1"
+down_revision: Union[str, None] = "05a50336996b"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -21,7 +22,12 @@ def upgrade() -> None:
     op.create_table(
         "waypoints",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("route_id", sa.Integer, sa.ForeignKey("routes.id", ondelete="CASCADE"), nullable=False),
+        sa.Column(
+            "route_id",
+            sa.Integer,
+            sa.ForeignKey("routes.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("lat", sa.Float, nullable=False),
         sa.Column("lon", sa.Float, nullable=False),
         sa.UniqueConstraint("route_id", "lat", "lon"),
