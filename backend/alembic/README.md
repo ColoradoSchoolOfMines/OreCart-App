@@ -22,4 +22,14 @@ Migrations can also be applied one-at-a-time by using
 alembic upgrade +1
 ```
 
-For more information on creating and managing migrations, [read the docs](https://alembic.sqlalchemy.org/en/latest/tutorial.html#create-a-migration-script)
+Migrations should be created on all database changes using
+
+```bash
+alembic revision -m "descriptive message here"
+```
+
+This will generate a new file called something like "abcdef123456_descriptive_message_here.py". It will contain an "upgrade" method should take the
+current table state and update it to the new table schema, and a "downgrade" method that should take the upgraded table state and turn it back
+into the prior schema. You should be able to use existing SQLAlchemy methods to modify the database, rather than raw SQL queries.
+
+For more information on creating and managing migrations, [read the docs](https://alembic.sqlalchemy.org/en/latest/tutorial.html#create-a-migration-script
