@@ -64,7 +64,7 @@ async def post_ridership_stats(req: Request, van_id: int):
     This route is used by the hardware components to send ridership statistics to be
     logged in the database. The body of the request is a packed byte array containing
     the following values in order:
-    - timestamp of time when response was sent (64-bit seconds since epoch)
+    - timestamp of time when response was sent (64-bit milliseconds since epoch)
     - entered (8-bit, number of people who entered the van at a given stop)
     - exited (8-bit, number of people who exited the van at the stop)
     - lat (double-precision float, current latitude of the van at the stop)
@@ -73,8 +73,8 @@ async def post_ridership_stats(req: Request, van_id: int):
 
     # Unpack the byte body sent by the hardware into their corresponding values
     body = await req.body()
-    timestamp, entered, exited, lat, lon = struct.unpack("!lbbdd", body)
-    timestamp = datetime.fromtimestamp(timestamp, timezone.utc)
+    timestamp_ms, entered, exited, lat, lon = struct.unpack("<Qbbdd", body)
+    timestamp = datetime.fromtimestamp(timestamp_ms / 1000.0, timezone.utc)
 
     current_time = datetime.now(timezone.utc)
 
