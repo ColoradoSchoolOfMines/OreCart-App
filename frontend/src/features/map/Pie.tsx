@@ -2,11 +2,18 @@ import * as d3 from "d3";
 import React from "react";
 import { Path, Svg } from "react-native-svg";
 
-interface PieChartProps {
+/**
+ * Props for the {@class Pie} component.
+ */
+interface PieProps {
+  /** The colors to display in the view. */
   colors: string[];
 }
 
-const PieChart: React.FC<PieChartProps> = ({ colors }) => {
+/**
+ * Displays a pie chart-like view with equal-size portions consisting of the given colors.
+ */
+const Pie = ({ colors }: PieProps): React.JSX.Element => {
   const pie = d3.pie()(colors.map(() => 1 / colors.length));
   const arcGenerator: (color: string) => string | undefined = d3
     .arc()
@@ -22,4 +29,4 @@ const PieChart: React.FC<PieChartProps> = ({ colors }) => {
   );
 };
 
-export default PieChart;
+export default Pie;

@@ -13,7 +13,7 @@ import { useGetRoutesQuery, type ExtendedRoute } from "../routes/routesSlice";
 import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
 
-import PieChart from "./ArcBorder";
+import Pie from "./Pie";
 
 /**
  * The props for the {@interface Map} component.
@@ -123,7 +123,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                   styles.marker,
                   {
                     borderColor: Color.orecart.get(
-                      routesById[van.routeId]?.name,
+                      routesById[van.routeId]?.name
                     ),
                     padding: 4,
                     borderWidth: 4,
@@ -136,7 +136,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                 />
               </View>
             </Marker>
-          ) : null,
+          ) : null
         )}
         {routes?.map((route, index) => (
           <Polyline
@@ -156,12 +156,19 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
             anchor={{ x: 0.5, y: 0.5 }}
           >
             <View style={[styles.marker]}>
+              {/* 
+              Create a similar border to that of the van indicators, but segment it
+              such that it shows the colors of all the routes that stop at it. Since
+              borders can only be one color, we must draw effectively a pie chart
+              on the background and then inset the actual icon on top of it to produce
+              a border.
+              */}
               <View style={LayoutStyle.overlay}>
-                <PieChart
+                <Pie
                   colors={stop.routeIds.map(
                     (routeId) =>
                       Color.orecart.get(routesById[routeId]?.name) ??
-                      Color.generic.black,
+                      Color.generic.black
                   )}
                 />
               </View>
