@@ -123,7 +123,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                   styles.marker,
                   {
                     borderColor: Color.orecart.get(
-                      routesById[van.routeId]?.name
+                      routesById[van.routeId]?.name,
                     ),
                     padding: 4,
                     borderWidth: 4,
@@ -136,7 +136,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                 />
               </View>
             </Marker>
-          ) : null
+          ) : null,
         )}
         {routes?.map((route, index) => (
           <Polyline
@@ -168,7 +168,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                   colors={stop.routeIds.map(
                     (routeId) =>
                       Color.orecart.get(routesById[routeId]?.name) ??
-                      Color.generic.black
+                      Color.generic.black,
                   )}
                 />
               </View>
