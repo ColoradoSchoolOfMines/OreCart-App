@@ -165,14 +165,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                   )}
                 />
               </View>
-              <View
-                style={{
-                  backgroundColor: "white",
-                  margin: 4,
-                  padding: 4,
-                  borderRadius: 100,
-                }}
-              >
+              <View style={styles.icon}>
                 <MaterialIcons
                   name="hail"
                   size={16}
@@ -231,6 +224,12 @@ const styles = StyleSheet.create({
   indicator: {
     width: 16,
     height: 16,
+    borderRadius: 100,
+  },
+  icon: {
+    backgroundColor: "white",
+    margin: 4,
+    padding: 4,
     borderRadius: 100,
   },
 });
