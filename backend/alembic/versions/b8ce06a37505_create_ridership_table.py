@@ -7,6 +7,7 @@ Create Date: 2023-10-04 17:40:44.364879
 """
 from typing import Sequence, Union
 
+import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -17,32 +18,25 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute(
-        """
-        CREATE TABLE IF NOT EXISTS public.ridership (
-	        id serial PRIMARY KEY,
-	        van_id int NOT NULL,
-	        route_id int NOT NULL,
-	        entered int NOT NULL,
-	        exited int NOT NULL,
-	        lat float8 NOT NULL,
-	        lon float8 NOT NULL,
-	        datetime timestamptz NOT NULL,
-	        UNIQUE (van_id, datetime),
-	        FOREIGN KEY (van_id)
-		        REFERENCES vans (id)
-		        ON DELETE CASCADE,
-	        FOREIGN KEY (route_id)
-		        REFERENCES routes (id)
-		        ON DELETE CASCADE
-        );
-    """
+    op.create_table(
+        "ridership",
+        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column("van_id", sa.Integer, nullable=False),
+        sa.Column("route_id", sa.Integer, nullable=False),
+        sa.Column("entered", sa.Integer, nullable=False),
+        sa.Column("exited", sa.Integer, nullable=False),
+        sa.Column("lat", sa.Float, nullable=False),
+        sa.Column("lon", sa.Float, nullable=False),
+        sa.Column("datetime", sa.DateTime(timezone=True), nullable=False),
+        sa.UniqueConstraint("van_id", "datetime"),
+        sa.ForeignKeyConstraint(["van_id"], ["vans.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["route_id"], ["routes.id"], ondelete="CASCADE"),
     )
 
 
 def downgrade() -> None:
     op.execute(
         """
-        DROP TABLE IF EXISTS public.ridership;
-    """
+		DROP TABLE IF EXISTS public.ridership;
+	"""
     )
