@@ -12,6 +12,7 @@ import { useLocationStatus, type Coordinate } from "../location/locationSlice";
 import { useGetRoutesQuery, type ExtendedRoute } from "../routes/routesSlice";
 import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
+import PieChart from "./ArcBorder";
 
 /**
  * The props for the {@interface Map} component.
@@ -121,8 +122,10 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                   styles.marker,
                   {
                     borderColor: Color.orecart.get(
-                      routesById[van.routeId]?.name,
+                      routesById[van.routeId]?.name
                     ),
+                    padding: 4,
+                    borderWidth: 4,
                   },
                 ]}
               >
@@ -132,7 +135,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                 />
               </View>
             </Marker>
-          ) : null,
+          ) : null
         )}
         {routes?.map((route, index) => (
           <Polyline
@@ -151,21 +154,30 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
             tracksViewChanges={false}
             anchor={{ x: 0.5, y: 0.5 }}
           >
-            <View
-              style={[
-                styles.marker,
-                {
-                  borderColor: Color.orecart.get(
-                    routesById[stop.routeIds[0]]?.name,
-                  ),
-                },
-              ]}
-            >
-              <MaterialIcons
-                name="hail"
-                size={16}
-                color={Color.generic.black}
-              />
+            <View style={[styles.marker]}>
+              <View style={LayoutStyle.overlay}>
+                <PieChart
+                  colors={stop.routeIds.map(
+                    (routeId) =>
+                      Color.orecart.get(routesById[routeId]?.name) ??
+                      Color.generic.black
+                  )}
+                />
+              </View>
+              <View
+                style={{
+                  backgroundColor: "white",
+                  margin: 4,
+                  padding: 4,
+                  borderRadius: 100,
+                }}
+              >
+                <MaterialIcons
+                  name="hail"
+                  size={16}
+                  color={Color.generic.black}
+                />
+              </View>
             </View>
           </Marker>
         ))}
@@ -214,8 +226,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 100,
-    padding: 4,
-    borderWidth: 4,
   },
   indicator: {
     width: 16,
