@@ -8,6 +8,7 @@ import {
 import "./index.css";
 import AccommodationsPage from './pages/accommodations/accommodations-page';
 import AlertsPage from './pages/alerts/alerts-page';
+import LoginPage from './pages/login/login-page';
 import RidershipPage from './pages/ridership/ridership-page';
 import RoutesPage from './pages/routes/routes-page';
 import VanPage from './pages/vans/vans-page';
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "alerts",
         element: <AlertsPage />
+      },
+      {
+        path: "/login",
+        element: <LoginPage />
       }
     ]
   },
