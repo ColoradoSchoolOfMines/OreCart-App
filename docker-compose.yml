@@ -26,10 +26,6 @@ services:
     depends_on:
       database:
         condition: service_healthy
-    develop:
-      watch:
-        - action: rebuild
-          path: ./backend/
   backend:
     container_name: orecart-backend
     build: ./backend
@@ -47,10 +43,6 @@ services:
     depends_on:
       migration:
         condition: service_completed_successfully
-    develop:
-      watch:
-        - action: rebuild
-          path: ./backend/
   frontend-admin:
     container_name: orecart-frontend-admin
     build: ./frontend-admin
@@ -68,9 +60,5 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    develop:
-      watch:
-        - action: rebuild
-          path: ./frontend-admin
 volumes:
   orecart-db-volume: {}
