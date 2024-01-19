@@ -51,8 +51,8 @@ def mock_stops():
 @pytest.fixture
 def mock_routes():
     return [
-        Route(id=1, name="Route 1"),
-        Route(id=2, name="Route 2"),
+        Route(id=1, name="Route 1", color="#000000"),
+        Route(id=2, name="Route 2", color="#000000"),
     ]
 
 
