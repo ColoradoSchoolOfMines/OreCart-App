@@ -36,12 +36,14 @@ const LoginPage: React.FC = () => {
 
       <form method="post" onSubmit={handleSubmit}>
         <div>
-          <label for="username">Username:</label>
-          <input type="text" name="username" required />
+          <label>Username:
+            <input type="text" name="username" required />
+          </label>
         </div>
         <div>
-          <label for="password">Password:</label>
-          <input type="password" name="password" required />
+          <label>Password:
+            <input type="password" name="password" required />
+          </label>
         </div>
         <div>
           <input type="submit" value="Log in" />
