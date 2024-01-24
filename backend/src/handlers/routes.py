@@ -250,7 +250,7 @@ async def create_route(req: Request, kml_file: UploadFile):
         routes = {}
         stops = {}
 
-        route_routeid_map = {}
+        stop_id_map = {}
 
         k = kml.KML()
         k.from_string(contents)
@@ -264,12 +264,18 @@ async def create_route(req: Request, kml_file: UploadFile):
                 else:
                     return HTTPException(status_code=400, detail="bad kml file")
 
+        for stop_name, stop in stops.items():
+            stop_model = Stop(
+                name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
+            )
+            session.add(stop_model)
+            session.flush()
+            stop_id_map[stop_name] = stop_model.id
+
         for route_name, route in routes.items():
             route_model = Route(name=route_name)
             session.add(route_model)
             session.flush()
-
-            route_routeid_map[route_name] = route_model.id
 
             added = set()
 
@@ -285,30 +291,18 @@ async def create_route(req: Request, kml_file: UploadFile):
                 session.add(waypoint)
                 session.flush()
 
-        pos = 0
-
-        for stop_name, stop in stops.items():
-            stop_model = Stop(
-                name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
-            )
-            session.add(stop_model)
-            session.flush()
-
             routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
+            route_stops = re.findall(routes_regex_pattern, str(route.description))
 
-            matches = re.findall(routes_regex_pattern, str(stop.description))
-
-            for match in matches:
-                if match not in route_routeid_map:
-                    return HTTPException(status_code=400, detail="bad kml file")
+            for pos, stop in enumerate(route_stops):
+                if stop not in stop_id_map:
+                    continue
+                stop_id = stop_id_map[stop]
                 route_stop = RouteStop(
-                    route_id=route_routeid_map[match],
-                    stop_id=stop_model.id,
-                    position=pos,
+                    route_id=route_model.id, stop_id=stop_id, position=pos
                 )
                 session.add(route_stop)
                 session.flush()
-                pos += 1
 
         await kml_file.close()
 
