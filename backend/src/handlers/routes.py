@@ -103,7 +103,22 @@ def get_kml(req: Request):
         style.append_style(PolyStyle(fill=0))  # No fill
 
         for route in routes:
-            p = kml.Placemark(ns, route.name, route.name, route.name)
+            stop_ids = [
+                route_stop.stop_id
+                for route_stop in route_stops
+                if route_stop.route_id == route.id
+            ]
+            stop_divs = "".join(
+                [
+                    f"<div>{route.name}<br></div>"
+                    for route in routes
+                    if route.id in stop_ids
+                ]
+            )
+
+            description = f"<![CDATA[{stop_divs}]]>"
+
+            p = kml.Placemark(ns, route.name, route.name, route.name, description)
             p.geometry = Polygon([(w.lon, w.lat, 0) for w in route.waypoints])
 
             p.append_style(style)
@@ -112,22 +127,7 @@ def get_kml(req: Request):
             d.append(p)
 
         for stop in stops:
-            route_ids = [
-                route_stop.route_id
-                for route_stop in route_stops
-                if route_stop.stop_id == stop.id
-            ]
-            routes_divs = "".join(
-                [
-                    f"<div>{route.name}<br></div>"
-                    for route in routes
-                    if route.id in route_ids
-                ]
-            )
-
-            description = f"<![CDATA[{routes_divs}]]>"
-
-            p = kml.Placemark(ns, stop.name, stop.name, description)
+            p = kml.Placemark(ns, stop.name, stop.name)
             p.geometry = Point(stop.lon, stop.lat)
             d.append(p)
 
