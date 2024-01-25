@@ -3,6 +3,7 @@ annotated-types==0.5.0
 anyio==3.7.1
 astroid==2.15.8
 black==23.9.1
+beautifulsoup4==4.10.0
 cachetools==5.3.2
 click==8.1.7
 dill==0.3.7

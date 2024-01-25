@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 import pygeoif
+from bs4 import BeautifulSoup
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
@@ -291,8 +292,17 @@ async def create_route(req: Request, kml_file: UploadFile):
                 session.add(waypoint)
                 session.flush()
 
-            routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
-            route_stops = re.findall(routes_regex_pattern, str(route.description))
+            route_desc_html = BeautifulSoup(route.description, features="html.parser")
+
+            # Want the text contents of all of the surface-level divs and then strip
+            # all of the tags of it's content
+
+            route_stops = [
+                div.text.strip()
+                for div in route_desc_html.find_all("div", recursive=False)
+            ]
+
+            print(route_stops, route_desc_html.find_all("div", recursive=False))
 
             for pos, stop in enumerate(route_stops):
                 if stop not in stop_id_map:
