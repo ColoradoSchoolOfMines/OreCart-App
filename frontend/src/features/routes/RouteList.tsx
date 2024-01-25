@@ -15,7 +15,7 @@ interface RouteListProps {
   mode: "basic" | "extended";
   routes: ExtendedRoute[] | undefined;
   inStop?: BasicStop;
-  defaultHeader: () => React.JSX.Element;
+  defaultHeader?: () => React.JSX.Element;
   renderStop?: (route: BasicStop) => React.JSX.Element;
   renderStopSkeleton?: () => React.JSX.Element;
   onPress: (route: ExtendedRoute) => void;
@@ -61,7 +61,7 @@ const RouteList = ({
           )}
           renderSectionHeader={({ section: { stop } }) => {
             if (renderStop === undefined || renderStopSkeleton === undefined) {
-              return defaultHeader();
+              return defaultHeader !== undefined ? defaultHeader() : null;
             }
             return stop !== undefined ? renderStop(stop) : renderStopSkeleton();
           }}
