@@ -26,8 +26,6 @@ export const LandingScreen = ({
 
   return (
     <View>
-      <AlertBanner />
-      <LocationPermissionPrompt />
       {isError ? (
         <ErrorMessage
           message="We couldn't fetch the routes right now. Try again later."
@@ -42,6 +40,12 @@ export const LandingScreen = ({
           onPress={(route) => {
             navigation.push("Route", { routeId: route.id });
           }}
+          defaultHeader={() => (
+            <View>
+              <AlertBanner />
+              <LocationPermissionPrompt />
+            </View>
+          )}
         />
       )}
     </View>
