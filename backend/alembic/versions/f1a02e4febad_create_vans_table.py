@@ -21,9 +21,8 @@ def upgrade() -> None:
     op.create_table(
         "vans",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("route_id", sa.Integer),
+        sa.Column("route_id", sa.Integer, sa.ForeignKey("routes.id"), nullable=True),
         sa.Column("wheelchair", sa.Boolean, nullable=False),
-        sa.ForeignKeyConstraint(["route_id"], ["routes.id"], ondelete="SET NULL"),
     )
 
 

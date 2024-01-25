@@ -21,16 +21,24 @@ def upgrade() -> None:
     op.create_table(
         "ridership",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("van_id", sa.Integer, nullable=False),
-        sa.Column("route_id", sa.Integer, nullable=False),
+        sa.Column(
+            "van_id",
+            sa.Integer,
+            sa.ForeignKey("vans.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "route_id",
+            sa.Integer,
+            sa.ForeignKey("routes.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
         sa.Column("entered", sa.Integer, nullable=False),
         sa.Column("exited", sa.Integer, nullable=False),
         sa.Column("lat", sa.Float, nullable=False),
         sa.Column("lon", sa.Float, nullable=False),
         sa.Column("datetime", sa.DateTime(timezone=True), nullable=False),
         sa.UniqueConstraint("van_id", "datetime"),
-        sa.ForeignKeyConstraint(["van_id"], ["vans.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["route_id"], ["routes.id"], ondelete="CASCADE"),
     )
 
 
