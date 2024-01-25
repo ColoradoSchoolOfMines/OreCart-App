@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 import pygeoif
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  # type: ignore
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
