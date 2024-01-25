@@ -18,18 +18,20 @@ import {
   formatSecondsAsMinutes,
   geoDistanceToMiles,
 } from "../location/util";
+import { type BasicRoute } from "../routes/routesSlice";
 import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
 
-import { type ExtendedStop } from "./stopsSlice";
+import { type BasicStop, type ExtendedStop } from "./stopsSlice";
 
 /**
  * The props for the {@interface StopItem} component.
  */
 interface StopItemProps {
   /** The stop to display. */
-  stop: ExtendedStop;
+  stop: BasicStop;
+  inRoute?: BasicRoute;
   /** Called when the stop item is clicked on. */
-  onPress: (stop: ExtendedStop) => void;
+  onPress: (stop: BasicStop) => void;
 }
 
 /**
@@ -37,9 +39,10 @@ interface StopItemProps {
  */
 export const StopItem = ({
   stop,
+  inRoute,
   onPress,
 }: StopItemProps): React.JSX.Element => {
-  const stopState = useStopState(stop);
+  const stopState = useStopState(stop, inRoute);
 
   // TODO: Remove as soon as we fetch colors from backend
 
@@ -90,7 +93,7 @@ interface StopState {
   vanArrivalTime?: string;
 }
 
-function useStopState(stop: ExtendedStop): StopState {
+function useStopState(stop: ExtendedStop, inRoute?: BasicRoute): StopState {
   const location = useLocation();
   const vans = useGetVansQuery().data;
 
@@ -102,7 +105,9 @@ function useStopState(stop: ExtendedStop): StopState {
     const arrivingVans = vans
       .filter(
         (van) =>
-          van.location !== undefined && van.location.nextStopId === stop.id,
+          (inRoute === undefined || van.routeId === inRoute.id) &&
+          van.location !== undefined &&
+          van.location.nextStopId === stop.id,
       )
       .map((van) => van.location) as VanLocation[];
     const closestStopVan = closest(arrivingVans, location);
