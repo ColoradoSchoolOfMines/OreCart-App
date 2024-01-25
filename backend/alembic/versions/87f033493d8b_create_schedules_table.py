@@ -32,11 +32,12 @@ def upgrade() -> None:
             sa.Integer,
             nullable=False,
             server_default="0",
-            check=(sa.text("dow >= 0 AND dow <= 6")),
         ),
         sa.Column("start_time", sa.Time(timezone=False), nullable=False),
         sa.Column("end_time", sa.Time(timezone=False), nullable=False),
         sa.UniqueConstraint("route_id", "dow"),
+        sa.CheckConstraint("dow >= 0 AND dow <= 6"),
+        sa.CheckConstraint("end_time > start_time"),
     )
 
 
