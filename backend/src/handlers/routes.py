@@ -80,71 +80,73 @@ def get_routes(
 
 
 @router.get("/kmlfile")
+@make_async
 def get_kml(req: Request):
     """
     Gets the KML file for all routes.
     """
+    session = req.state.session
 
-    with req.app.state.db.session() as session:
-        routes = session.query(Route).all()
+    routes = session.query(Route).all()
 
-        stops = session.query(Stop).all()
+    stops = session.query(Stop).all()
 
-        route_stops = session.query(RouteStop).all()
+    route_stops = session.query(RouteStop).all()
 
-        k = kml.KML()
-        ns = "{http://www.opengis.net/kml/2.2}"
-        d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCart app.")
-        k.append(d)
+    k = kml.KML()
+    ns = "{http://www.opengis.net/kml/2.2}"
+    d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCart app.")
+    k.append(d)
 
-        style = kml.Style(id="route-outline")
-        style.append_style(
-            LineStyle(color="ff0000ff", width=2)
-        )  # Red outline in AABBGGRR hex format
-        style.append_style(PolyStyle(fill=0))  # No fill
+    style = kml.Style(id="route-outline")
+    style.append_style(
+        LineStyle(color="ff0000ff", width=2)
+    )  # Red outline in AABBGGRR hex format
+    style.append_style(PolyStyle(fill=0))  # No fill
 
-        for route in routes:
-            p = kml.Placemark(ns, route.name, route.name, route.name)
-            p.geometry = Polygon([(w.lon, w.lat, 0) for w in route.waypoints])
+    for route in routes:
+        p = kml.Placemark(ns, route.name, route.name, route.name)
+        p.geometry = Polygon([(w.lon, w.lat, 0) for w in route.waypoints])
 
-            p.append_style(style)
-            p.styleUrl = "#route-outline"
+        p.append_style(style)
+        p.styleUrl = "#route-outline"
 
-            d.append(p)
+        d.append(p)
 
-        for stop in stops:
-            route_ids = [
-                route_stop.route_id
-                for route_stop in route_stops
-                if route_stop.stop_id == stop.id
+    for stop in stops:
+        route_ids = [
+            route_stop.route_id
+            for route_stop in route_stops
+            if route_stop.stop_id == stop.id
+        ]
+        routes_divs = "".join(
+            [
+                f"<div>{route.name}<br></div>"
+                for route in routes
+                if route.id in route_ids
             ]
-            routes_divs = "".join(
-                [
-                    f"<div>{route.name}<br></div>"
-                    for route in routes
-                    if route.id in route_ids
-                ]
-            )
+        )
 
-            description = f"<![CDATA[{routes_divs}]]>"
+        description = f"<![CDATA[{routes_divs}]]>"
 
-            p = kml.Placemark(ns, stop.name, stop.name, description)
-            p.geometry = Point(stop.lon, stop.lat)
-            d.append(p)
+        p = kml.Placemark(ns, stop.name, stop.name, description)
+        p.geometry = Point(stop.lon, stop.lat)
+        d.append(p)
 
-        d.append_style(style)
+    d.append_style(style)
 
-        kml_string = k.to_string().replace("&lt;", "<").replace("&gt;", ">")
+    kml_string = k.to_string().replace("&lt;", "<").replace("&gt;", ">")
 
-        kml_string_bytes = kml_string.encode("ascii")
-        base64_kml_string = base64.b64encode(kml_string_bytes).decode("ascii")
+    kml_string_bytes = kml_string.encode("ascii")
+    base64_kml_string = base64.b64encode(kml_string_bytes).decode("ascii")
 
-        # return kml_string
+    # return kml_string
 
-        return {"base64": base64_kml_string}
+    return {"base64": base64_kml_string}
 
 
 @router.get("/{route_id}")
+@make_async
 def get_route(
     req: Request,
     route_id: int,
@@ -153,27 +155,27 @@ def get_route(
     """
     Gets the route with the specified ID.
     """
+    session = req.state.session
 
     include_set = process_include(include, INCLUDES)
-    with req.app.state.db.session() as session:
-        route = session.query(Route).filter(Route.id == route_id).first()
-        if not route:
-            raise HTTPException(status_code=404, detail="Route not found")
+    route = session.query(Route).filter(Route.id == route_id).first()
+    if not route:
+        raise HTTPException(status_code=404, detail="Route not found")
 
-        route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
+    route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
 
-        # Add related values to the route if included
-        if FIELD_STOP_IDS in include_set:
-            route_json[FIELD_STOP_IDS] = query_route_stop_ids(route.id, session)
+    # Add related values to the route if included
+    if FIELD_STOP_IDS in include_set:
+        route_json[FIELD_STOP_IDS] = query_route_stop_ids(route.id, session)
 
-        if FIELD_WAYPOINTS in include_set:
-            route_json[FIELD_WAYPOINTS] = query_route_waypoints(route.id, session)
+    if FIELD_WAYPOINTS in include_set:
+        route_json[FIELD_WAYPOINTS] = query_route_waypoints(route.id, session)
 
-        if FIELD_IS_ACTIVE in include_set:
-            alert = get_current_alert(datetime.now(timezone.utc), session)
-            route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
+    if FIELD_IS_ACTIVE in include_set:
+        alert = get_current_alert(datetime.now(timezone.utc), session)
+        route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
 
-        return route_json
+    return route_json
 
 
 def query_route_stop_ids(route_id: int, session):
@@ -337,17 +339,18 @@ def kml_to_waypoints(contents: bytes):
 
 
 @router.delete("/")
+@make_async
 def delete_route(req: Request):
     """
     Deletes everything in Routes, Waypoint, Stops, and Route-Stop.
     """
+    session = req.state.session
 
-    with req.app.state.db.session() as session:
-        session.query(Route).delete()
-        session.query(Waypoint).delete()
-        session.query(Stop).delete()
-        session.query(RouteStop).delete()
-        session.commit()
+    session.query(Route).delete()
+    session.query(Waypoint).delete()
+    session.query(Stop).delete()
+    session.query(RouteStop).delete()
+    session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
 
@@ -361,17 +364,18 @@ class RouteStopModel(BaseModel):
 
 
 @router.get("/{route_id}/stops")
+@make_async
 def get_route_stops(req: Request, route_id: int):
     """
     Gets all stops for the specified route.
     """
+    session = req.state.session
 
-    with req.app.state.db.session() as session:
-        stops = (
-            session.query(RouteStop)
-            .filter(RouteStop.route_id == route_id)
-            .with_entities(RouteStop.stop_id)
-            .all()
-        )
+    stops = (
+        session.query(RouteStop)
+        .filter(RouteStop.route_id == route_id)
+        .with_entities(RouteStop.stop_id)
+        .all()
+    )
 
-        return [stop_id for (stop_id,) in stops]
+    return [stop_id for (stop_id,) in stops]

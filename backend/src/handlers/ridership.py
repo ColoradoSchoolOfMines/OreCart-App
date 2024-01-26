@@ -10,6 +10,7 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.sql import ColumnElement
+from src.auth.make_async import make_async
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
 from src.model.van import Van
@@ -131,15 +132,16 @@ async def post_ridership_stats(req: Request, van_id: int):
 
 
 @router.get("/")
+@make_async
 def get_ridership(
     req: Request, filters: Optional[RidershipFilterModel]
 ) -> List[Dict[str, Union[str, int, float]]]:
-    with req.app.state.db.session() as session:
-        analytics: List[Analytics] = []
-        if filters is None or filters.filters is None:
-            analytics = session.query(Analytics).all()
-        else:
-            analytics = session.query(Analytics).filter(*filters.filters).all()
+    session = req.state.session
+    analytics: List[Analytics] = []
+    if filters is None or filters.filters is None:
+        analytics = session.query(Analytics).all()
+    else:
+        analytics = session.query(Analytics).filter(*filters.filters).all()
 
     # convert analytics to json
     analytics_json: List[Dict[str, Union[str, int, float]]] = []

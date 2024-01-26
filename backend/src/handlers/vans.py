@@ -8,6 +8,7 @@ from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
+from src.auth.make_async import make_async
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.route import Route
 from src.model.route_stop import RouteStop
@@ -47,21 +48,23 @@ INCLUDES: Set[str] = {
 
 
 @router.get("/")
+@make_async
 def get_vans(
     req: Request, include: Union[List[str], None] = Query(default=None)
 ) -> JSONResponse:
-    include_set = process_include(include=include, allowed=INCLUDES)
-    with req.app.state.db.session() as session:
-        vans: List[Van] = session.query(Van).all()
+    session = req.state.session
 
-        resp: List[Dict[str, Optional[Union[int, float, bool]]]] = [
-            {
-                "id": van.id,
-                "routeId": van.route_id,
-                "wheelchair": van.wheelchair,
-            }
-            for van in vans
-        ]
+    include_set = process_include(include=include, allowed=INCLUDES)
+    vans: List[Van] = session.query(Van).all()
+
+    resp: List[Dict[str, Optional[Union[int, float, bool]]]] = [
+        {
+            "id": van.id,
+            "routeId": van.route_id,
+            "wheelchair": van.wheelchair,
+        }
+        for van in vans
+    ]
 
     if INCLUDE_LOCATION in include_set:
         for van in resp:
@@ -71,58 +74,64 @@ def get_vans(
 
 
 @router.get("/{van_id}")
+@make_async
 def get_van(
     req: Request, van_id: int, include: Union[List[str], None] = Query(default=None)
 ) -> JSONResponse:
-    include_set = process_include(include=include, allowed=INCLUDES)
-    with req.app.state.db.session() as session:
-        van: Van = session.query(Van).filter_by(id=van_id).first()
-        if van is None:
-            return JSONResponse(content={"message": "Van not found"}, status_code=404)
+    session = req.state.session
 
-        resp = {
-            "id": van_id,
-            "routeId": van.route_id,
-            "wheelchair": van.wheelchair,
-        }
+    include_set = process_include(include=include, allowed=INCLUDES)
+    van: Van = session.query(Van).filter_by(id=van_id).first()
+    if van is None:
+        return JSONResponse(content={"message": "Van not found"}, status_code=404)
+
+    resp = {
+        "id": van_id,
+        "routeId": van.route_id,
+        "wheelchair": van.wheelchair,
+    }
 
     return JSONResponse(content=resp)
 
 
 @router.post("/")
+@make_async
 def post_van(req: Request, van_model: VanModel) -> JSONResponse:
-    with req.app.state.db.session() as session:
-        van = Van(route_id=van_model.route_id, wheelchair=van_model.wheelchair)
+    session = req.state.session
 
-        session.add(van)
-        session.commit()
+    van = Van(route_id=van_model.route_id, wheelchair=van_model.wheelchair)
+
+    session.add(van)
+    session.commit()
 
     return JSONResponse(content={"message": "OK"})
 
 
 @router.put("/{van_id}")
+@make_async
 def put_van(req: Request, van_id: int, van_model: VanModel) -> JSONResponse:
-    with req.app.state.db.session() as session:
-        van: Van = session.query(Van).filter_by(id=van_id).first()
-        if van is None:
-            return JSONResponse(content={"message": "Van not found"}, status_code=404)
+    session = req.state.session
+    van: Van = session.query(Van).filter_by(id=van_id).first()
+    if van is None:
+        return JSONResponse(content={"message": "Van not found"}, status_code=404)
 
-        van.route_id = van_model.route_id
-        van.wheelchair = van_model.wheelchair
+    van.route_id = van_model.route_id
+    van.wheelchair = van_model.wheelchair
 
-        session.commit()
+    session.commit()
 
     return JSONResponse(content={"message": "OK"})
 
 
 @router.delete("/{van_id}")
+@make_async
 def delete_van(req: Request, van_id: int) -> JSONResponse:
-    with req.app.state.db.session() as session:
-        van: Van = session.query(Van).filter_by(id=van_id).first()
-        if van is None:
-            return JSONResponse(content={"message": "Van not found"}, status_code=404)
-        session.query(Van).filter_by(id=van_id).delete()
-        session.commit()
+    session = req.state.session
+    van: Van = session.query(Van).filter_by(id=van_id).first()
+    if van is None:
+        return JSONResponse(content={"message": "Van not found"}, status_code=404)
+    session.query(Van).filter_by(id=van_id).delete()
+    session.commit()
 
     return JSONResponse(content={"message": "OK"})
 
@@ -166,9 +175,10 @@ async def subscribe_location(websocket: WebSocket, van_id: int) -> None:
         await asyncio.sleep(2)
 
 
+@make_async
 def get_all_van_ids(req: Union[Request, WebSocket]) -> List[int]:
-    with req.app.state.db.session() as session:
-        return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
+    session = req.state.session
+    return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
 
 
 def get_location_for_vans(

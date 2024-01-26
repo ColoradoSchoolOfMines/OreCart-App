@@ -53,11 +53,12 @@ def get_alerts(
 
 
 @router.get("/{alert_id}")
+@make_async
 def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
-    with req.app.state.db.session() as session:
-        alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
-        if alert is None:
-            return JSONResponse(content={"message": "Alert not found"}, status_code=404)
+    session = req.state.session
+    alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
+    if alert is None:
+        return JSONResponse(content={"message": "Alert not found"}, status_code=404)
 
     alert_json: Dict[str, Union[str, int]] = {
         "id": alert.id,

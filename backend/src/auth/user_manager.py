@@ -25,8 +25,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
 
 async def get_user_db(req: Request):
-    async with req.app.state.db.async_session() as session:
-        yield SQLAlchemyUserDatabase(session, User)
+    async with req.app.state.db.async_session() as asession:
+        yield SQLAlchemyUserDatabase(asession, User)
 
 
 async def get_user_manager(
