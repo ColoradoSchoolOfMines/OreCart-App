@@ -9,6 +9,7 @@ from typing import Dict, List, Optional, Union
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
+from sqlalchemy import select
 from sqlalchemy.sql import ColumnElement
 from src.auth.make_async import make_async
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
@@ -93,10 +94,10 @@ async def post_ridership_stats(req: Request, van_id: int):
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_IN_FUTURE
         )
 
-    with req.app.state.db.session() as session:
+    async with req.app.state.db.async_session() as asession:
         # Find the route that the van is currently on, required by the ridership database.
         # If there is no route, then the van does not exist or is not running.
-        van = session.query(Van).filter_by(id=van_id).first()
+        van = await asession.execute(select(Van).filter_by(id=van_id).limit(1)).first()
         if not van:
             raise HardwareHTTPException(
                 status_code=404, error_code=HardwareErrorCode.VAN_NOT_ACTIVE
@@ -105,9 +106,12 @@ async def post_ridership_stats(req: Request, van_id: int):
         # Check that the timestamp is the most recent one for the van. This prevents
         # updates from being sent out of order, which could mess up the statistics.
         most_recent = (
-            session.query(Analytics)
-            .filter_by(van_id=van_id)
-            .order_by(Analytics.datetime.desc())
+            await asession.execute(
+                select(Analytics)
+                .filter_by(van_id=van_id)
+                .order_by(Analytics.datetime.desc())
+                .limit(1)
+            )
             .first()
         )
         if most_recent is not None and timestamp <= most_recent.datetime:
@@ -125,8 +129,8 @@ async def post_ridership_stats(req: Request, van_id: int):
             lon=lon,
             datetime=timestamp,
         )
-        session.add(new_ridership)
-        session.commit()
+        asession.add(new_ridership)
+        await asession.commit()
 
     return HardwareOKResponse()
 

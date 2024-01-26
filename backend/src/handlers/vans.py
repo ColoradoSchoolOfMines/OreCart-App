@@ -250,19 +250,22 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     # cache entry and stop list. It's better to do this once rather than coupling it with
     # push_location due to the very expensive stop query we have to do.
     if van_id not in req.app.state.van_tracker:
-        with req.app.state.db.session() as session:
+        async with req.app.state.db.async_session() as asession:
             # Need to find the likely list of stops this van will go on. It's assumed that
             # this will only change between van activations, so we can query once and then
             # cache this list.
             stops = (
-                session.query(Stop)
-                .join(RouteStop, Stop.id == RouteStop.stop_id)
-                # Make sure all stops will be in order since that's critical for the time estimate
-                .order_by(RouteStop.position)
-                .join(Van, Van.route_id == RouteStop.route_id)
-                .filter(Van.id == van_id)
-                # Ignore inactive stops we won't be going to and thus don't need to estimate times for
-                .filter(Stop.active == True)
+                await asession.execute(
+                    select(Stop)
+                    .join(RouteStop, Stop.id == RouteStop.stop_id)
+                    # Make sure all stops will be in order since that's critical for the time estimate
+                    .order_by(RouteStop.position)
+                    .join(Van, Van.route_id == RouteStop.route_id)
+                    .filter(Van.id == van_id)
+                    # Ignore inactive stops we won't be going to and thus don't need to estimate times for
+                    .filter(Stop.active == True)
+                )
+                .scalars()
                 .all()
             )
 
