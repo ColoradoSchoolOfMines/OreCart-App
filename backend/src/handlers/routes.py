@@ -14,6 +14,7 @@ from fastkml import kml
 from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
 from pygeoif.geometry import Point, Polygon
+from src.auth.make_async import make_async
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
@@ -40,6 +41,7 @@ router = APIRouter(prefix="/routes", tags=["routes"])
 
 
 @router.get("/")
+@make_async
 def get_routes(
     req: Request,
     include: Annotated[list[str] | None, Query()] = None,
@@ -47,34 +49,34 @@ def get_routes(
     """
     Gets all routes.
     """
+    session = req.state.session
 
     include_set = process_include(include, INCLUDES)
-    with req.app.state.db.session() as session:
-        routes = session.query(Route).all()
+    routes = session.query(Route).all()
 
-        # Be more efficient and load the current alert only once if
-        # we need it for the isActive field.
-        alert = None
+    # Be more efficient and load the current alert only once if
+    # we need it for the isActive field.
+    alert = None
+    if FIELD_IS_ACTIVE in include_set:
+        alert = get_current_alert(datetime.now(timezone.utc), session)
+
+    routes_json = []
+    for route in routes:
+        route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
+
+        # Add related values to the route if included
+        if FIELD_STOP_IDS in include_set:
+            route_json[FIELD_STOP_IDS] = query_route_stop_ids(route.id, session)
+
+        if FIELD_WAYPOINTS in include_set:
+            route_json[FIELD_WAYPOINTS] = query_route_waypoints(route.id, session)
+
         if FIELD_IS_ACTIVE in include_set:
-            alert = get_current_alert(datetime.now(timezone.utc), session)
+            route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
 
-        routes_json = []
-        for route in routes:
-            route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
+        routes_json.append(route_json)
 
-            # Add related values to the route if included
-            if FIELD_STOP_IDS in include_set:
-                route_json[FIELD_STOP_IDS] = query_route_stop_ids(route.id, session)
-
-            if FIELD_WAYPOINTS in include_set:
-                route_json[FIELD_WAYPOINTS] = query_route_waypoints(route.id, session)
-
-            if FIELD_IS_ACTIVE in include_set:
-                route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
-
-            routes_json.append(route_json)
-
-        return routes_json
+    return routes_json
 
 
 @router.get("/kmlfile")
@@ -241,8 +243,7 @@ async def create_route(req: Request, kml_file: UploadFile):
     """
     Creates a new route.
     """
-
-    with req.app.state.db.session() as session:
+    async with req.app.state.db.async_session() as asession:
         contents: bytes = await kml_file.read()
 
         contents = contents.decode("utf-8").encode("ascii")
@@ -266,8 +267,8 @@ async def create_route(req: Request, kml_file: UploadFile):
 
         for route_name, route in routes.items():
             route_model = Route(name=route_name)
-            session.add(route_model)
-            session.flush()
+            asession.add(route_model)
+            asession.flush()
 
             route_routeid_map[route_name] = route_model.id
 
@@ -282,8 +283,8 @@ async def create_route(req: Request, kml_file: UploadFile):
                 waypoint = Waypoint(
                     route_id=route_model.id, lat=coords[1], lon=coords[0]
                 )
-                session.add(waypoint)
-                session.flush()
+                asession.add(waypoint)
+                asession.flush()
 
         pos = 0
 
@@ -291,8 +292,8 @@ async def create_route(req: Request, kml_file: UploadFile):
             stop_model = Stop(
                 name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
             )
-            session.add(stop_model)
-            session.flush()
+            asession.add(stop_model)
+            asession.flush()
 
             routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
 
@@ -306,13 +307,13 @@ async def create_route(req: Request, kml_file: UploadFile):
                     stop_id=stop_model.id,
                     position=pos,
                 )
-                session.add(route_stop)
-                session.flush()
+                asession.add(route_stop)
+                asession.flush()
                 pos += 1
 
         await kml_file.close()
 
-        session.commit()
+        asession.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
 
