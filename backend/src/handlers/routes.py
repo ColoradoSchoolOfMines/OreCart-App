@@ -270,7 +270,7 @@ async def create_route(req: Request, kml_file: UploadFile):
         for route_name, route in routes.items():
             route_model = Route(name=route_name)
             asession.add(route_model)
-            asession.flush()
+            await asession.flush()
 
             route_routeid_map[route_name] = route_model.id
 
@@ -286,7 +286,7 @@ async def create_route(req: Request, kml_file: UploadFile):
                     route_id=route_model.id, lat=coords[1], lon=coords[0]
                 )
                 asession.add(waypoint)
-                asession.flush()
+                await asession.flush()
 
         pos = 0
 
@@ -295,7 +295,7 @@ async def create_route(req: Request, kml_file: UploadFile):
                 name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
             )
             asession.add(stop_model)
-            asession.flush()
+            await asession.flush()
 
             routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
 
@@ -310,7 +310,7 @@ async def create_route(req: Request, kml_file: UploadFile):
                     position=pos,
                 )
                 asession.add(route_stop)
-                asession.flush()
+                await asession.flush()
                 pos += 1
 
         await kml_file.close()
