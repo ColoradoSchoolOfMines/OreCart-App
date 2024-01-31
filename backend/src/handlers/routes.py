@@ -8,19 +8,21 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 import pygeoif
-from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
 from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
 from pygeoif.geometry import Point, Polygon
 from src.auth.make_async import make_async
+from src.auth.user_manager import current_user
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.waypoint import Waypoint
+from src.model.user import User
 from src.request import process_include
 
 # JSON field names/include values
@@ -241,7 +243,7 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
 
 
 @router.post("/")
-async def create_route(req: Request, kml_file: UploadFile):
+async def create_route(req: Request, kml_file: UploadFile, user: Annotated[User, Depends(current_user)]):
     """
     Creates a new route.
     """
@@ -340,7 +342,7 @@ def kml_to_waypoints(contents: bytes):
 
 @router.delete("/")
 @make_async
-def delete_route(req: Request):
+def delete_route(req: Request, user: Annotated[User, Depends(current_user)]):
     """
     Deletes everything in Routes, Waypoint, Stops, and Route-Stop.
     """

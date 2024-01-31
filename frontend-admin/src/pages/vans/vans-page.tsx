@@ -36,6 +36,7 @@ const VanPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(vanData),
+        credentials: 'include',
       });
       await queryClient.invalidateQueries({ queryKey: ['vans'] });
       dialogRef.current?.close();
@@ -64,6 +65,7 @@ const VanPage: React.FC = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(vanData),
+        credentials: 'include',
       });
       await queryClient.invalidateQueries({ queryKey: ['vans'] });
       setCurrentVanId(-1);
@@ -81,6 +83,7 @@ const VanPage: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
       await queryClient.invalidateQueries({ queryKey: ['vans'] });
       setCurrentVanId(-1);

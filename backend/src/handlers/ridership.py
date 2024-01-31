@@ -4,17 +4,19 @@ Routes for tracking ridership statistics.
 
 import struct
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional, Union
+from typing import Annotated, Dict, List, Optional, Union
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy import select
 from sqlalchemy.sql import ColumnElement
 from src.auth.make_async import make_async
+from src.auth.user_manager import current_user
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
 from src.model.van import Van
+from src.model.user import User
 
 router = APIRouter(prefix="/analytics/ridership", tags=["analytics", "ridership"])
 
@@ -61,7 +63,7 @@ class RidershipFilterModel(BaseModel):
 
 
 @router.post("/{van_id}")
-async def post_ridership_stats(req: Request, van_id: int):
+async def post_ridership_stats(req: Request, van_id: int, user: Annotated[User, Depends(current_user)]):
     """
     This route is used by the hardware components to send ridership statistics to be
     logged in the database. The body of the request is a packed byte array containing
@@ -138,7 +140,7 @@ async def post_ridership_stats(req: Request, van_id: int):
 @router.get("/")
 @make_async
 def get_ridership(
-    req: Request, filters: Optional[RidershipFilterModel]
+    req: Request, filters: Optional[RidershipFilterModel], user: Annotated[User, Depends(current_user)]
 ) -> List[Dict[str, Union[str, int, float]]]:
     session = req.state.session
     analytics: List[Analytics] = []

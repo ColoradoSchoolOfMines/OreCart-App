@@ -5,13 +5,15 @@ Contains routes specific to working with stops.
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 from src.auth.make_async import make_async
+from src.auth.user_manager import current_user
 from src.model.alert import Alert
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.stop_disable import StopDisable
+from src.model.user import User
 from src.request import process_include
 
 # JSON field names/include values
@@ -170,7 +172,7 @@ class StopModel(BaseModel):
 
 @router.post("/")
 @make_async
-def create_stop(req: Request, stop_model: StopModel) -> dict[str, str]:
+def create_stop(req: Request, stop_model: StopModel, user: Annotated[User, Depends(current_user)]) -> dict[str, str]:
     """
     Creates a new stop.
     """
@@ -194,6 +196,7 @@ def update_stop(
     req: Request,
     stop_id: int,
     stop_model: StopModel,
+    user: Annotated[User, Depends(current_user)],
 ) -> dict[str, str]:
     """
     Updates the stop with the specified id.
@@ -215,7 +218,7 @@ def update_stop(
 
 @router.delete("/{stop_id}")
 @make_async
-def delete_stop(req: Request, stop_id: int) -> dict[str, str]:
+def delete_stop(req: Request, stop_id: int, user: Annotated[User, Depends(current_user)]) -> dict[str, str]:
     """
     Deletes the stop with the specified id.
     """

@@ -1,11 +1,13 @@
 from datetime import datetime, timezone
-from typing import Dict, List, Optional, Union
+from typing import Annotated, Dict, List, Optional, Union
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from src.auth.make_async import make_async
+from src.auth.user_manager import current_user
 from src.model.alert import Alert
+from src.model.user import User
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 
@@ -72,7 +74,7 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
 
 @router.post("/")
 @make_async
-def post_alert(req: Request, alert_model: AlertModel) -> Dict[str, str]:
+def post_alert(req: Request, alert_model: AlertModel, user: Annotated[User, Depends(current_user)]) -> Dict[str, str]:
     session = req.state.session
 
     dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
@@ -92,7 +94,7 @@ def post_alert(req: Request, alert_model: AlertModel) -> Dict[str, str]:
 @router.put("/{alert_id}")
 @make_async
 def update_alert(
-    req: Request, alert_id: int, alert_model: AlertModel
+    req: Request, alert_id: int, alert_model: AlertModel, user: Annotated[User, Depends(current_user)]
 ) -> Dict[str, str]:
     session = req.state.session
 
@@ -113,7 +115,7 @@ def update_alert(
 
 @router.delete("/{alert_id}")
 @make_async
-def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
+def delete_alert(req: Request, alert_id: int, user: Annotated[User, Depends(current_user)]) -> Dict[str, str]:
     session = req.state.session
 
     alert: Alert = session.query(Alert).filter_by(id=alert_id).first()

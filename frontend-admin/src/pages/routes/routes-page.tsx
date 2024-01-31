@@ -24,6 +24,7 @@ const RoutesPage: React.FC = () => {
       const response = await fetch(`${baseUrl}/routes/`, {
         method: 'POST',
         body: formData, // FormData is directly sent without setting Content-Type header
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -40,6 +41,7 @@ const RoutesPage: React.FC = () => {
     try {
       const response = await fetch(`${baseUrl}/routes/`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (!response.ok) {
         throw new Error('Network response was not ok');
