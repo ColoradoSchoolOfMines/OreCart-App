@@ -74,7 +74,9 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
 
 @router.post("/")
 @make_async
-def post_alert(req: Request, alert_model: AlertModel, user: Annotated[User, Depends(current_user)]) -> Dict[str, str]:
+def post_alert(
+    req: Request, alert_model: AlertModel, user: Annotated[User, Depends(current_user)]
+) -> Dict[str, str]:
     session = req.state.session
 
     dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
@@ -94,7 +96,10 @@ def post_alert(req: Request, alert_model: AlertModel, user: Annotated[User, Depe
 @router.put("/{alert_id}")
 @make_async
 def update_alert(
-    req: Request, alert_id: int, alert_model: AlertModel, user: Annotated[User, Depends(current_user)]
+    req: Request,
+    alert_id: int,
+    alert_model: AlertModel,
+    user: Annotated[User, Depends(current_user)],
 ) -> Dict[str, str]:
     session = req.state.session
 
@@ -115,7 +120,9 @@ def update_alert(
 
 @router.delete("/{alert_id}")
 @make_async
-def delete_alert(req: Request, alert_id: int, user: Annotated[User, Depends(current_user)]) -> Dict[str, str]:
+def delete_alert(
+    req: Request, alert_id: int, user: Annotated[User, Depends(current_user)]
+) -> Dict[str, str]:
     session = req.state.session
 
     alert: Alert = session.query(Alert).filter_by(id=alert_id).first()

@@ -15,8 +15,8 @@ from src.auth.make_async import make_async
 from src.auth.user_manager import current_user
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.analytics import Analytics
-from src.model.van import Van
 from src.model.user import User
+from src.model.van import Van
 
 router = APIRouter(prefix="/analytics/ridership", tags=["analytics", "ridership"])
 
@@ -63,7 +63,9 @@ class RidershipFilterModel(BaseModel):
 
 
 @router.post("/{van_id}")
-async def post_ridership_stats(req: Request, van_id: int, user: Annotated[User, Depends(current_user)]):
+async def post_ridership_stats(
+    req: Request, van_id: int, user: Annotated[User, Depends(current_user)]
+):
     """
     This route is used by the hardware components to send ridership statistics to be
     logged in the database. The body of the request is a packed byte array containing
@@ -107,15 +109,12 @@ async def post_ridership_stats(req: Request, van_id: int, user: Annotated[User, 
 
         # Check that the timestamp is the most recent one for the van. This prevents
         # updates from being sent out of order, which could mess up the statistics.
-        most_recent = (
-            await asession.execute(
-                select(Analytics)
-                .filter_by(van_id=van_id)
-                .order_by(Analytics.datetime.desc())
-                .limit(1)
-            )
-            .first()
-        )
+        most_recent = await asession.execute(
+            select(Analytics)
+            .filter_by(van_id=van_id)
+            .order_by(Analytics.datetime.desc())
+            .limit(1)
+        ).first()
         if most_recent is not None and timestamp <= most_recent.datetime:
             raise HardwareHTTPException(
                 status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
@@ -140,7 +139,9 @@ async def post_ridership_stats(req: Request, van_id: int, user: Annotated[User, 
 @router.get("/")
 @make_async
 def get_ridership(
-    req: Request, filters: Optional[RidershipFilterModel], user: Annotated[User, Depends(current_user)]
+    req: Request,
+    filters: Optional[RidershipFilterModel],
+    user: Annotated[User, Depends(current_user)],
 ) -> List[Dict[str, Union[str, int, float]]]:
     session = req.state.session
     analytics: List[Analytics] = []

@@ -98,7 +98,9 @@ def get_van(
 
 @router.post("/")
 @make_async
-def post_van(req: Request, van_model: VanModel, user: Annotated[User, Depends(current_user)]) -> JSONResponse:
+def post_van(
+    req: Request, van_model: VanModel, user: Annotated[User, Depends(current_user)]
+) -> JSONResponse:
     session = req.state.session
 
     van = Van(route_id=van_model.route_id, wheelchair=van_model.wheelchair)
@@ -111,7 +113,12 @@ def post_van(req: Request, van_model: VanModel, user: Annotated[User, Depends(cu
 
 @router.put("/{van_id}")
 @make_async
-def put_van(req: Request, van_id: int, van_model: VanModel, user: Annotated[User, Depends(current_user)]) -> JSONResponse:
+def put_van(
+    req: Request,
+    van_id: int,
+    van_model: VanModel,
+    user: Annotated[User, Depends(current_user)],
+) -> JSONResponse:
     session = req.state.session
     van: Van = session.query(Van).filter_by(id=van_id).first()
     if van is None:
@@ -127,7 +134,9 @@ def put_van(req: Request, van_id: int, van_model: VanModel, user: Annotated[User
 
 @router.delete("/{van_id}")
 @make_async
-def delete_van(req: Request, van_id: int, user: Annotated[User, Depends(current_user)]) -> JSONResponse:
+def delete_van(
+    req: Request, van_id: int, user: Annotated[User, Depends(current_user)]
+) -> JSONResponse:
     session = req.state.session
     van: Van = session.query(Van).filter_by(id=van_id).first()
     if van is None:
@@ -218,7 +227,9 @@ def get_location_for_van(
 
 
 @router.post("/location/{van_id}")
-async def post_location(req: Request, van_id: int, user: Annotated[User, Depends(current_user)]) -> HardwareOKResponse:
+async def post_location(
+    req: Request, van_id: int, user: Annotated[User, Depends(current_user)]
+) -> HardwareOKResponse:
     # byte body: long long for timestamp, double for lat, double for lon
     body = await req.body()
     timestamp_ms, lat, lon = struct.unpack("<Qdd", body)

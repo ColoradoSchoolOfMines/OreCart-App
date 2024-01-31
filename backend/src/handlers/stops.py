@@ -172,7 +172,9 @@ class StopModel(BaseModel):
 
 @router.post("/")
 @make_async
-def create_stop(req: Request, stop_model: StopModel, user: Annotated[User, Depends(current_user)]) -> dict[str, str]:
+def create_stop(
+    req: Request, stop_model: StopModel, user: Annotated[User, Depends(current_user)]
+) -> dict[str, str]:
     """
     Creates a new stop.
     """
@@ -218,7 +220,9 @@ def update_stop(
 
 @router.delete("/{stop_id}")
 @make_async
-def delete_stop(req: Request, stop_id: int, user: Annotated[User, Depends(current_user)]) -> dict[str, str]:
+def delete_stop(
+    req: Request, stop_id: int, user: Annotated[User, Depends(current_user)]
+) -> dict[str, str]:
     """
     Deletes the stop with the specified id.
     """
