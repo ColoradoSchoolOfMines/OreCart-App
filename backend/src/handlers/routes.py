@@ -196,6 +196,8 @@ def query_route_waypoints(route_id: int, session):
     """
 
     waypoints = session.query(Waypoint).filter(route_id == Waypoint.route_id).all()
+    waypoints = [waypoint for waypoint in waypoints]
+    waypoints.append(waypoints[0])
     return [
         {FIELD_LATITUDE: waypoint.lat, FIELD_LONGITUDE: waypoint.lon}
         for waypoint in waypoints
