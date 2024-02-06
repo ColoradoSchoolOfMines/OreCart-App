@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {
+  redirect,
   RouterProvider,
   createBrowserRouter,
 } from "react-router-dom";
@@ -14,34 +15,59 @@ import RoutesPage from './pages/routes/routes-page';
 import VanPage from './pages/vans/vans-page';
 import Root from './templates/root';
 
+const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
+async function authRedirect({ request }) {
+  // avoid infinite redirect loop
+  if (new URL(request.url).pathname == '/login') return null;
+  let loggedIn = false;
+  await fetch(`${baseUrl}/auth/check`, {
+    method: 'POST',
+    credentials: 'include',
+  })
+    .then((response) => {
+      loggedIn = (response.status != 401);
+    })
+    .catch((error) => {
+      throw new Error('Network response was not ok');
+    });
+  return loggedIn ? null : redirect("/login");
+}
+
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
+    loader: authRedirect,
     children: [
       {
         path: "/vans",
-        element: <VanPage />
+        element: <VanPage />,
+        loader: authRedirect,
       },
       {
         path: "/ridership",
-        element: <RidershipPage />
+        element: <RidershipPage />,
+        loader: authRedirect,
       },
       {
         path: "/routes",
-        element: <RoutesPage />
+        element: <RoutesPage />,
+        loader: authRedirect,
       },
       {
         path: "/accommodations",
-        element: <AccommodationsPage />
+        element: <AccommodationsPage />,
+        loader: authRedirect,
       },
       {
         path: "alerts",
-        element: <AlertsPage />
+        element: <AlertsPage />,
+        loader: authRedirect,
       },
       {
         path: "/login",
-        element: <LoginPage />
+        element: <LoginPage />,
       }
     ]
   },

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .auth.schemas import UserCreate, UserRead
 from .auth.user_manager import auth_backend, fastapi_users
 from .db import Base, DBWrapper
-from .handlers import alert, ridership, routes, stops, vans
+from .handlers import alert, auth_check, ridership, routes, stops, vans
 from .hardware import HardwareExceptionMiddleware
 from .vantracking.factory import van_tracker
 from .vantracking.tracker import VanTracker
@@ -16,7 +16,16 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    # How can we avoid hardcoding these?
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:5173/vans",
+        "http://localhost:5173/ridership",
+        "http://localhost:5173/routes",
+        "http://localhost:5173/accomodations",
+        "http://localhost:5173/alerts",
+        "http://localhost:5173/login",
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,6 +37,7 @@ app.include_router(stops.router)
 app.include_router(alert.router)
 app.include_router(ridership.router)
 app.include_router(vans.router)
+app.include_router(auth_check.router)
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend),
