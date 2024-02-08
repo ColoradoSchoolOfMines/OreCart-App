@@ -373,10 +373,9 @@ def get_route_stops(req: Request, route_id: int):
 
     with req.app.state.db.session() as session:
         stops = (
-            session.query(RouteStop)
+            session.query(Stop, RouteStop)
             .filter(RouteStop.route_id == route_id)
-            .with_entities(RouteStop.stop_id)
+            .with_entities(RouteStop.stop_id, Stop.name)
             .all()
         )
-
-        return [stop_id for (stop_id,) in stops]
+        return [(stop_id, name) for (stop_id, name) in stops]
