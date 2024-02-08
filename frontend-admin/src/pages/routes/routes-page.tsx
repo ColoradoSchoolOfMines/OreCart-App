@@ -1,5 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import Card from '../../components/card/card';
 import AddRouteForm from './add-route-form';
 import { Route, Stop } from './route-types';
@@ -14,16 +14,17 @@ const fetchRoutes = async () => {
   return route_data;
 }
 
-const fetchStops = async (route_id: string) => {
-  const response = await fetch(`${baseUrl}/routes/${route_id}/stops`);
-  const data = await response.json();
-  const stops_data = data as Stop[] || [];
-  return stops_data;
-}
-
 const RoutesPage: React.FC = () => {
   const { data: routes, isLoading, error } = useQuery({ queryKey: ['routes'], queryFn: fetchRoutes });
-
+  
+  const [ currentRouteId, setCurrentRouteId ] = useState<number>(-1);
+  const fetchStops = async () => {
+    const response = await fetch(`${baseUrl}/routes/${currentRouteId}/stops`);
+    const data = await response.json();
+    const stops_data = data as Stop[] || [];
+    return stops_data;
+  }
+  
   const { data: stops, isLoading: stopsLoading, error: stopsError } = useQuery({ queryKey: ['stops'], queryFn: fetchStops });
 
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -79,21 +80,10 @@ const RoutesPage: React.FC = () => {
   const openRoutePage = async (routeId: number) => {
     dialogEditRef.current?.showModal();
 
-    try {
-      const response = await fetch(`${baseUrl}/routes/${routeId}/stops`, {
-        method: 'GET',
-      });
-      if (!response.ok) {
-        throw new Error('Network response was not ok');
-      }
-      // Handle the successful response
-      // await queryClient.invalidateQueries({ queryKey: ['routes'] });
-
-      console.log(response.json())
-
-    } catch (error) {
-      console.error('There was a problem with the fetch operation:', error);
-    }
+    const response = await fetch(`${baseUrl}/routes/${currentRouteId}/stops`);
+    const data = await response.json();
+    const stops_data = data as Stop[] || [];
+    console.log(stops_data)
 
     // setCurrentVanId(vanId);
     // const route = routes?.find((route) => route.id === routeId);
@@ -105,17 +95,18 @@ const RoutesPage: React.FC = () => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occurred: {(error as Error).message}</div>;
 
-  // TODO refactor this out of this file
-  if (stopsLoading) return <div>Loading...</div>;
-  if (stopsError) return <div>An error occurred: {(stopsError as Error).message}</div>;
-
   return (
     <main className='p-routes-page'>
       <dialog ref={dialogEditRef}>
-        <p>Popup</p>
-        {/* {stops?.map((stop: Stop) => (
-          `${stop}`
-        ))} */}
+        {stopsLoading ? 
+          <div>Loading...</div>
+        : stopsError ?
+          <div>An error occurred: {(stopsError as Error).message}</div>
+        : 
+          stops?.map((stop: Stop) => (
+            `${stop}`
+          ))
+        }
         <button type="button" onClick={() => {dialogEditRef.current?.close()}}>Cancel</button>
       </dialog>
 
@@ -124,6 +115,7 @@ const RoutesPage: React.FC = () => {
         {routes?.map((route: Route) => (
           <Card title={`${route.name} (${route.id})`} onClick={() => {
             openRoutePage(route.id)
+            setCurrentRouteId(route.id)
           }} key={route.id}></Card>
         ))}
       </div>
