@@ -1,33 +1,64 @@
+import { BottomSheetSectionList } from "@gorhom/bottom-sheet";
+import { useFocusEffect } from "@react-navigation/native";
 import React from "react";
-import { FlatList, StyleSheet, View, type ViewProps } from "react-native";
+import { StyleSheet, View, type ViewProps } from "react-native";
 
 import Divider from "../../common/components/Divider";
 import SkeletonList from "../../common/components/SkeletonList";
 import LayoutStyle from "../../common/style/layout";
 import { useLocation } from "../location/locationSlice";
 import { distance } from "../location/util";
+import { type BasicRoute } from "../routes/routesSlice";
 
 import { StopItem, StopItemSkeleton } from "./StopItem";
-import { type Stop } from "./stopsSlice";
+import { type BasicStop, type ExtendedStop } from "./stopsSlice";
 
 interface StopListProps extends ViewProps {
-  stops?: Stop[];
+  stops?: ExtendedStop[];
+  inRoute?: BasicRoute;
+  renderRoute?: (route: BasicRoute) => React.JSX.Element;
+  renderRouteSkeleton?: () => React.JSX.Element;
   /** Called when the stop item is clicked on. */
-  onPress: (stop: Stop) => void;
+  onPress: (stop: BasicStop) => void;
 }
 
 /**
  * Screen that displays a list of stops.
  */
-const StopList = ({ stops, onPress }: StopListProps): React.JSX.Element => {
+const StopList = ({
+  stops,
+  inRoute,
+  renderRoute,
+  renderRouteSkeleton,
+  onPress,
+}: StopListProps): React.JSX.Element => {
   const sortedStops = sortStopsByDistance(stops);
   return (
     <View style={[LayoutStyle.fill]}>
       {sortedStops !== undefined ? (
-        <FlatList
+        <BottomSheetSectionList
+          sections={[
+            {
+              route: inRoute,
+              data: sortedStops,
+            },
+          ]}
+          focusHook={useFocusEffect}
           style={styles.stopContainer}
-          data={stops}
-          renderItem={({ item }) => <StopItem stop={item} onPress={onPress} />}
+          renderItem={({ item }) => (
+            <StopItem stop={item} inRoute={inRoute} onPress={onPress} />
+          )}
+          renderSectionHeader={({ section: { route } }) => {
+            if (
+              renderRoute === undefined ||
+              renderRouteSkeleton === undefined
+            ) {
+              return null;
+            }
+            return route !== undefined
+              ? renderRoute(route)
+              : renderRouteSkeleton();
+          }}
           keyExtractor={(item) => item.id.toString()}
           ItemSeparatorComponent={Divider}
         />
@@ -42,7 +73,7 @@ const StopList = ({ stops, onPress }: StopListProps): React.JSX.Element => {
   );
 };
 
-function sortStopsByDistance(stops?: Stop[]): Stop[] | undefined {
+function sortStopsByDistance(stops?: BasicStop[]): BasicStop[] | undefined {
   const location = useLocation();
   if (stops === undefined || location === undefined) {
     return undefined;

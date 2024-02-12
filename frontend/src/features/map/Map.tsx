@@ -13,6 +13,8 @@ import { useGetRoutesQuery, type ExtendedRoute } from "../routes/routesSlice";
 import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
 
+import Pie from "./Pie";
+
 /**
  * The props for the {@interface Map} component.
  */
@@ -123,6 +125,8 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
                     borderColor: Color.orecart.get(
                       routesById[van.routeId]?.name,
                     ),
+                    padding: 4,
+                    borderWidth: 4,
                   },
                 ]}
               >
@@ -151,21 +155,30 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
             tracksViewChanges={false}
             anchor={{ x: 0.5, y: 0.5 }}
           >
-            <View
-              style={[
-                styles.marker,
-                {
-                  borderColor: Color.orecart.get(
-                    routesById[stop.routeIds[0]]?.name,
-                  ),
-                },
-              ]}
-            >
-              <MaterialIcons
-                name="hail"
-                size={16}
-                color={Color.generic.black}
-              />
+            <View style={[styles.marker]}>
+              {/* 
+              Create a similar border to that of the van indicators, but segment it
+              such that it shows the colors of all the routes that stop at it. Since
+              borders can only be one color, we must draw effectively a pie chart
+              on the background and then inset the actual icon on top of it to produce
+              a border.
+              */}
+              <View style={LayoutStyle.overlay}>
+                <Pie
+                  colors={stop.routeIds.map(
+                    (routeId) =>
+                      Color.orecart.get(routesById[routeId]?.name) ??
+                      Color.generic.black,
+                  )}
+                />
+              </View>
+              <View style={styles.icon}>
+                <MaterialIcons
+                  name="hail"
+                  size={16}
+                  color={Color.generic.black}
+                />
+              </View>
             </View>
           </Marker>
         ))}
@@ -214,12 +227,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 100,
-    padding: 4,
-    borderWidth: 4,
   },
   indicator: {
     width: 16,
     height: 16,
+    borderRadius: 100,
+  },
+  icon: {
+    backgroundColor: "white",
+    margin: 4,
+    padding: 4,
     borderRadius: 100,
   },
 });

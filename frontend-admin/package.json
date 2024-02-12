@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mantine/core": "^7.5.2",
+    "@mantine/hooks": "^7.5.2",
     "@tanstack/react-query": "^5.14.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
@@ -27,6 +29,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.3",
     "typescript": "^5.0.2",
-    "vite": "^4.5.1"
+    "vite": "^4.5.2"
   }
 }

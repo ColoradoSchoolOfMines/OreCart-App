@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 import pygeoif
+from bs4 import BeautifulSoup  # type: ignore
 from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
@@ -102,7 +103,22 @@ def get_kml(req: Request):
         style.append_style(PolyStyle(fill=0))  # No fill
 
         for route in routes:
-            p = kml.Placemark(ns, route.name, route.name, route.name)
+            stop_ids = [
+                route_stop.stop_id
+                for route_stop in route_stops
+                if route_stop.route_id == route.id
+            ]
+            stop_divs = "".join(
+                [
+                    f"<div>{route.name}<br></div>"
+                    for route in routes
+                    if route.id in stop_ids
+                ]
+            )
+
+            description = f"<![CDATA[{stop_divs}]]>"
+
+            p = kml.Placemark(ns, route.name, route.name, route.name, description)
             p.geometry = Polygon([(w.lon, w.lat, 0) for w in route.waypoints])
 
             p.append_style(style)
@@ -111,22 +127,7 @@ def get_kml(req: Request):
             d.append(p)
 
         for stop in stops:
-            route_ids = [
-                route_stop.route_id
-                for route_stop in route_stops
-                if route_stop.stop_id == stop.id
-            ]
-            routes_divs = "".join(
-                [
-                    f"<div>{route.name}<br></div>"
-                    for route in routes
-                    if route.id in route_ids
-                ]
-            )
-
-            description = f"<![CDATA[{routes_divs}]]>"
-
-            p = kml.Placemark(ns, stop.name, stop.name, description)
+            p = kml.Placemark(ns, stop.name, stop.name)
             p.geometry = Point(stop.lon, stop.lat)
             d.append(p)
 
@@ -195,6 +196,8 @@ def query_route_waypoints(route_id: int, session):
     """
 
     waypoints = session.query(Waypoint).filter(route_id == Waypoint.route_id).all()
+    waypoints = [waypoint for waypoint in waypoints]
+    waypoints.append(waypoints[0])
     return [
         {FIELD_LATITUDE: waypoint.lat, FIELD_LONGITUDE: waypoint.lon}
         for waypoint in waypoints
@@ -250,7 +253,7 @@ async def create_route(req: Request, kml_file: UploadFile):
         routes = {}
         stops = {}
 
-        route_routeid_map = {}
+        stop_id_map = {}
 
         k = kml.KML()
         k.from_string(contents)
@@ -264,12 +267,18 @@ async def create_route(req: Request, kml_file: UploadFile):
                 else:
                     return HTTPException(status_code=400, detail="bad kml file")
 
+        for stop_name, stop in stops.items():
+            stop_model = Stop(
+                name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
+            )
+            session.add(stop_model)
+            session.flush()
+            stop_id_map[stop_name] = stop_model.id
+
         for route_name, route in routes.items():
             route_model = Route(name=route_name)
             session.add(route_model)
             session.flush()
-
-            route_routeid_map[route_name] = route_model.id
 
             added = set()
 
@@ -285,30 +294,27 @@ async def create_route(req: Request, kml_file: UploadFile):
                 session.add(waypoint)
                 session.flush()
 
-        pos = 0
+            route_desc_html = BeautifulSoup(route.description, features="html.parser")
 
-        for stop_name, stop in stops.items():
-            stop_model = Stop(
-                name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
-            )
-            session.add(stop_model)
-            session.flush()
+            # Want the text contents of all of the surface-level divs and then strip
+            # all of the tags of it's content
 
-            routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
+            route_stops = [
+                div.text.strip()
+                for div in route_desc_html.find_all("div", recursive=False)
+            ]
 
-            matches = re.findall(routes_regex_pattern, str(stop.description))
+            print(route_stops, route_desc_html.find_all("div", recursive=False))
 
-            for match in matches:
-                if match not in route_routeid_map:
-                    return HTTPException(status_code=400, detail="bad kml file")
+            for pos, stop in enumerate(route_stops):
+                if stop not in stop_id_map:
+                    continue
+                stop_id = stop_id_map[stop]
                 route_stop = RouteStop(
-                    route_id=route_routeid_map[match],
-                    stop_id=stop_model.id,
-                    position=pos,
+                    route_id=route_model.id, stop_id=stop_id, position=pos
                 )
                 session.add(route_stop)
                 session.flush()
-                pos += 1
 
         await kml_file.close()
 

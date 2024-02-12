@@ -13,11 +13,16 @@ import Color from "../../common/style/color";
 import { useLocation } from "../location/locationSlice";
 import {
   closest,
+  distance,
   formatMiles,
   formatSecondsAsMinutes,
   geoDistanceToMiles,
 } from "../location/util";
-import { useGetStopsQuery, type ExtendedStop } from "../stops/stopsSlice";
+import {
+  useGetStopsQuery,
+  type BasicStop,
+  type ExtendedStop,
+} from "../stops/stopsSlice";
 import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
 
 import { type BasicRoute, type ExtendedRoute } from "./routesSlice";
@@ -25,6 +30,7 @@ import { type BasicRoute, type ExtendedRoute } from "./routesSlice";
 interface RouteItemProps {
   mode: "basic" | "extended";
   route: ExtendedRoute;
+  inStop?: BasicStop;
   onPress: (route: ExtendedRoute) => void;
 }
 
@@ -34,9 +40,10 @@ interface RouteItemProps {
 export const RouteItem = ({
   mode,
   route,
+  inStop,
   onPress,
 }: RouteItemProps): React.JSX.Element => {
-  const closestStop = useClosestStop(route);
+  const closestStop = useClosestStop(route, inStop);
   const routeNameColorStyle = {
     color: Color.orecart.get(route.name) ?? Color.generic.black,
   };
@@ -93,33 +100,40 @@ interface ClosestStop extends ExtendedStop {
   vanArrivalTime: string;
 }
 
-function useClosestStop(to: BasicRoute): ClosestStop | undefined {
+function useClosestStop(
+  to: BasicRoute,
+  inStop?: ExtendedStop,
+): ClosestStop | undefined {
   const vans = useGetVansQuery().data;
+  const location = useLocation();
+  const stops = useGetStopsQuery().data;
   if (vans === undefined) {
     return undefined;
   }
-
-  const stops = useGetStopsQuery().data;
-  if (stops === undefined) {
-    return undefined;
-  }
-
-  const location = useLocation();
   if (location === undefined) {
     return undefined;
   }
 
-  const routeStops = stops.filter((stop) => stop.routeIds.includes(to.id));
-  const closestRouteStop = closest(routeStops, location);
-  if (closestRouteStop === undefined) {
-    return undefined;
+  let stop = inStop;
+  if (stop === undefined) {
+    if (stops === undefined) {
+      return undefined;
+    }
+
+    const routeStops = stops.filter((stop) => stop.routeIds.includes(to.id));
+    const closestRouteStop = closest(routeStops, location);
+    if (closestRouteStop === undefined) {
+      return undefined;
+    }
+    stop = closestRouteStop.inner;
   }
 
   const arrivingVans = vans
     .filter(
       (van) =>
         van.location !== undefined &&
-        van.location.nextStopId === closestRouteStop.inner.id,
+        van.location.nextStopId === stop.id &&
+        van.routeId === to.id,
     )
     .map((van) => van.location) as VanLocation[];
   const closestRouteStopVan = closest(arrivingVans, location);
@@ -128,10 +142,8 @@ function useClosestStop(to: BasicRoute): ClosestStop | undefined {
   }
 
   return {
-    ...closestRouteStop.inner,
-    distanceFromUser: formatMiles(
-      geoDistanceToMiles(closestRouteStop.distance),
-    ),
+    ...stop,
+    distanceFromUser: formatMiles(geoDistanceToMiles(distance(stop, location))),
     vanArrivalTime: formatSecondsAsMinutes(
       closestRouteStopVan.inner.secondsToNextStop,
     ),
