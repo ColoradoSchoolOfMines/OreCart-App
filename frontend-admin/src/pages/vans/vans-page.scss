@@ -1,7 +1,16 @@
 .p-van-page {
-  > .cards-container {
+  .van-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 24px;
+    gap: 16px;
+    > .van-card {
+      aspect-ratio: 1 / 1;
+      max-width: fit-content;
+      display: flex;
+      align-items: center;
+    }
+  }
+  .add-button {
+    width: fit-content;
   }
 }
