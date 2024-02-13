@@ -34,7 +34,7 @@ const RoutesPage: React.FC = () => {
     isLoading: stopsLoading,
     error: stopsError,
   } = useQuery({
-    queryKey: ["stops"],
+    queryKey: ["stops", currentRouteId],
     queryFn: () => fetchStops(currentRouteId),
   });
 
@@ -61,6 +61,7 @@ const RoutesPage: React.FC = () => {
 
   return (
     <main className="p-routes-page">
+      {currentRouteId}
       <Modal
         opened={isRouteEditModalOpen}
         onClose={() => setIsRouteEditModalOpen(false)}
@@ -89,7 +90,6 @@ const RoutesPage: React.FC = () => {
             title={`${route.name} (${route.id})`}
             onClick={() => {
               setCurrentRouteId(route.id);
-
               setIsRouteEditModalOpen(true);
             }}
             key={route.id}
