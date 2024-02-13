@@ -88,8 +88,9 @@ const RoutesPage: React.FC = () => {
           <Card
             title={`${route.name} (${route.id})`}
             onClick={() => {
-              setIsRouteEditModalOpen(true);
               setCurrentRouteId(route.id);
+
+              setIsRouteEditModalOpen(true);
             }}
             key={route.id}
           ></Card>
