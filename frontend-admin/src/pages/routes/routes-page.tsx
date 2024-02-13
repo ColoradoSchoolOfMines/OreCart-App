@@ -61,7 +61,6 @@ const RoutesPage: React.FC = () => {
 
   return (
     <main className="p-routes-page">
-      {currentRouteId}
       <Modal
         opened={isRouteEditModalOpen}
         onClose={() => setIsRouteEditModalOpen(false)}
