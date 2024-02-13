@@ -179,11 +179,7 @@ const RoutesPage: React.FC = () => {
       >
         <AddRouteForm
           onSubmit={handleFormSubmit}
-          onCancel={() => {
-            {
-              () => setIsRouteAddModalOpen(false);
-            }
-          }}
+          onCancel={() => setIsRouteAddModalOpen(false)}
         />
       </Modal>
     </main>
