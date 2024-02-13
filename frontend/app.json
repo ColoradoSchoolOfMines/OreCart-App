@@ -18,11 +18,12 @@
       "supportsTablet": true,
       "bundleIdentifier": "edu.mines.orecart.app",
       "config": {
-        "googleMapsApiKey": "${process.env.GOOGLE_MAPS_API_KEY_IOS}"
+        "googleMapsApiKey": "<YOU_MUST_FILL_THIS_IN_MANUALLY_NO_ENV_VARS_WONT_WORK>"
       }
     },
     "android": {
       "package": "edu.mines.orecart.app",
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -34,7 +35,7 @@
       ],
       "config": {
         "googleMaps": {
-          "apiKey": "GOOGLE_MAPS_API_KEY_ANDROID"
+          "apiKey": "<YOU_MUST_FILL_THIS_IN_MANUALLY_NO_ENV_VARS_WONT_WORK>"
         }
       }
     },

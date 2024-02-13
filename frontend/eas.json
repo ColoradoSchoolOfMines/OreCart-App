@@ -10,7 +10,14 @@
     "preview": {
       "distribution": "internal"
     },
-    "production": {}
+    "production": {
+      "android": {
+        "credentialsSource": "local"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_DOMAIN": "orecart-backend.tbwright.dev"
+      }
+    }
   },
   "submit": {
     "production": {}
