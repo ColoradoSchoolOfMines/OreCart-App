@@ -96,12 +96,6 @@ def get_kml(req: Request):
         d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCart app.")
         k.append(d)
 
-        style = kml.Style(id="route-outline")
-        style.append_style(
-            LineStyle(color="ff0000ff", width=2)
-        )  # Red outline in AABBGGRR hex format
-        style.append_style(PolyStyle(fill=0))  # No fill
-
         for route in routes:
             stop_ids = [
                 route_stop.stop_id
@@ -118,7 +112,18 @@ def get_kml(req: Request):
 
             description = f"<![CDATA[{stop_divs}]]>"
 
-            p = kml.Placemark(ns, route.name, route.name, route.name, description)
+            style = kml.Style(id="route-outline")
+            style.append_style(
+                LineStyle(color="#00" + route.color[1:], width=2)
+            )  # Red outline in AABBGGRR hex format
+            style.append_style(PolyStyle(fill=0))  # No fill
+            p = kml.Placemark(
+                ns=ns,
+                id=route.name,
+                name=route.name,
+                description=description,
+                styles=[style],
+            )
             p.geometry = Polygon([(w.lon, w.lat, 0) for w in route.waypoints])
 
             p.append_style(style)
@@ -276,14 +281,21 @@ async def create_route(req: Request, kml_file: UploadFile):
             stop_id_map[stop_name] = stop_model.id
 
         for route_name, route in routes.items():
-            route_model = Route(name=route_name)
+            # Get polygon color
+            color = "#000000"
+            for style in route.styles():
+                if isinstance(style, PolyStyle):
+                    color = style.color
+                    break
+            route_model = Route(name=route_name, color=color)
             session.add(route_model)
             session.flush()
 
             added = set()
 
-            for coords in route.geometry.exterior.coords:
-                if coords in added:
+            for i, coords in enumerate(route.geometry.exterior.coords):
+                # Ignore dupes except for the last one that completes the polygon
+                if coords in added and i != len(route.geometry.exterior.coords) - 1:
                     print(f"skipping duplicate {coords}")
                     continue
                 print(f"adding {coords}")
