@@ -1,6 +1,7 @@
 import { Modal } from "@mantine/core";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
+import { clearRoutes, fetchStops, getKML } from "../../api/routes";
 import Card from "../../components/card/card";
 import AddRouteForm from "./add-route-form";
 import { Route, Stop } from "./route-types";
@@ -27,18 +28,15 @@ const RoutesPage: React.FC = () => {
     useState<boolean>(false);
   const [isRouteAddModalOpen, setIsRouteAddModalOpen] =
     useState<boolean>(false);
-  const fetchStops = async () => {
-    const response = await fetch(`${baseUrl}/routes/${currentRouteId}/stops`);
-    const data = await response.json();
-    const stops_data = (data as Stop[]) || [];
-    return stops_data;
-  };
 
   const {
     data: stops,
     isLoading: stopsLoading,
     error: stopsError,
-  } = useQuery({ queryKey: ["stops"], queryFn: fetchStops });
+  } = useQuery({
+    queryKey: ["stops"],
+    queryFn: () => fetchStops(currentRouteId),
+  });
 
   const queryClient = useQueryClient();
 
@@ -56,51 +54,6 @@ const RoutesPage: React.FC = () => {
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error);
     }
-  };
-
-  const clearRoutes = async () => {
-    try {
-      const response = await fetch(`${baseUrl}/routes/`, {
-        method: "DELETE",
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      // Handle the successful response
-      await queryClient.invalidateQueries({ queryKey: ["routes"] });
-    } catch (error) {
-      console.error("There was a problem with the fetch operation:", error);
-    }
-  };
-
-  const getKML = async () => {
-    const response = await fetch(`${baseUrl}/routes/kmlfile`);
-    const data = await response.json();
-    const kml = atob(data.base64);
-
-    const element = document.createElement("a");
-    const file = new Blob([kml], {
-      type: "application/vnd.google-earth.kml+xml",
-    });
-    element.href = URL.createObjectURL(file);
-    element.download = "routes.kml";
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
-  };
-
-  const openRoutePage = async (routeId: number) => {
-    setIsRouteEditModalOpen(true);
-
-    const response = await fetch(`${baseUrl}/routes/${currentRouteId}/stops`);
-    const data = await response.json();
-    const stops_data = (data as Stop[]) || [];
-    console.log(stops_data);
-
-    // setCurrentVanId(vanId);
-    // const route = routes?.find((route) => route.id === routeId);
-    // if (route) {
-    //   vanEditFormRef.current?.setData(route);
-    // }
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -135,7 +88,7 @@ const RoutesPage: React.FC = () => {
           <Card
             title={`${route.name} (${route.id})`}
             onClick={() => {
-              openRoutePage(route.id);
+              setIsRouteEditModalOpen(true);
               setCurrentRouteId(route.id);
             }}
             key={route.id}
@@ -156,7 +109,7 @@ const RoutesPage: React.FC = () => {
       {!(!routes || routes?.length == 0) && (
         <button
           onClick={() => {
-            clearRoutes();
+            clearRoutes(queryClient);
           }}
         >
           Clear Routes
