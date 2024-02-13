@@ -71,7 +71,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
       renderDrawerContent={() => {
         return (
           <View style={SpacingStyle.pad(drawerInsets, 16)}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => {
                 navigation.push("ADARequest");
               }}
@@ -80,7 +80,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 <MaterialIcons name="accessible" size={24} color="black" />
                 <Text style={styles.drawerItemText}>ADA Ride Request</Text>
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <TouchableOpacity
               onPress={() => {
@@ -92,7 +92,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 <Text style={styles.drawerItemText}>Upcoming Alerts</Text>
               </View>
             </TouchableOpacity>
-
+{/* 
             <TouchableOpacity
               onPress={() => {
                 navigation.push("Settings");
@@ -102,9 +102,9 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 <MaterialIcons name="settings" size={24} color="black" />
                 <Text style={styles.drawerItemText}>Settings</Text>
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => {
                 navigation.push("BugReport");
               }}
@@ -113,7 +113,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 <MaterialIcons name="bug-report" size={24} color="black" />
                 <Text style={styles.drawerItemText}>Bug Report</Text>
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             <Text>Version {expoVersion}</Text>
           </View>
