@@ -5,7 +5,7 @@ from src.db import Base
 
 class Waypoint(Base):
     __tablename__ = "waypoints"
-    __table_args__ = ForeignKeyConstraint(["route_id"], ["routes.id"])
+    __table_args__ = (ForeignKeyConstraint(["route_id"], ["routes.id"]),)
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, nullable=False
     )
