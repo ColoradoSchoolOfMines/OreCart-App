@@ -22,7 +22,7 @@ def upgrade() -> None:
         "vans",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("route_id", sa.Integer, sa.ForeignKey("routes.id"), nullable=True),
-        sa.Column("wheelchair", sa.Boolean, nullable=False),
+        sa.Column("guid", sa.String(15), nullable=False),
     )
 
 
