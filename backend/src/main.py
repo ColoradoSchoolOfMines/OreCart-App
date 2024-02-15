@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -12,19 +14,21 @@ from .vantracking.tracker import VanTracker
 
 load_dotenv()
 
+FRONTEND_URL = os.environ["FRONTEND_ADMIN_URL"]
+
 app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
     # How can we avoid hardcoding these?
     allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:5173/vans",
-        "http://localhost:5173/ridership",
-        "http://localhost:5173/routes",
-        "http://localhost:5173/accomodations",
-        "http://localhost:5173/alerts",
-        "http://localhost:5173/login",
+        f"{FRONTEND_URL}",
+        f"{FRONTEND_URL}/vans",
+        f"{FRONTEND_URL}/ridership",
+        f"{FRONTEND_URL}/routes",
+        f"{FRONTEND_URL}/accomodations",
+        f"{FRONTEND_URL}/alerts",
+        f"{FRONTEND_URL}/login",
     ],
     allow_credentials=True,
     allow_methods=["*"],
