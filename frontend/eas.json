@@ -3,19 +3,28 @@
     "version": ">= 7.2.0"
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
     "preview": {
-      "distribution": "internal"
+      "developmentClient": false,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "ORECART_API_DOMAIN": "orecart-backend.tbwright.dev",
+        "ORECART_API_SECURE": "1"
+        // "GOOGLE_MAPS_API_KEY_IOS": "YOUR_UNRESTRICTED_GOOGLE_MAPS_API_KEY_THESE_CAN_BE_THE_SAME",
+        // "GOOGLE_MAPS_API_KEY_ANDROID": "YOUR_UNRESTRICTED_GOOGLE_MAPS_API_KEY_THESE_CAN_BE_THE_SAME"
+      }
     },
     "production": {
       "android": {
         "credentialsSource": "local"
       },
       "env": {
-        "EXPO_PUBLIC_API_DOMAIN": "orecart-backend.tbwright.dev"
+        "ORECART_API_DOMAIN": "orecart-backend.tbwright.dev",
+        "ORECART_API_SECURE": "1"
+        // "GOOGLE_MAPS_API_KEY_IOS": "YOUR_RESTRICTED_GOOGLE_MAPS_API_KEY_THESE_SHOULD_BE_DIFFERENT",
+        // "GOOGLE_MAPS_API_KEY_ANDROID": "YOUR_RESTRICTED_GOOGLE_MAPS_API_KEY_THESE_SHOULD_BE_DIFFERENT"
       }
     }
   },

@@ -43,3 +43,6 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+keys/*
+builds/*
