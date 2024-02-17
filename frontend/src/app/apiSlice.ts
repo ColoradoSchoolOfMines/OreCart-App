@@ -20,7 +20,7 @@ import Constants from "expo-constants";
  */
 export default createApi({
   baseQuery: fetchBaseQuery({
-    baseUrl: Constants.expoConfig?.extra?.orecartApiUrl,
+    baseUrl: Constants.expoConfig?.extra?.httpApiUrl,
   }),
   tagTypes: [
     "ActiveAlerts",

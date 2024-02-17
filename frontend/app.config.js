@@ -1,7 +1,6 @@
 let httpApiUrl;
 let wsApiUrl;
 
-// If set to secure, use wss://
 if (process.env.ORECART_API_SECURE === "1") {
   httpApiUrl = `https://${process.env.ORECART_API_DOMAIN}`;
   wsApiUrl = `wss://${process.env.ORECART_API_DOMAIN}`;
@@ -9,7 +8,6 @@ if (process.env.ORECART_API_SECURE === "1") {
   httpApiUrl = `http://${process.env.ORECART_API_DOMAIN}`;
   wsApiUrl = `ws://${process.env.ORECART_API_DOMAIN}`;
 }
-
 
 module.exports = {
   name: "OreCart",
