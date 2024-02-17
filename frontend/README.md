@@ -55,6 +55,8 @@ the `GOOGLE_MAPS_API_KEY_ANDROID` and `GOOGLE_MAPS_API_KEY_IOS` entry in the `en
 - Preview builds can use a simple unrestricted API key
 - Production builds should use restricted API keys that differ between iOS and Android
 
+You can read more about api key config in the [MapView Documentation](https://docs.expo.dev/versions/latest/sdk/map-view/)
+
 ## Building on Android
 
 You can then create a preview build with this:
