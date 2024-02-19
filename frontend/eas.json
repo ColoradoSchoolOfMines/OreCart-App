@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 7.2.0"
+    "version": ">= 7.2.0",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
     "preview": {
@@ -11,20 +12,23 @@
       },
       "env": {
         "ORECART_API_DOMAIN": "orecart-backend.tbwright.dev",
-        "ORECART_API_SECURE": "1"
-        // "GOOGLE_MAPS_API_KEY_IOS": "YOUR_UNRESTRICTED_GOOGLE_MAPS_API_KEY_THESE_CAN_BE_THE_SAME",
-        // "GOOGLE_MAPS_API_KEY_ANDROID": "YOUR_UNRESTRICTED_GOOGLE_MAPS_API_KEY_THESE_CAN_BE_THE_SAME"
+        "ORECART_API_SECURE": "1",
+        "GOOGLE_MAPS_API_KEY_IOS": "KEY",
+        "GOOGLE_MAPS_API_KEY_ANDROID": "KEY"
       }
     },
     "production": {
       "android": {
         "credentialsSource": "local"
       },
+      "ios": {
+        "credentialsSource": "local"
+      },
       "env": {
         "ORECART_API_DOMAIN": "orecart-backend.tbwright.dev",
-        "ORECART_API_SECURE": "1"
-        // "GOOGLE_MAPS_API_KEY_IOS": "YOUR_RESTRICTED_GOOGLE_MAPS_API_KEY_THESE_SHOULD_BE_DIFFERENT",
-        // "GOOGLE_MAPS_API_KEY_ANDROID": "YOUR_RESTRICTED_GOOGLE_MAPS_API_KEY_THESE_SHOULD_BE_DIFFERENT"
+        "ORECART_API_SECURE": "1",
+        "GOOGLE_MAPS_API_KEY_IOS": "KEY",
+        "GOOGLE_MAPS_API_KEY_ANDROID": "KEY"
       }
     }
   },
