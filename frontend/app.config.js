@@ -12,7 +12,7 @@ if (process.env.ORECART_API_SECURE === "1") {
 module.exports = {
   name: "OreCart",
   slug: "orecart",
-  version: "1.0.0",
+  version: "1.0.1",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
@@ -29,7 +29,10 @@ module.exports = {
     bundleIdentifier: "edu.mines.orecart.app",
     config: {
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS
-    }
+    },
+    infoPlist: {
+      NSLocationWhenInUseUsageDescription: "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you."
+    },
   },
   android: {
     package: "edu.mines.orecart.app",
@@ -55,7 +58,7 @@ module.exports = {
     [
       "expo-location",
       {
-        locationAlwaysAndWhenInUsePermission: "Allow OreCart to use your location."
+        locationAlwaysAndWhenInUsePermission: "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you."
       }
     ]
   ],
