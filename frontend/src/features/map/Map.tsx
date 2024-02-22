@@ -1,7 +1,12 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useRef, useState } from "react";
 import { Image, StyleSheet, View, type ViewProps } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE, Polyline } from "react-native-maps";
+import MapView, {
+  Marker,
+  PROVIDER_GOOGLE,
+  Polyline,
+  Region,
+} from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../../common/components/FloatingButton";
@@ -14,6 +19,13 @@ import { useGetStopsQuery } from "../stops/stopsSlice";
 import { useGetVansQuery } from "../vans/vansSlice";
 
 import Pie from "./Pie";
+
+const GOLDEN: Region = {
+  latitude: 39.7422630160319,
+  latitudeDelta: 0.04125315984375533,
+  longitude: -105.21280037239194,
+  longitudeDelta: 0.05248378962278366,
+};
 
 /**
  * The props for the {@interface Map} component.
@@ -97,6 +109,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
         showsMyLocationButton={false}
         mapPadding={padding}
         toolbarEnabled={false}
+        region={GOLDEN}
         scrollEnabled={true}
         onPanDrag={() => {
           // Let's say the user accidentally pans a tad before they realize
