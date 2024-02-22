@@ -1,11 +1,12 @@
 import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
-import { View } from "react-native";
-
 import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+
 import { type OuterParamList } from "../../common/navTypes";
+
+import { useGetPickupSpotsQuery, type PickupSpot } from "./adaSlice";
 import PickupSpotList from "./PickupSpotList";
-import { useGetPickupSpotsQuery } from "./adaSlice";
 
 export interface ADARequestScreenProps {
   navigation: StackNavigationProp<OuterParamList, "ADARequest">;
@@ -17,15 +18,31 @@ export const ADARequestScreen = ({
   navigation,
 }: ADARequestScreenProps): React.JSX.Element => {
   const { data: pickupSpots } = useGetPickupSpotsQuery();
-  const [currentSpotId, setCurrentSpotId] = useState<number | undefined>(null);
+  const [currentSpot, setCurrentSpot] = useState<PickupSpot | null>(null);
   return (
-    <View>
+    <View style={styles.container}>
+      <Text style={styles.header}>Select a pickup spot</Text>
       <PickupSpotList
+        style={styles.innerContainer}
         spots={pickupSpots}
         onSpotSelected={(spot) => {
-          setCurrentSpotId(spot?.id);
+          setCurrentSpot(spot);
         }}
       />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    padding: 16,
+  },
+  header: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 8,
+  },
+  innerContainer: {
+    paddingVertical: 8,
+  },
+});

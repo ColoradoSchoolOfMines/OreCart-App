@@ -10,7 +10,8 @@ import {
 
 import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
-import { PickupSpot } from "./adaSlice";
+
+import { type PickupSpot } from "./adaSlice";
 
 interface PickupSpotItemProps {
   spot: PickupSpot;
