@@ -2,8 +2,27 @@ import React from 'react';
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
+function onLoginFail() {
+  document.getElementById('login-confirmation').innerHTML='username or password incorrect';
+  document.getElementById('login-confirmation').style.display='block';
+}
+
 const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  document.getElementById("login-confirmation").style.display="block";
+  e.preventDefault();
+  fetch(`${baseUrl}/auth/login`, {
+    method: 'POST',
+    body: new FormData(e.currentTarget),
+    credentials: 'include',
+  })
+    .then((response) => {
+      document.getElementById('login-confirmation').style.display='block';
+      if (response.status == 400) {
+        onLoginFail();
+      }
+    })
+    .catch((error) => {
+      onLoginFail();
+    });
 }
 
 const LoginPage: React.FC = () => {
