@@ -20,9 +20,10 @@ interface SkeletonProps extends ViewProps {
 const SkeletonList = ({
   generator,
   divider,
+  style,
 }: SkeletonProps): React.JSX.Element => {
   return (
-    <>
+    <View style={style}>
       {/* for (i = 0; i < 3; ++i) */}
       {Array.from({ length: 3 }).map((_, index) => (
         // 1 / 2^i maps to 1.0 opacity, 0.5 opacity, 0.25 opacity, etc.
@@ -33,7 +34,7 @@ const SkeletonList = ({
           {index < 2 ? divider ? <Divider /> : <Spacer /> : null}
         </View>
       ))}
-    </>
+    </View>
   );
 };
 
