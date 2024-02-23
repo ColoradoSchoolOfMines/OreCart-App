@@ -20,6 +20,7 @@ export interface BasicStop extends Coordinate {
   id: number;
   name: string;
   routeIds: number[];
+  isActive: boolean;
 }
 
 // --- API Definition ---

@@ -7,6 +7,7 @@ Create Date: 2023-10-04 17:40:30.795226
 """
 from typing import Sequence, Union
 
+import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -17,20 +18,21 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.execute(
-        """
-        CREATE TABLE IF NOT EXISTS public.route_disables (
-	        id serial PRIMARY KEY,
-	        alert_id int NOT NULL,
-	        route_id int NOT NULL,
-	        FOREIGN KEY (alert_id)
-		        REFERENCES alerts (id)
-		        ON DELETE CASCADE,
-	        FOREIGN KEY (route_id)
-		        REFERENCES routes (id)
-		        ON DELETE CASCADE
-        );
-    """
+    op.create_table(
+        "route_disables",
+        sa.Column("id", sa.Integer, primary_key=True),
+        sa.Column(
+            "alert_id",
+            sa.Integer,
+            sa.ForeignKey("alerts.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "route_id",
+            sa.Integer,
+            sa.ForeignKey("routes.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
     )
 
 

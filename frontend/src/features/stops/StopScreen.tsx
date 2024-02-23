@@ -8,12 +8,12 @@ import ErrorMessage from "../../common/components/ErrorMessage";
 import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
 import Color from "../../common/style/color";
-import { type Coordinate, useLocationStatus } from "../location/locationSlice";
+import { useLocationStatus, type Coordinate } from "../location/locationSlice";
 import { distance, formatMiles, geoDistanceToMiles } from "../location/util";
 import RouteList from "../routes/RouteList";
 import { useGetRoutesQuery } from "../routes/routesSlice";
 
-import { useGetStopQuery, type Stop } from "./stopsSlice";
+import { useGetStopQuery, type BasicStop } from "./stopsSlice";
 
 export interface StopScreenProps {
   navigation: StackNavigationProp<InnerParamList, "Stop">;
@@ -24,12 +24,8 @@ export const StopScreen = ({
   route,
   navigation,
 }: StopScreenProps): React.JSX.Element => {
-  console.log(route.params.stopId);
-
   const {
     data: stop,
-    isSuccess: stopSuccess,
-    isLoading: stopLoading,
     isError: stopError,
     refetch: refetchStops,
   } = useGetStopQuery(route.params.stopId);
@@ -55,30 +51,21 @@ export const StopScreen = ({
 
   return (
     <View>
-      {stopSuccess ? (
-        <StopHeader stop={stop} />
-      ) : stopLoading ? (
-        <StopSkeleton />
-      ) : stopError ? (
+      {stopError || routesError ? (
         <ErrorMessage
-          message="We couldn't fetch this stop right now. Try again later."
-          retry={() => {
-            retryStop();
-          }}
-        />
-      ) : null}
-
-      {routesError ? (
-        <ErrorMessage
-          message="We couldn't fetch the routes right now. Try again later."
+          message="We couldn't fetch the stop right now. Try again later."
           retry={() => {
             retryRoutes();
+            retryStop();
           }}
         />
       ) : (
         <RouteList
           mode="basic"
           routes={stopRoutes}
+          inStop={stop}
+          renderStop={(stop) => <StopHeader stop={stop} />}
+          renderStopSkeleton={() => <StopSkeleton />}
           onPress={(route) => {
             navigation.push("Route", { routeId: route.id });
           }}
@@ -88,7 +75,7 @@ export const StopScreen = ({
   );
 };
 
-const StopHeader = ({ stop }: { stop: Stop }): React.JSX.Element => {
+const StopHeader = ({ stop }: { stop: BasicStop }): React.JSX.Element => {
   const status = useLocationStatus();
   let stopDistance;
   if (status.type === "active") {
@@ -142,7 +129,7 @@ const openDirections = (coordinate: Coordinate): void => {
       if (supported) {
         return await Linking.openURL(url);
       } else {
-        console.log(`Don't know how to open URI: ${url}`);
+        console.error(`Don't know how to open URI: ${url}`);
       }
     })
     .catch((err) => {

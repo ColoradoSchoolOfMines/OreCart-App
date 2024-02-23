@@ -1,11 +1,11 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableHighlight,
   FlatList,
+  StyleSheet,
+  Text,
+  TouchableHighlight,
+  View,
 } from "react-native";
 
 import Spacer from "../../common/components/Spacer";
@@ -84,7 +84,6 @@ const AlertBanner = (): React.JSX.Element | null => {
 
 const styles = StyleSheet.create({
   spacing: {
-    paddingHorizontal: 16,
     paddingBottom: 8,
   },
   container: {

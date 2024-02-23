@@ -24,8 +24,6 @@ export const RouteScreen = ({
   const { routeId } = navRoute.params;
   const {
     data: route,
-    isSuccess: routeSuccess,
-    isLoading: routeLoading,
     isError: routeError,
     refetch: refetchRoute,
   } = useGetRouteQuery(routeId);
@@ -47,29 +45,20 @@ export const RouteScreen = ({
 
   return (
     <View>
-      {routeSuccess ? (
-        <RouteHeader route={route} />
-      ) : routeLoading ? (
-        <RouteSkeleton />
-      ) : routeError ? (
+      {stopsError || routeError ? (
         <ErrorMessage
-          message="We couldn't fetch this route right now. Try again later."
+          message="We couldn't fetch the route right now. Try again later."
           retry={() => {
             retryRoute();
-          }}
-        />
-      ) : null}
-
-      {stopsError ? (
-        <ErrorMessage
-          message="We couldn't fetch the stops right now. Try again later."
-          retry={() => {
             retryStops();
           }}
         />
       ) : (
         <StopList
           stops={routeStops}
+          inRoute={route}
+          renderRoute={(route) => <RouteHeader route={route} />}
+          renderRouteSkeleton={() => <RouteSkeleton />}
           onPress={(stop) => {
             navigation.push("Stop", { stopId: stop.id });
           }}

@@ -8,16 +8,8 @@ from datetime import datetime, timezone
 from typing import Annotated, Optional
 
 import pygeoif
-from fastapi import (
-    APIRouter,
-    Depends,
-    File,
-    Form,
-    HTTPException,
-    Query,
-    Request,
-    UploadFile,
-)
+from bs4 import BeautifulSoup  # type: ignore
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
 from fastkml.styles import LineStyle, PolyStyle
@@ -99,9 +91,7 @@ def get_kml(req: Request):
     session = req.state.session
 
     routes = session.query(Route).all()
-
     stops = session.query(Stop).all()
-
     route_stops = session.query(RouteStop).all()
 
     k = kml.KML()
@@ -109,14 +99,34 @@ def get_kml(req: Request):
     d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCart app.")
     k.append(d)
 
-    style = kml.Style(id="route-outline")
-    style.append_style(
-        LineStyle(color="ff0000ff", width=2)
-    )  # Red outline in AABBGGRR hex format
-    style.append_style(PolyStyle(fill=0))  # No fill
-
     for route in routes:
-        p = kml.Placemark(ns, route.name, route.name, route.name)
+        stop_ids = [
+            route_stop.stop_id
+            for route_stop in route_stops
+            if route_stop.route_id == route.id
+        ]
+        stop_divs = "".join(
+            [
+                f"<div>{route.name}<br></div>"
+                for route in routes
+                if route.id in stop_ids
+            ]
+        )
+
+        description = f"<![CDATA[{stop_divs}]]>"
+
+        style = kml.Style(id="route-outline")
+        style.append_style(
+            LineStyle(color="#00" + route.color[1:], width=2)
+        )  # Red outline in AABBGGRR hex format
+        style.append_style(PolyStyle(fill=0))  # No fill
+        p = kml.Placemark(
+            ns=ns,
+            id=route.name,
+            name=route.name,
+            description=description,
+            styles=[style],
+        )
         p.geometry = Polygon([(w.lon, w.lat, 0) for w in route.waypoints])
 
         p.append_style(style)
@@ -125,22 +135,7 @@ def get_kml(req: Request):
         d.append(p)
 
     for stop in stops:
-        route_ids = [
-            route_stop.route_id
-            for route_stop in route_stops
-            if route_stop.stop_id == stop.id
-        ]
-        routes_divs = "".join(
-            [
-                f"<div>{route.name}<br></div>"
-                for route in routes
-                if route.id in route_ids
-            ]
-        )
-
-        description = f"<![CDATA[{routes_divs}]]>"
-
-        p = kml.Placemark(ns, stop.name, stop.name, description)
+        p = kml.Placemark(ns, stop.name, stop.name)
         p.geometry = Point(stop.lon, stop.lat)
         d.append(p)
 
@@ -210,6 +205,8 @@ def query_route_waypoints(route_id: int, session):
     """
 
     waypoints = session.query(Waypoint).filter(route_id == Waypoint.route_id).all()
+    waypoints = [waypoint for waypoint in waypoints]
+    waypoints.append(waypoints[0])
     return [
         {FIELD_LATITUDE: waypoint.lat, FIELD_LONGITUDE: waypoint.lon}
         for waypoint in waypoints
@@ -252,12 +249,11 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
 
 
 @router.post("/")
-async def create_route(
-    req: Request, kml_file: UploadFile, user: Annotated[User, Depends(current_user)]
-):
+async def create_route(req: Request, kml_file: UploadFile, user: Annotated[User, Depends(current_user)]):
     """
     Creates a new route.
     """
+
     async with req.app.state.db.async_session() as asession:
         contents: bytes = await kml_file.read()
 
@@ -266,7 +262,7 @@ async def create_route(
         routes = {}
         stops = {}
 
-        route_routeid_map = {}
+        stop_id_map = {}
 
         k = kml.KML()
         k.from_string(contents)
@@ -280,17 +276,30 @@ async def create_route(
                 else:
                     return HTTPException(status_code=400, detail="bad kml file")
 
+        for stop_name, stop in stops.items():
+            stop_model = Stop(
+                name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
+            )
+            asession.add(stop_model)
+            await asession.flush()
+            stop_id_map[stop_name] = stop_model.id
+
         for route_name, route in routes.items():
-            route_model = Route(name=route_name)
+            # Get polygon color
+            color = "#000000"
+            for style in route.styles():
+                if isinstance(style, PolyStyle):
+                    color = style.color
+                    break
+            route_model = Route(name=route_name, color=color)
             asession.add(route_model)
             await asession.flush()
 
-            route_routeid_map[route_name] = route_model.id
-
             added = set()
 
-            for coords in route.geometry.exterior.coords:
-                if coords in added:
+            for i, coords in enumerate(route.geometry.exterior.coords):
+                # Ignore dupes except for the last one that completes the polygon
+                if coords in added and i != len(route.geometry.exterior.coords) - 1:
                     print(f"skipping duplicate {coords}")
                     continue
                 print(f"adding {coords}")
@@ -301,34 +310,31 @@ async def create_route(
                 asession.add(waypoint)
                 await asession.flush()
 
-        pos = 0
+            route_desc_html = BeautifulSoup(route.description, features="html.parser")
 
-        for stop_name, stop in stops.items():
-            stop_model = Stop(
-                name=stop_name, lat=stop.geometry.y, lon=stop.geometry.x, active=True
-            )
-            asession.add(stop_model)
-            await asession.flush()
+            # Want the text contents of all of the surface-level divs and then strip
+            # all of the tags of it's content
 
-            routes_regex_pattern = r"<div>(.*?)(?:<br>)?<\/div>"
+            route_stops = [
+                div.text.strip()
+                for div in route_desc_html.find_all("div", recursive=False)
+            ]
 
-            matches = re.findall(routes_regex_pattern, str(stop.description))
+            print(route_stops, route_desc_html.find_all("div", recursive=False))
 
-            for match in matches:
-                if match not in route_routeid_map:
-                    return HTTPException(status_code=400, detail="bad kml file")
+            for pos, stop in enumerate(route_stops):
+                if stop not in stop_id_map:
+                    continue
+                stop_id = stop_id_map[stop]
                 route_stop = RouteStop(
-                    route_id=route_routeid_map[match],
-                    stop_id=stop_model.id,
-                    position=pos,
+                    route_id=route_model.id, stop_id=stop_id, position=pos
                 )
                 asession.add(route_stop)
                 await asession.flush()
-                pos += 1
 
         await kml_file.close()
 
-        asession.commit()
+        await asession.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
 
@@ -385,10 +391,9 @@ def get_route_stops(req: Request, route_id: int):
     session = req.state.session
 
     stops = (
-        session.query(RouteStop)
+        session.query(Stop, RouteStop)
         .filter(RouteStop.route_id == route_id)
-        .with_entities(RouteStop.stop_id)
+        .with_entities(RouteStop.stop_id, Stop.name)
         .all()
     )
-
-    return [stop_id for (stop_id,) in stops]
+    return [(stop_id, name) for (stop_id, name) in stops]
