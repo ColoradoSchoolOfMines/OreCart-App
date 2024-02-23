@@ -12,6 +12,7 @@ from src.handlers.alert import (
     update_alert,
 )
 from src.model.alert import Alert
+from src.model.user import User
 
 
 @pytest.fixture
@@ -146,7 +147,7 @@ def test_post_alert(mock_route_args, mock_alert):
     )
 
     # Act
-    response = post_alert(mock_route_args.req, alert_model)
+    response = post_alert(mock_route_args.req, alert_model, User())
 
     # Assert
     assert response == {"message": "OK"}
@@ -172,7 +173,7 @@ def test_update_alert(mock_route_args, mock_alert):
     )
 
     # Act
-    response = update_alert(mock_route_args.req, mock_alert.id, new_alert_model)
+    response = update_alert(mock_route_args.req, mock_alert.id, new_alert_model, User())
 
     # Assert
     assert response == {"message": "OK"}
@@ -187,7 +188,7 @@ def test_delete_alert(mock_route_args, mock_alert):
     mock_route_args.session.add(mock_alert)
 
     # Act
-    response = delete_alert(mock_route_args.req, mock_alert.id)
+    response = delete_alert(mock_route_args.req, mock_alert.id, User())
 
     # Assert
     assert response == {"message": "OK"}

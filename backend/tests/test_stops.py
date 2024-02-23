@@ -8,6 +8,7 @@ from src.model.route import Route
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.stop_disable import StopDisable
+from src.model.user import User
 
 
 @pytest.fixture
@@ -390,7 +391,7 @@ def test_create_stop(mock_route_args, mock_stop):
     )
 
     # Act
-    response = create_stop(mock_route_args.req, stop_model)
+    response = create_stop(mock_route_args.req, stop_model, User())
 
     # Assert
     assert response == {"message": "OK"}
@@ -418,7 +419,7 @@ def test_update_stop(mock_route_args, mock_stop):
     )
 
     # Act
-    response = update_stop(mock_route_args.req, mock_stop.id, new_stop_model)
+    response = update_stop(mock_route_args.req, mock_stop.id, new_stop_model, User())
 
     # Assert
     assert response == {"message": "OK"}
