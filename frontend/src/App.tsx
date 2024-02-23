@@ -3,6 +3,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import * as NavigationBar from "expo-navigation-bar";
 import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
 
 import Home from "./app/Home";
@@ -21,7 +22,7 @@ import { SettingsScreen } from "./features/settings/SettingsScreen";
 
 if (Platform.OS === "android") {
   NavigationBar.setBackgroundColorAsync(Color.generic.white).catch(
-    console.error,
+    console.error
   );
 }
 
@@ -73,6 +74,7 @@ const App = (): React.JSX.Element => (
             />
           </Stack.Navigator>
         </NavigationContainer>
+        <Toast position="bottom" />
       </View>
     </SafeAreaProvider>
   </Provider>

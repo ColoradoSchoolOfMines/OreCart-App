@@ -13,6 +13,12 @@ import Color from "../../common/style/color";
 
 import { type PickupSpot } from "./adaSlice";
 
+/**
+ * The props for the {@interface PickupSpotItem} component.
+ * @property spot - The pickup spot to render.
+ * @property selected - Whether the spot is selected.
+ * @property onPress - A callback to call when the spot is pressed.
+ */
 interface PickupSpotItemProps {
   spot: PickupSpot;
   selected: boolean;
@@ -59,7 +65,7 @@ export const PickupSpotItem = ({
 };
 
 /**
- * A skeleton component that mimics the {@interface PickupSpotItemSkeleton} component.
+ * A skeleton component that mimics the {@interface PickupSpotItem} component.
  */
 export const PickupSpotItemSkeleton = ({
   style,

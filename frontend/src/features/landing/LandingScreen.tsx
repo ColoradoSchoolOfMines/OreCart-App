@@ -1,6 +1,6 @@
 import { type RouteProp } from "@react-navigation/native";
 import { type StackNavigationProp } from "@react-navigation/stack";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 import ErrorMessage from "../../common/components/ErrorMessage";
 import { type InnerParamList } from "../../common/navTypes";
@@ -28,6 +28,7 @@ export const LandingScreen = ({
     <View>
       {isError ? (
         <ErrorMessage
+          style={styles.message}
           message="We couldn't fetch the routes right now. Try again later."
           retry={() => {
             retry();
@@ -51,3 +52,9 @@ export const LandingScreen = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  message: {
+    marginVertical: 16,
+  },
+});

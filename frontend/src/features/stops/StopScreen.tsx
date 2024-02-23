@@ -53,6 +53,7 @@ export const StopScreen = ({
     <View>
       {stopError || routesError ? (
         <ErrorMessage
+          style={styles.message}
           message="We couldn't fetch the stop right now. Try again later."
           retry={() => {
             retryRoutes();
@@ -80,7 +81,7 @@ const StopHeader = ({ stop }: { stop: BasicStop }): React.JSX.Element => {
   let stopDistance;
   if (status.type === "active") {
     stopDistance = formatMiles(
-      geoDistanceToMiles(distance(stop, status.location)),
+      geoDistanceToMiles(distance(stop, status.location))
     );
   }
 
@@ -178,5 +179,8 @@ const styles = StyleSheet.create({
     color: "white",
     fontWeight: "500",
     fontSize: 16,
+  },
+  message: {
+    marginVertical: 16,
   },
 });

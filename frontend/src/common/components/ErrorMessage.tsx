@@ -8,9 +8,13 @@ interface ErrorComponentProps extends ViewProps {
   retry: () => void;
 }
 
-const ErrorMessage: React.FC<ErrorComponentProps> = ({ message, retry }) => {
+const ErrorMessage: React.FC<ErrorComponentProps> = ({
+  message,
+  retry,
+  style,
+}) => {
   return (
-    <View style={styles.loadingContainer}>
+    <View style={[style]}>
       <Text style={styles.header}>{message}</Text>
       <RetryButton retry={retry} />
     </View>
@@ -18,9 +22,6 @@ const ErrorMessage: React.FC<ErrorComponentProps> = ({ message, retry }) => {
 };
 
 const styles = StyleSheet.create({
-  loadingContainer: {
-    padding: 16,
-  },
   header: {
     marginBottom: 16,
     alignSelf: "center",

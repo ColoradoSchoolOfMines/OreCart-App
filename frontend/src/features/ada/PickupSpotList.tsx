@@ -7,11 +7,20 @@ import SkeletonList from "../../common/components/SkeletonList";
 import { type PickupSpot } from "./adaSlice";
 import { PickupSpotItem, PickupSpotItemSkeleton } from "./PickupSpotItem";
 
+/**
+ * The props for the {@interface PickupSpotList} component.
+ * @property spots - The list of pickup spots to render. Should be undefined if loading.
+ * @property onSpotSelected - A callback to call when a spot is selected.
+ * Called with null if the spot is deselected.
+ */
 interface PickupSpotListProps extends ViewProps {
   spots?: PickupSpot[];
   onSpotSelected: (spot: PickupSpot | null) => void;
 }
 
+/**
+ * A list of pickup spots as shown by {@function PickupSpotItem}.
+ */
 const PickupSpotList = ({
   spots,
   onSpotSelected,
@@ -21,17 +30,19 @@ const PickupSpotList = ({
 
   const handleSpotSelected = (spot: PickupSpot): void => {
     if (selectedSpot === spot) {
+      // Deselect the spot if it's already selected
       setSelectedSpot(null);
       onSpotSelected(null);
       return;
     }
+    // Select the spot and propagate the selection
     setSelectedSpot(spot);
     onSpotSelected(spot);
   };
 
   return spots !== undefined ? (
     <View style={[styles.container, style]}>
-      {spots.map((spot, index) => (
+      {spots.map((spot) => (
         <PickupSpotItem
           key={spot.id}
           spot={spot}
@@ -41,6 +52,7 @@ const PickupSpotList = ({
       ))}
     </View>
   ) : (
+    // Nothing loaded, show skeleton items but horizontally.
     <SkeletonList
       generator={() => <PickupSpotItemSkeleton />}
       divider={false}

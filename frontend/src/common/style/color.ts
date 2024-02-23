@@ -25,6 +25,7 @@ export default {
       pale_blue: "#CFDCE9",
       ext: {
         blaster_blue_highlight: "#235D99",
+        light_blue_highlight: "#6A83AD",
       },
     },
     neutral: {
