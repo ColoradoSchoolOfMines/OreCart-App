@@ -1,31 +1,32 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
-function onLoginFail() {
-  document.getElementById('login-confirmation').innerHTML='username or password incorrect';
-  document.getElementById('login-confirmation').style.display='block';
-}
-
-const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  e.preventDefault();
-  fetch(`${baseUrl}/auth/login`, {
-    method: 'POST',
-    body: new FormData(e.currentTarget),
-    credentials: 'include',
-  })
-    .then((response) => {
-      document.getElementById('login-confirmation').style.display='block';
-      if (response.status == 400) {
-        onLoginFail();
-      }
-    })
-    .catch((error) => {
-      onLoginFail();
-    });
-}
-
 const LoginPage: React.FC = () => {
+  const [statusMessage, setStatusMessage] = useState('');
+
+  function onLoginFail() {
+    setStatusMessage('username or password incorrect');
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    fetch(`${baseUrl}/auth/login`, {
+      method: 'POST',
+      body: new FormData(e.currentTarget),
+      credentials: 'include',
+    })
+      .then((response) => {
+        if (response.status == 400) {
+          onLoginFail();
+        }
+        else {
+          setStatusMessage('You have logged in successfully; other pages are now available!');
+        }
+      })
+      .catch(() => { onLoginFail(); });
+  }
+
   return (
     <main>
 
@@ -46,7 +47,7 @@ const LoginPage: React.FC = () => {
           <input type="submit" value="Log in" />
         </div>
       </form>
-      <p id="login-confirmation" style={{"display": "none"}}>You have logged in successfully; other pages are now available!</p>
+      <p id="login-confirmation">{statusMessage}</p>
 
     </main>
   );
