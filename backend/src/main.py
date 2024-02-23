@@ -48,13 +48,13 @@ app.include_router(
     prefix="/auth",
     tags=["auth"],
 )
-# Something will have to be done to tighten the security of this endpoint. It should
-# probably be removed altogether; registration can be left to manual database editing.
-app.include_router(
-    fastapi_users.get_register_router(UserRead, UserCreate),
-    prefix="/auth",
-    tags=["auth"],
-)
+
+# Uncomment this to add a route that registers new users
+# app.include_router(
+#     fastapi_users.get_register_router(UserRead, UserCreate),
+#     prefix="/auth",
+#     tags=["auth"],
+# )
 
 
 @app.on_event("startup")
