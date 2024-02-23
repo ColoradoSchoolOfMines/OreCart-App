@@ -5,6 +5,7 @@ from os import getenv
 from alembic import context
 from dotenv import load_dotenv
 from sqlalchemy import engine_from_config, pool
+from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import AsyncConnection, async_engine_from_config
 
 # this is the Alembic Config object, which provides
@@ -56,7 +57,7 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
-def do_run_migrations(connection: AsyncConnection) -> None:
+def do_run_migrations(connection: Connection) -> None:
     context.configure(connection=connection, target_metadata=target_metadata)
     with context.begin_transaction():
         context.run_migrations()

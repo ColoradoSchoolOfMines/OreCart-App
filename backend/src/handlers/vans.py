@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
+from sqlalchemy.sql.expression import select
 from src.auth.make_async import make_async
 from src.auth.user_manager import current_user
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
