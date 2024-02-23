@@ -81,7 +81,7 @@ const StopHeader = ({ stop }: { stop: BasicStop }): React.JSX.Element => {
   let stopDistance;
   if (status.type === "active") {
     stopDistance = formatMiles(
-      geoDistanceToMiles(distance(stop, status.location))
+      geoDistanceToMiles(distance(stop, status.location)),
     );
   }
 
