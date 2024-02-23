@@ -16,7 +16,7 @@ import "@mantine/core/styles.layer.css";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
-async function authRedirect({ request }) {
+async function authRedirect( {request}: {request: Request}) {
   // avoid infinite redirect loop
   if (new URL(request.url).pathname == '/login') return null;
   let loggedIn = false;
@@ -27,7 +27,7 @@ async function authRedirect({ request }) {
     .then((response) => {
       loggedIn = (response.status != 401);
     })
-    .catch((error) => {
+    .catch(() => {
       throw new Error('Network response was not ok');
     });
   return loggedIn ? null : redirect("/login");
