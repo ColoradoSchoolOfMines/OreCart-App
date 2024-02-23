@@ -9,7 +9,16 @@ from typing import Annotated, Optional
 
 import pygeoif
 from bs4 import BeautifulSoup  # type: ignore
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Query,
+    Request,
+    UploadFile,
+)
 from fastapi.responses import JSONResponse
 from fastkml import kml
 from fastkml.styles import LineStyle, PolyStyle
@@ -106,11 +115,7 @@ def get_kml(req: Request):
             if route_stop.route_id == route.id
         ]
         stop_divs = "".join(
-            [
-                f"<div>{route.name}<br></div>"
-                for route in routes
-                if route.id in stop_ids
-            ]
+            [f"<div>{route.name}<br></div>" for route in routes if route.id in stop_ids]
         )
 
         description = f"<![CDATA[{stop_divs}]]>"
@@ -249,7 +254,9 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
 
 
 @router.post("/")
-async def create_route(req: Request, kml_file: UploadFile, user: Annotated[User, Depends(current_user)]):
+async def create_route(
+    req: Request, kml_file: UploadFile, user: Annotated[User, Depends(current_user)]
+):
     """
     Creates a new route.
     """
