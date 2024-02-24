@@ -16,6 +16,7 @@ from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
 from pygeoif.geometry import Point, Polygon
 from src.model.alert import Alert
+from src.model.pickup_spot import PickupSpot
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
@@ -86,10 +87,9 @@ def get_kml(req: Request):
 
     with req.app.state.db.session() as session:
         routes = session.query(Route).all()
-
         stops = session.query(Stop).all()
-
         route_stops = session.query(RouteStop).all()
+        pickup_spots = session.query(PickupSpot).all()
 
         k = kml.KML()
         ns = "{http://www.opengis.net/kml/2.2}"
@@ -132,8 +132,17 @@ def get_kml(req: Request):
             d.append(p)
 
         for stop in stops:
-            p = kml.Placemark(ns, stop.name, stop.name)
+            description = "<![CDATA[<div>Stop<br></div>]]>"
+            p = kml.Placemark(ns, stop.name, stop.name, description=description)
             p.geometry = Point(stop.lon, stop.lat)
+            d.append(p)
+
+        for pickup_spot in pickup_spots:
+            description = "<![CDATA[<div>Pickup Spot<br></div>]]>"
+            p = kml.Placemark(
+                ns, pickup_spot.name, pickup_spot.name, description=description
+            )
+            p.geometry = Point(pickup_spot.lon, pickup_spot.lat)
             d.append(p)
 
         d.append_style(style)
@@ -257,6 +266,7 @@ async def create_route(req: Request, kml_file: UploadFile):
 
         routes = {}
         stops = {}
+        pickup_spots = {}
 
         stop_id_map = {}
 
@@ -265,10 +275,26 @@ async def create_route(req: Request, kml_file: UploadFile):
 
         for feature_list in k.features():
             for feature in feature_list.features():
+
                 if type(feature.geometry) == pygeoif.geometry.Polygon:
                     routes[feature.name] = feature
                 elif type(feature.geometry) == pygeoif.geometry.Point:
-                    stops[feature.name] = feature
+                    if feature.description is None:
+                        return HTTPException(status_code=400, detail="bad kml file")
+
+                    desc_html = BeautifulSoup(
+                        feature.description, features="html.parser"
+                    )
+
+                    # Want the first div's text contents and then strip all of the tags
+                    typ = desc_html.find("div", recursive=True).text.strip()
+
+                    if typ == "Stop":
+                        stops[feature.name] = feature
+                    elif typ == "Pickup Spot":
+                        pickup_spots[feature.name] = feature
+                    else:
+                        return HTTPException(status_code=400, detail="invlaid")
                 else:
                     return HTTPException(status_code=400, detail="bad kml file")
 
@@ -316,8 +342,6 @@ async def create_route(req: Request, kml_file: UploadFile):
                 for div in route_desc_html.find_all("div", recursive=False)
             ]
 
-            print(route_stops, route_desc_html.find_all("div", recursive=False))
-
             for pos, stop in enumerate(route_stops):
                 if stop not in stop_id_map:
                     continue
@@ -327,6 +351,15 @@ async def create_route(req: Request, kml_file: UploadFile):
                 )
                 session.add(route_stop)
                 session.flush()
+
+        for pickup_spot_name, pickup_spot in pickup_spots.items():
+            pickup_spot_model = PickupSpot(
+                name=pickup_spot_name,
+                lat=pickup_spot.geometry.y,
+                lon=pickup_spot.geometry.x,
+            )
+            session.add(pickup_spot_model)
+            session.flush()
 
         await kml_file.close()
 
