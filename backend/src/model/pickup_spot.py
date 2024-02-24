@@ -10,6 +10,8 @@ class PickupSpot(Base):
         primary_key=True, autoincrement=True, nullable=False
     )
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
+    lat: Mapped[float] = mapped_column(nullable=False)
+    lon: Mapped[float] = mapped_column(nullable=False)
 
     def __eq__(self, __value: object) -> bool:
         # Exclude ID since it'll always differ, only compare on content

@@ -23,6 +23,8 @@ def upgrade() -> None:
         "pickup_spots",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column("name", sa.String(255), nullable=False),
+        sa.Column("lat", sa.Float, nullable=False),
+        sa.Column("lon", sa.Float, nullable=False),
         sa.UniqueConstraint("name"),
     )
 

@@ -18,14 +18,16 @@ class PickupSpotModel(BaseModel):
 
 
 @router.get("/pickup_spots")
-def get_pickup_spots(req: Request) -> List[Dict[str, Union[str, int]]]:
+def get_pickup_spots(req: Request) -> List[Dict[str, Union[str, int, float]]]:
     with req.app.state.db.session() as session:
         pickup_spots = session.query(PickupSpot).all()
-        pickup_spots_json: List[Dict[str, Union[str, int]]] = []
+        pickup_spots_json: List[Dict[str, Union[str, int, float]]] = []
         for spot in pickup_spots:
             spot_json = {
                 "id": spot.id,
                 "name": spot.name,
+                "latitude": spot.lat,
+                "longitude": spot.lon,
             }
             pickup_spots_json.append(spot_json)
 
@@ -115,7 +117,12 @@ def get_ada_requests(
                     .filter(PickupSpot.id == request.pickup_spot)
                     .first()
                 )
-                request_json[FIELD_PICKUP_SPOTS] = {"id": spot.id, "name": spot.name}
+                request_json[FIELD_PICKUP_SPOTS] = {
+                    "id": spot.id,
+                    "name": spot.name,
+                    "latitude": spot.lat,
+                    "longitude": spot.lon,
+                }
             result.append(request_json)
 
         return result
