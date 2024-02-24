@@ -102,7 +102,7 @@ def get_ada_requests(
         else:
             raise HTTPException(status_code=400, detail=f"Invalid filter {filter}")
 
-        ada_requests = ada_requests.all()
+        ada_requests = ada_requests.order_by(ADARequest.created_at).all()
 
         result = []
         for request in ada_requests:

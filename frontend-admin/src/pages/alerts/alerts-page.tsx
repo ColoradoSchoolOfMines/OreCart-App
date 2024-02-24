@@ -1,10 +1,10 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import React, { useRef, useState } from 'react';
-import Card from '../../components/card/card';
-import AddAlertForm from './add-alert-form';
-import { Alert, AlertData, AlertEditFormMethods } from './alert-types';
-import './alerts-page.scss';
-import EditAlertForm from './edit-alert-form';
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useRef, useState } from "react";
+import Card from "../../components/card/card";
+import AddAlertForm from "./add-alert-form";
+import { Alert, AlertData, AlertEditFormMethods } from "./alert-types";
+import "./alerts-page.scss";
+import EditAlertForm from "./edit-alert-form";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
@@ -16,11 +16,15 @@ const fetchAlerts = async () => {
 };
 
 const AlertsPage: React.FC = () => {
-  const { data: alerts, isLoading, error } = useQuery({ queryKey: ['alerts'], queryFn: fetchAlerts });
+  const {
+    data: alerts,
+    isLoading,
+    error,
+  } = useQuery({ queryKey: ["alerts"], queryFn: fetchAlerts });
   const dialogRef = useRef<HTMLDialogElement>(null);
   const queryClient = useQueryClient();
   const dialogEditRef = useRef<HTMLDialogElement>(null);
-  const [ currentAlertId, setCurrentAlertId ] = useState<number>(-1);
+  const [currentAlertId, setCurrentAlertId] = useState<number>(-1);
   const alertEditFormRef = useRef<AlertEditFormMethods>(null);
 
   const handleAddAlert = () => {
@@ -30,20 +34,20 @@ const AlertsPage: React.FC = () => {
   const handleFormSubmit = async (formData: AlertData) => {
     try {
       const response = await fetch(`${baseUrl}/alerts/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
-      // Handle the successful response 
-      await queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      // Handle the successful response
+      await queryClient.invalidateQueries({ queryKey: ["alerts"] });
       dialogRef.current?.close();
     } catch (error) {
-      console.error('There was a problem with the fetch operation:', error);
+      console.error("There was a problem with the fetch operation:", error);
     }
   };
 
@@ -60,38 +64,38 @@ const AlertsPage: React.FC = () => {
   const handleEditSubmit = async (formData: AlertData) => {
     try {
       const response = await fetch(`${baseUrl}/alerts/${currentAlertId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       // Handle the successful response
-      await queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      await queryClient.invalidateQueries({ queryKey: ["alerts"] });
       setCurrentAlertId(-1);
       dialogEditRef.current?.close();
     } catch (error) {
-      console.error('There was a problem with the fetch operation:', error);
+      console.error("There was a problem with the fetch operation:", error);
     }
   };
 
   const handleDeleteAlert = async () => {
     try {
       const response = await fetch(`${baseUrl}/alerts/${currentAlertId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error("Network response was not ok");
       }
       // Handle the successful response
-      await queryClient.invalidateQueries({ queryKey: ['alerts'] });
+      await queryClient.invalidateQueries({ queryKey: ["alerts"] });
       setCurrentAlertId(-1);
       dialogEditRef.current?.close();
     } catch (error) {
-      console.error('There was a problem with the fetch operation:', error);
+      console.error("There was a problem with the fetch operation:", error);
     }
   };
 
@@ -99,22 +103,40 @@ const AlertsPage: React.FC = () => {
   if (error) return <div>An error occurred: {(error as Error).message}</div>;
 
   return (
-    <main className='p-alerts-page'>
+    <main className="p-alerts-page">
       <h1>Alerts</h1>
       <div className="cards-container">
         {alerts?.map((alert: Alert) => (
-          <Card title={`Alert ${alert.id}`} key={alert.id} onClick={() => {handleEdit(alert.id)}}></Card>
+          <Card
+            title={`Alert ${alert.id}`}
+            key={alert.id}
+            onClick={() => {
+              handleEdit(alert.id);
+            }}
+          ></Card>
         ))}
       </div>
 
       <button onClick={handleAddAlert}>Add Alert</button>
 
       <dialog ref={dialogRef}>
-        <AddAlertForm onSubmit={handleFormSubmit} onCancel={() => {dialogRef.current?.close()}} />
+        <AddAlertForm
+          onSubmit={handleFormSubmit}
+          onCancel={() => {
+            dialogRef.current?.close();
+          }}
+        />
       </dialog>
 
       <dialog ref={dialogEditRef}>
-        <EditAlertForm ref={alertEditFormRef} onSubmit={handleEditSubmit} onCancel={() => {dialogEditRef.current?.close()}} onDelete={handleDeleteAlert} />
+        <EditAlertForm
+          ref={alertEditFormRef}
+          onSubmit={handleEditSubmit}
+          onCancel={() => {
+            dialogEditRef.current?.close();
+          }}
+          onDelete={handleDeleteAlert}
+        />
       </dialog>
     </main>
   );
