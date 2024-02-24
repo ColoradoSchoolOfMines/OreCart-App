@@ -4,6 +4,7 @@ Contains routes specific to working with routes.
 
 import base64
 import re
+import struct
 from datetime import datetime, timezone
 from typing import Annotated, Optional
 
@@ -15,6 +16,7 @@ from fastkml import kml
 from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
 from pygeoif.geometry import Point, Polygon
+from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.alert import Alert
 from src.model.route import Route
 from src.model.route_disable import RouteDisable
@@ -76,6 +78,35 @@ def get_routes(
             routes_json.append(route_json)
 
         return routes_json
+
+
+@router.get("/hardware")
+def get_routes_hardware(req: Request):
+    """
+    Gets all routes in a binary format.
+    """
+
+    with req.app.state.db.session() as session:
+        routes = session.query(Route).all()
+        routes_length = len(routes)
+        if routes_length > 255:
+            raise HardwareHTTPException(400, HardwareErrorCode.TOO_MANY_ROUTES)
+
+        routes_binary = struct.pack("B", routes_length)
+        for route in routes:
+            route_id_binary = struct.pack(">I", route.id)
+            route_name_binary = route.name.encode("utf-8")
+            route_name_length = len(route_name_binary)
+            if route_name_length > 255:
+                raise HardwareHTTPException(400, HardwareErrorCode.ROUTE_NAME_TOO_LONG)
+
+            routes_binary += (
+                route_id_binary
+                + struct.pack("B", route_name_length)
+                + struct.pack(f"{route_name_length}s", route_name_binary)
+            )
+
+        return HardwareOKResponse(routes_binary)
 
 
 @router.get("/kmlfile")
