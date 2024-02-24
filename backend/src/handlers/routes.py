@@ -275,7 +275,6 @@ async def create_route(req: Request, kml_file: UploadFile):
 
         for feature_list in k.features():
             for feature in feature_list.features():
-
                 if type(feature.geometry) == pygeoif.geometry.Polygon:
                     routes[feature.name] = feature
                 elif type(feature.geometry) == pygeoif.geometry.Point:
