@@ -76,7 +76,7 @@ const AccommodationsPage: React.FC = () => {
       <Select
         data={["Today", "Future"]}
         value={filter}
-        onChange={setFilter}
+        onChange={(value) => setFilter(value ?? "Today")}
         allowDeselect={false}
       />
       <Table>
