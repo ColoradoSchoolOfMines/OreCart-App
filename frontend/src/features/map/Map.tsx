@@ -5,7 +5,7 @@ import MapView, {
   Marker,
   PROVIDER_GOOGLE,
   Polyline,
-  Region,
+  type Region,
 } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

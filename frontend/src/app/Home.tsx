@@ -92,7 +92,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 <Text style={styles.drawerItemText}>Upcoming Alerts</Text>
               </View>
             </TouchableOpacity>
-{/* 
+            {/* 
             <TouchableOpacity
               onPress={() => {
                 navigation.push("Settings");
