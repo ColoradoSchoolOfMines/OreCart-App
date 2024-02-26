@@ -3,6 +3,11 @@ export interface Route {
   name: string;
 }
 
+export interface Stop {
+  id: number;
+  name: string;
+}
+
 export interface AddRouteFormProps {
   onSubmit: (data: FormData) => void; // or Promise<void> if async
   onCancel: () => void;
