@@ -1,3 +1,5 @@
+import Constants from "expo-constants";
+
 import apiSlice from "../../app/apiSlice";
 import { type Coordinate } from "../location/locationSlice";
 
@@ -25,8 +27,7 @@ export interface VanLocation extends Coordinate {
   secondsToNextStop: number;
 }
 
-const vanLocationApiUrl =
-  "ws://" + process.env.EXPO_PUBLIC_API_DOMAIN + "/vans/location/subscribe/";
+const vanLocationApiUrl = `${Constants.expoConfig?.extra?.wsApiUrl}/vans/location/subscribe/`;
 
 /**
  * This slice extends the existing API slice with the van route and companion

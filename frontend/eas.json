@@ -1,16 +1,36 @@
 {
   "cli": {
-    "version": ">= 7.2.0"
+    "version": ">= 7.2.0",
+    "promptToConfigurePushNotifications": false
   },
   "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal"
-    },
     "preview": {
-      "distribution": "internal"
+      "developmentClient": false,
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      },
+      "env": {
+        "ORECART_API_DOMAIN": "orecart-backend.tbwright.dev",
+        "ORECART_API_SECURE": "1",
+        "GOOGLE_MAPS_API_KEY_IOS": "KEY",
+        "GOOGLE_MAPS_API_KEY_ANDROID": "KEY"
+      }
     },
-    "production": {}
+    "production": {
+      "android": {
+        "credentialsSource": "local"
+      },
+      "ios": {
+        "credentialsSource": "local"
+      },
+      "env": {
+        "ORECART_API_DOMAIN": "orecart-backend.tbwright.dev",
+        "ORECART_API_SECURE": "1",
+        "GOOGLE_MAPS_API_KEY_IOS": "KEY",
+        "GOOGLE_MAPS_API_KEY_ANDROID": "KEY"
+      }
+    }
   },
   "submit": {
     "production": {}
