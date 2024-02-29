@@ -82,12 +82,12 @@ def mock_stop_disables():
     return [StopDisable(id=1, stop_id=3, alert_id=1)]
 
 
-def test_get_stops_no_includes(mock_route_args, mock_stops):
+async def test_get_stops_no_includes(mock_route_args, mock_stops):
     mock_route_args.session.add_all(mock_stops)
     mock_route_args.session.commit()
 
     # Act
-    response = get_stops(mock_route_args.req)
+    response = await get_stops(mock_route_args.req)
 
     # Assert
     assert response == [
@@ -101,7 +101,7 @@ def test_get_stops_no_includes(mock_route_args, mock_stops):
     ]
 
 
-def test_get_stops_include_routeIds(
+async def test_get_stops_include_routeIds(
     mock_route_args, mock_stops, mock_routes, mock_route_stops
 ):
     mock_route_args.session.add_all(mock_stops)
@@ -112,7 +112,7 @@ def test_get_stops_include_routeIds(
     mock_stop_route_ids = {1: [1], 2: [2, 1], 3: [1]}
 
     # Act
-    response = get_stops(mock_route_args.req, ["routeIds"])
+    response = await get_stops(mock_route_args.req, ["routeIds"])
 
     # Assert
     assert response == [
@@ -127,14 +127,14 @@ def test_get_stops_include_routeIds(
     ]
 
 
-def test_get_stops_include_is_active_no_alert(mock_route_args, mock_stops):
+async def test_get_stops_include_is_active_no_alert(mock_route_args, mock_stops):
     mock_route_args.session.add_all(mock_stops)
     mock_route_args.session.commit()
 
     mock_stop_is_active = {1: True, 2: False, 3: True}
 
     # Act
-    response = get_stops(mock_route_args.req, ["isActive"])
+    response = await get_stops(mock_route_args.req, ["isActive"])
 
     # Assert
     assert response == [
@@ -149,7 +149,7 @@ def test_get_stops_include_is_active_no_alert(mock_route_args, mock_stops):
     ]
 
 
-def test_get_stops_include_is_active_with_alert(
+async def test_get_stops_include_is_active_with_alert(
     mock_route_args, mock_stops, mock_alert
 ):
     mock_route_args.session.add_all(mock_stops)
@@ -159,7 +159,7 @@ def test_get_stops_include_is_active_with_alert(
     mock_stop_is_active = {1: True, 2: False, 3: True}
 
     # Act
-    response = get_stops(mock_route_args.req, ["isActive"])
+    response = await get_stops(mock_route_args.req, ["isActive"])
 
     # Assert
     assert response == [
@@ -174,7 +174,7 @@ def test_get_stops_include_is_active_with_alert(
     ]
 
 
-def test_get_stops_include_is_active_with_alert_and_disable(
+async def test_get_stops_include_is_active_with_alert_and_disable(
     mock_route_args, mock_stops, mock_alert, mock_stop_disables
 ):
     mock_route_args.session.add_all(mock_stops)
@@ -185,7 +185,7 @@ def test_get_stops_include_is_active_with_alert_and_disable(
     mock_stop_is_active = {1: True, 2: False, 3: False}
 
     # Act
-    response = get_stops(mock_route_args.req, ["isActive"])
+    response = await get_stops(mock_route_args.req, ["isActive"])
 
     # Assert
     assert response == [
@@ -200,7 +200,7 @@ def test_get_stops_include_is_active_with_alert_and_disable(
     ]
 
 
-def test_get_stops_include_route_ids_and_is_active(
+async def test_get_stops_include_route_ids_and_is_active(
     mock_route_args,
     mock_stops,
     mock_routes,
@@ -220,7 +220,7 @@ def test_get_stops_include_route_ids_and_is_active(
     mock_stop_is_active = {1: True, 2: False, 3: False}
 
     # Act
-    response = get_stops(mock_route_args.req, ["routeIds", "isActive"])
+    response = await get_stops(mock_route_args.req, ["routeIds", "isActive"])
 
     # Assert
     assert response == [

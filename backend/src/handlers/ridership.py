@@ -101,7 +101,7 @@ async def post_ridership_stats(
     async with req.app.state.db.async_session() as asession:
         # Find the route that the van is currently on, required by the ridership database.
         # If there is no route, then the van does not exist or is not running.
-        van = await asession.execute(select(Van).filter_by(id=van_id).limit(1)).first()
+        van = (await asession.execute(select(Van).filter_by(id=van_id).limit(1))).first()
         if not van:
             raise HardwareHTTPException(
                 status_code=404, error_code=HardwareErrorCode.VAN_NOT_ACTIVE
@@ -109,12 +109,12 @@ async def post_ridership_stats(
 
         # Check that the timestamp is the most recent one for the van. This prevents
         # updates from being sent out of order, which could mess up the statistics.
-        most_recent = await asession.execute(
+        most_recent = (await asession.execute(
             select(Analytics)
             .filter_by(van_id=van_id)
             .order_by(Analytics.datetime.desc())
             .limit(1)
-        ).first()
+        )).first()
         if most_recent is not None and timestamp <= most_recent.datetime:
             raise HardwareHTTPException(
                 status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT

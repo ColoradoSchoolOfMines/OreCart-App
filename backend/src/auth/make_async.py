@@ -10,6 +10,8 @@ def make_async(func):
 
     @functools.wraps(func)
     async def func_call(req: Request, *args, **kwargs):
+        print(f"{req.app.state.db.async_session=}")
+        print(f"{req.app.state.db.async_session()=}")
         async with req.app.state.db.async_session() as asession:
             return await asession.run_sync(
                 func_call_wrapper, func, req, *args, **kwargs
