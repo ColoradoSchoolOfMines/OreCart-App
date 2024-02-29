@@ -15,6 +15,8 @@ INCLUDES = {FIELD_PICKUP_SPOTS}
 
 class PickupSpotModel(BaseModel):
     name: str
+    latitude: float
+    longitude: float
 
 
 @router.get("/pickup_spots")
@@ -36,7 +38,7 @@ def get_pickup_spots(req: Request) -> List[Dict[str, Union[str, int, float]]]:
 
 @router.post("/pickup_spots")
 def post_pickup_spot(spot: PickupSpotModel, req: Request):
-    new_spot = PickupSpot(name=spot.name)
+    new_spot = PickupSpot(name=spot.name, lat=spot.latitude, lon=spot.longitude)
 
     with req.app.state.db.session() as session:
         session.add(new_spot)
@@ -54,6 +56,8 @@ def update_pickup_spot(id: int, spot: PickupSpotModel, req: Request):
             raise HTTPException(status_code=404, detail="Pickup spot not found")
 
         pickup_spot.name = spot.name
+        pickup_spot.lat = spot.latitude
+        pickup_spot.lon = spot.longitude
         session.commit()
 
     return {"message": "OK"}
@@ -93,22 +97,22 @@ def get_ada_requests(
                 hour=23, minute=59, second=59
             )
             ada_requests = session.query(ADARequest).filter(
-                ADARequest.created_at >= now, ADARequest.created_at <= end_of_day
+                ADARequest.pickup_time >= now, ADARequest.pickup_time <= end_of_day
             )
         elif filter == "future":
             ada_requests = session.query(ADARequest).filter(
-                ADARequest.created_at >= now
+                ADARequest.pickup_time >= now
             )
         else:
             raise HTTPException(status_code=400, detail=f"Invalid filter {filter}")
 
-        ada_requests = ada_requests.order_by(ADARequest.created_at).all()
+        ada_requests = ada_requests.order_by(ADARequest.pickup_time).all()
 
         result = []
         for request in ada_requests:
             request_json = {
                 "id": request.id,
-                "pickup_time": int(request.created_at.timestamp()),
+                "pickup_time": int(request.pickup_time.timestamp()),
                 "wheelchair": request.wheelchair,
             }
             if FIELD_PICKUP_SPOTS in include_set:
@@ -149,7 +153,7 @@ def create_ada_request(
         pickup_spot = ADARequest(
             pickup_spot=ada_request_model.pickup_spot_id,
             wheelchair=ada_request_model.wheelchair,
-            created_at=pickup_time,
+            pickup_time=pickup_time,
         )
         session.add(pickup_spot)
         session.commit()

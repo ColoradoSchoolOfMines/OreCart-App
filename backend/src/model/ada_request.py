@@ -13,7 +13,7 @@ class ADARequest(Base):
         primary_key=True, autoincrement=True, nullable=False
     )
     pickup_spot: Mapped[int] = mapped_column(nullable=False)
-    created_at: Mapped[datetime] = mapped_column(TZDateTime, nullable=False)
+    pickup_time: Mapped[datetime] = mapped_column(TZDateTime, nullable=False)
     wheelchair: Mapped[bool] = mapped_column(nullable=False)
 
     def __eq__(self, __value: object) -> bool:
@@ -21,9 +21,9 @@ class ADARequest(Base):
         return (
             isinstance(__value, ADARequest)
             and self.pickup_spot == __value.pickup_spot
-            and self.created_at == __value.created_at
+            and self.pickup_time == __value.pickup_time
             and self.wheelchair == __value.wheelchair
         )
 
     def __repr__(self) -> str:
-        return f"<AdaRequest id={self.id} pickup_spot={self.pickup_spot} created_at={self.created_at} wheelchair={self.wheelchair}>"
+        return f"<AdaRequest id={self.id} pickup_spot={self.pickup_spot} pickup_time={self.pickup_time} wheelchair={self.wheelchair}>"

@@ -28,7 +28,7 @@ def upgrade() -> None:
             sa.ForeignKey("pickup_spots.id"),
             nullable=False,
         ),
-        sa.Column("created_at", sa.TIMESTAMP(timezone=True), nullable=False),
+        sa.Column("pickup_time", sa.DateTime(timezone=True), nullable=False),
         sa.Column("wheelchair", sa.Boolean, nullable=False),
     )
 
