@@ -47,6 +47,7 @@ export const RouteScreen = ({
     <View>
       {stopsError || routeError ? (
         <ErrorMessage
+          style={styles.message}
           message="We couldn't fetch the route right now. Try again later."
           retry={() => {
             retryRoute();
@@ -116,5 +117,8 @@ const styles = StyleSheet.create({
   },
   routeDesc: {
     fontSize: 16,
+  },
+  message: {
+    marginVertical: 16,
   },
 });

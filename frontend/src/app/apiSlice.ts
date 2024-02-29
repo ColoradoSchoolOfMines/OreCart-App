@@ -30,6 +30,7 @@ export default createApi({
     "Stops",
     "Stop",
     "Vans",
+    "PickupSpots",
   ],
   endpoints: () => ({}), // All endpoints are injected by other files
 });
