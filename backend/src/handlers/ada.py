@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import Annotated, Dict, List, Union
+from typing import Annotated, Dict, List, Optional, Union
 
 from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel
@@ -86,27 +86,26 @@ class ADARequestModel(BaseModel):
 @router.get("/requests")
 def get_ada_requests(
     req: Request,
-    filter: str = Query("future"),
+    filter: Optional[str] = None,
     include: Annotated[list[str] | None, Query()] = None,
 ):
     now = datetime.now(timezone.utc)
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
+        query = session.query(ADARequest)
         if filter == "today":
             end_of_day = datetime.now(timezone.utc).replace(
                 hour=23, minute=59, second=59
             )
-            ada_requests = session.query(ADARequest).filter(
+            query = query.filter(
                 ADARequest.pickup_time >= now, ADARequest.pickup_time <= end_of_day
             )
         elif filter == "future":
-            ada_requests = session.query(ADARequest).filter(
-                ADARequest.pickup_time >= now
-            )
-        else:
+            query = query.filter(ADARequest.pickup_time >= now)
+        elif filter is not None:
             raise HTTPException(status_code=400, detail=f"Invalid filter {filter}")
 
-        ada_requests = ada_requests.order_by(ADARequest.pickup_time).all()
+        ada_requests = query.order_by(ADARequest.pickup_time).all()
 
         result = []
         for request in ada_requests:
