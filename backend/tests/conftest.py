@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
+import asyncio
 import pytest
 from pydantic import BaseModel
 from sqlalchemy import create_engine
@@ -30,8 +31,13 @@ def mock_session():
 
 # @pytest.fixture
 def mock_async_session():
-    engine = create_async_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+    async def init_models():
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.drop_all)
+            await conn.run_sync(Base.metadata.create_all)
+
+    asyncio.run(init_models())
     asm = async_sessionmaker(bind=engine)
     return asm()
 
