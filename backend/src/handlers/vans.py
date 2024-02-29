@@ -54,7 +54,7 @@ def get_vans(
     with req.app.state.db.session() as session:
         vans: List[Van] = session.query(Van).all()
 
-        resp: List[Dict[str, Optional[Union[int, float, bool]]]] = [
+        resp: List[Dict[str, Optional[Union[int, float, str]]]] = [
             {
                 "id": van.id,
                 "routeId": van.route_id,

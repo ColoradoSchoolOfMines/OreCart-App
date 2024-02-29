@@ -21,6 +21,4 @@ class Van(Base):
         )
 
     def __repr__(self) -> str:
-        return (
-            f"<Van id={self.id} route_id={self.route_id} guid={self.guid}>"
-        )
+        return f"<Van id={self.id} route_id={self.route_id} guid={self.guid}>"
