@@ -1,24 +1,21 @@
 import apiSlice from "../../app/apiSlice";
 import { type Coordinate } from "../location/locationSlice";
+import { type Stop } from "../stops/stopsSlice";
 
-/**
- * A list of routes, as defined by the backend.
- */
-export type Routes = ExtendedRoute[];
-
-export interface BasicRoute {
+export interface Route {
   id: number;
   name: string;
-  stopIds: number[];
+  isActive: boolean;
+  color: string;
+  desc: string;
+  waypoints: Coordinate[];
 }
 
-/**
- * A Route, as defined by the backend.
- */
-export interface ExtendedRoute extends BasicRoute {
-  waypoints: Coordinate[];
-  isActive: boolean;
+export interface ParentRoute extends Route {
+  stops: Stop[];
 }
+
+export interface WaypointRoute extends Route {}
 
 // --- API Definition ---
 
@@ -29,13 +26,14 @@ export interface ExtendedRoute extends BasicRoute {
 const routesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-    getRoutes: builder.query<Routes, void>({
+    getRoutes: builder.query<WaypointRoute[], void>({
       query: () =>
-        "/routes/?include=stopIds&include=waypoints&include=isActive",
+        "/routes/?include=stops&include=waypoints&include=isActive&include=color",
       providesTags: ["Routes"],
     }),
-    getRoute: builder.query<BasicRoute, number>({
-      query: (id) => `/routes/${id}?include=stopIds`,
+    getRoute: builder.query<ParentRoute, number>({
+      query: (id) =>
+        `/routes/${id}?include=stops&include=waypoints&include=isActive&include=color`,
       providesTags: (_, __, id) => [{ type: "Route", id }],
     }),
   }),

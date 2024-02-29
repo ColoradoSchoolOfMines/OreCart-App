@@ -5,7 +5,7 @@ import RetryButton from "./RetryButton";
 
 interface ErrorComponentProps extends ViewProps {
   message: string;
-  retry: () => void;
+  retry: () => Promise<object>;
 }
 
 const ErrorMessage: React.FC<ErrorComponentProps> = ({
@@ -16,7 +16,11 @@ const ErrorMessage: React.FC<ErrorComponentProps> = ({
   return (
     <View style={[style]}>
       <Text style={styles.header}>{message}</Text>
-      <RetryButton retry={retry} />
+      <RetryButton
+        retry={() => {
+          retry().catch(() => {});
+        }}
+      />
     </View>
   );
 };

@@ -1,26 +1,19 @@
 import apiSlice from "../../app/apiSlice";
 import { type Coordinate } from "../location/locationSlice";
+import { type Route } from "../routes/routesSlice";
 
-/**
- * A list of stops, as defined by the backend.
- */
-export type Stops = ExtendedStop[];
-
-/**
- * A Stop, as defined by the backend.
- */
-export interface ExtendedStop extends Coordinate {
+export interface Stop extends Coordinate {
   id: number;
   name: string;
-  routeIds: number[];
   isActive: boolean;
 }
 
-export interface BasicStop extends Coordinate {
-  id: number;
-  name: string;
-  routeIds: number[];
-  isActive: boolean;
+export interface ColorStop extends Stop {
+  colors: string[];
+}
+
+export interface ParentStop extends Stop {
+  routes: Route[];
 }
 
 // --- API Definition ---
@@ -32,12 +25,12 @@ export interface BasicStop extends Coordinate {
 const stopsApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-    getStops: builder.query<Stops, void>({
-      query: () => "/stops/?include=routeIds&include=isActive",
+    getStops: builder.query<ColorStop[], void>({
+      query: () => "/stops/?include=colors&include=isActive",
       providesTags: ["Stops"],
     }),
-    getStop: builder.query<BasicStop, number>({
-      query: (id) => `/stops/${id}?include=routeIds&include=isActive`,
+    getStop: builder.query<ParentStop, number>({
+      query: (id) => `/stops/${id}?include=routes&include=isActive`,
       providesTags: (_, __, id) => [{ type: "Stop", id }],
     }),
   }),
@@ -45,5 +38,6 @@ const stopsApiSlice = apiSlice.injectEndpoints({
 
 /**
  * Hook for querying the list of stops.
+  | GenericPerspective
  */
 export const { useGetStopsQuery, useGetStopQuery } = stopsApiSlice;

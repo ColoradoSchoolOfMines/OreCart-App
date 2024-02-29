@@ -4,16 +4,19 @@ import React from "react";
 import { Linking, Platform, StyleSheet, Text, View } from "react-native";
 import { TouchableHighlight } from "react-native-gesture-handler";
 
-import ErrorMessage from "../../common/components/ErrorMessage";
+import ParentChildList from "../../common/components/ParentChildList";
+import QueryText from "../../common/components/QueryText";
 import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
+import { wrapReduxQuery } from "../../common/query";
 import Color from "../../common/style/color";
-import { useLocationStatus, type Coordinate } from "../location/locationSlice";
-import { distance, formatMiles, geoDistanceToMiles } from "../location/util";
-import RouteList from "../routes/RouteList";
-import { useGetRoutesQuery } from "../routes/routesSlice";
+import { useDistance, type Coordinate } from "../location/locationSlice";
+import { formatSecondsAsMinutes } from "../location/util";
+import { changeMapFocus, type MapFocus } from "../map/mapSlice";
+import { type Route } from "../routes/routesSlice";
 
-import { useGetStopQuery, type BasicStop } from "./stopsSlice";
+import { StopRouteItem, StopRouteItemSkeleton } from "./StopRouteItem";
+import { useGetStopQuery, type ParentStop } from "./stopsSlice";
 
 export interface StopScreenProps {
   navigation: StackNavigationProp<InnerParamList, "Stop">;
@@ -24,75 +27,53 @@ export const StopScreen = ({
   route,
   navigation,
 }: StopScreenProps): React.JSX.Element => {
-  const {
-    data: stop,
-    isError: stopError,
-    refetch: refetchStops,
-  } = useGetStopQuery(route.params.stopId);
-
-  const {
-    data: routes,
-    isError: routesError,
-    refetch: refetchRoutes,
-  } = useGetRoutesQuery();
-
-  function retryStop(): void {
-    refetchStops().catch(console.error);
-  }
-
-  function retryRoutes(): void {
-    refetchRoutes().catch(console.error);
-  }
-
-  let stopRoutes;
-  if (routes !== undefined && stop !== undefined) {
-    stopRoutes = routes.filter((route) => stop.routeIds.includes(route.id));
-  }
+  const stop = useGetStopQuery(route.params.stopId);
+  const focus: MapFocus | undefined = stop.isSuccess
+    ? {
+        type: "SingleStop",
+        stop: stop.data,
+      }
+    : undefined;
+  changeMapFocus(focus);
 
   return (
-    <View>
-      {stopError || routesError ? (
-        <ErrorMessage
-          style={styles.message}
-          message="We couldn't fetch the stop right now. Try again later."
-          retry={() => {
-            retryRoutes();
-            retryStop();
-          }}
-        />
-      ) : (
-        <RouteList
-          mode="basic"
-          routes={stopRoutes}
-          inStop={stop}
-          renderStop={(stop) => <StopHeader stop={stop} />}
-          renderStopSkeleton={() => <StopSkeleton />}
-          onPress={(route) => {
-            navigation.push("Route", { routeId: route.id });
+    <ParentChildList
+      header={(stop: ParentStop) => <StopHeader stop={stop} />}
+      headerSkeleton={() => <StopSkeleton />}
+      item={(stop: ParentStop, route: Route) => (
+        <StopRouteItem
+          route={route}
+          stop={stop}
+          onPress={(route: Route) => {
+            navigation.navigate("Route", { routeId: route.id });
           }}
         />
       )}
-    </View>
+      itemSkeleton={() => <StopRouteItemSkeleton />}
+      divider="line"
+      query={wrapReduxQuery<ParentStop>(stop)}
+      refresh={stop.refetch}
+      map={(stop: ParentStop) => stop.routes}
+      keyExtractor={(route: Route) => route.id.toString()}
+      errorMessage="Failed to load stop. Please try again."
+    />
   );
 };
 
-const StopHeader = ({ stop }: { stop: BasicStop }): React.JSX.Element => {
-  const status = useLocationStatus();
-  let stopDistance;
-  if (status.type === "active") {
-    stopDistance = formatMiles(
-      geoDistanceToMiles(distance(stop, status.location)),
-    );
-  }
+const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
+  const distance = useDistance(stop);
 
   return (
     <View style={styles.container}>
       <Text style={styles.stopName}>{stop.name}</Text>
-      {status.type === "active" ? (
-        <Text style={styles.stopDesc}>{stopDistance} away</Text>
-      ) : status.type === "initializing" ? (
-        <TextSkeleton style={styles.stopDesc} widthFraction={0.3} />
-      ) : null}
+      <QueryText
+        style={styles.stopDesc}
+        query={distance}
+        body={(distance: number) =>
+          `Next OreCart in ${formatSecondsAsMinutes(distance)}`
+        }
+        skeletonWidth={0.6}
+      />
       <TouchableHighlight
         underlayColor={Color.generic.location_highlight}
         style={[styles.button, styles.locationButton]}
@@ -125,6 +106,11 @@ const openDirections = (coordinate: Coordinate): void => {
     android: `google.navigation:q=${location}`,
   });
 
+  if (url === undefined) {
+    console.error("Can't open directions on this platform");
+    return;
+  }
+
   Linking.canOpenURL(url)
     .then(async (supported) => {
       if (supported) {
@@ -137,6 +123,7 @@ const openDirections = (coordinate: Coordinate): void => {
       console.error("Can't launch directions", err);
     });
 };
+
 const styles = StyleSheet.create({
   container: {
     padding: 16,

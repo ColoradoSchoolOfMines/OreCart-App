@@ -1,6 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 import { useAppSelector } from "../../common/hooks";
+import { error, loading, success, type Query } from "../../common/query";
 
 /**
  * Implementation of latitude/longitude-based coordinates independent from any particular
@@ -87,18 +88,69 @@ const locationSlice = createSlice({
  * Hook for querying the current location. Will be undefined if not currently
  * available.
  */
-export const useLocation = (): Coordinate | undefined =>
-  useAppSelector((state) =>
-    state.location.status.type === "active"
-      ? state.location.status.location
-      : undefined,
+export const useLocation = (): Query<Coordinate> =>
+  useAppSelector((state) => {
+    switch (state.location.status.type) {
+      case "active":
+        return success(state.location.status.location);
+      case "inactive":
+        return loading();
+      case "initializing":
+        return loading();
+      case "not_granted":
+        return error("Not granted");
+      case "error":
+        return error("Unknown error");
+    }
+  });
+
+export interface Closest<T> {
+  value: T;
+  distance: number;
+}
+
+export const useClosest = <T extends Coordinate>(
+  of: T[]
+): Query<Closest<T>> => {
+  const location = useLocation();
+  if (!location.isSuccess) {
+    return location;
+  }
+
+  const closest = of.reduce<Closest<T> | undefined>(
+    (acc: Closest<T> | undefined, cur: T) => {
+      const distance = Math.sqrt(
+        Math.pow(cur.latitude - location.data.latitude, 2) +
+          Math.pow(cur.longitude - location.data.longitude, 2)
+      );
+      if (acc === undefined || distance < acc.distance) {
+        return { value: cur, distance };
+      }
+      return acc;
+    },
+    undefined
   );
 
-/**
- * Hook for querying the current location status.
- */
-export const useLocationStatus = (): LocationStatus =>
-  useAppSelector((state) => state.location.status);
+  if (closest === undefined) {
+    return error("No closest found");
+  }
+
+  return success(closest);
+};
+
+export const useDistance = <T extends Coordinate>(at: T): Query<number> => {
+  const location = useLocation();
+  if (!location.isSuccess) {
+    return location;
+  }
+
+  const distance = Math.sqrt(
+    Math.pow(at.latitude - location.data.latitude, 2) +
+      Math.pow(at.longitude - location.data.longitude, 2)
+  );
+
+  return success(distance);
+};
 
 export const { updateLocationStatus } = locationSlice.actions;
 

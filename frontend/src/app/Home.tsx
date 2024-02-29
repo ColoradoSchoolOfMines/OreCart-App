@@ -20,6 +20,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../common/components/FloatingButton";
+import Sheet from "../common/components/Sheet";
 import { type InnerParamList, type OuterParamList } from "../common/navTypes";
 import Color from "../common/style/color";
 import LayoutStyle from "../common/style/layout";
@@ -27,7 +28,6 @@ import SpacingStyle from "../common/style/spacing";
 import { LandingScreen } from "../features/landing/LandingScreen";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
-import Sheet from "../features/navigation/Sheet";
 import { RouteScreen } from "../features/routes/RouteScreen";
 import { StopScreen } from "../features/stops/StopScreen";
 
