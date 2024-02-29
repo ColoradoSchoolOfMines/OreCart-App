@@ -180,7 +180,9 @@ async def test_update_alert(mock_route_args, mock_alert):
     )
 
     # Act
-    response = await update_alert(mock_route_args.req, mock_alert.id, new_alert_model, User())
+    response = await update_alert(
+        mock_route_args.req, mock_alert.id, new_alert_model, User()
+    )
 
     # Assert
     assert response == {"message": "OK"}
