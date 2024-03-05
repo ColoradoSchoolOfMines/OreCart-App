@@ -216,45 +216,56 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
 
     # Check that the timestamp is the most recent one for the van. This prevents
     # updates from being sent out of order.
-    van_state = req.app.state.van_tracker.get_van(van_guid)
-    if van_state is not None and timestamp < van_state.location.timestamp:
-        raise HardwareHTTPException(
-            status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
-        )
-
-    # The van may be starting up for the first time, in which we need to initialize it's
-    # cache entry and stop list. It's better to do this once rather than coupling it with
-    # push_location due to the very expensive stop query we have to do.
-    if van_guid not in req.app.state.van_tracker:
-        with req.app.state.db.session() as session:
-            # Need to find the likely list of stops this van will go on. It's assumed that
-            # this will only change between van activations, so we can query once and then
-            # cache this list.
-            stops = (
-                session.query(Stop)
-                .join(RouteStop, Stop.id == RouteStop.stop_id)
-                # Make sure all stops will be in order since that's critical for the time estimate
-                .order_by(RouteStop.position)
-                .join(Van, Van.route_id == RouteStop.route_id)
-                .filter(Van.guid == van_guid)
-                # Ignore inactive stops we won't be going to and thus don't need to estimate times for
-                .filter(Stop.active == True)
-                .all()
+    with req.app.state.db.session() as session:
+        van = session.query(Van).filter_by(guid=van_guid).first()
+        van_state = req.app.state.van_tracker.get_van(van.id)
+        if van_state is not None and timestamp < van_state.location.timestamp:
+            raise HardwareHTTPException(
+                status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
             )
 
-            if not stops:
-                # No stops implies a van that does not exist
-                raise HardwareHTTPException(
-                    status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
+        # The van may be starting up for the first time, in which we need to initialize it's
+        # cache entry and stop list. It's better to do this once rather than coupling it with
+        # push_location due to the very expensive stop query we have to do.
+        if van.id not in req.app.state.van_tracker:
+            with req.app.state.db.session() as session:
+                # Need to find the likely list of stops this van will go on. It's assumed that
+                # this will only change between van activations, so we can query once and then
+                # cache this list.
+                stops = (
+                    session.query(Stop)
+                    .join(RouteStop, Stop.id == RouteStop.stop_id)
+                    # Make sure all stops will be in order since that's critical for the time estimate
+                    .order_by(RouteStop.position)
+                    .join(Van, Van.route_id == RouteStop.route_id)
+                    .filter(Van.guid == van_guid)
+                    # Ignore inactive stops we won't be going to and thus don't need to estimate times for
+                    .filter(Stop.active == True)
+                    .all()
                 )
 
-            req.app.state.van_tracker.init_van(van_guid, stops)
+                if not stops:
+                    # No stops implies a van that does not exist
+                    raise HardwareHTTPException(
+                        status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
+                    )
 
-    req.app.state.van_tracker.push_location(
-        van_guid,
-        Location(
-            timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon)
-        ),
-    )
+                req.app.state.van_tracker.init_van(van.id, stops)
+
+
+    with req.app.state.db.session() as session:
+        van = session.query(Van).filter_by(guid=van_guid).first()
+        if van is None:
+            raise HardwareHTTPException(
+                status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
+            )
+
+        # Update the van's location
+        req.app.state.van_tracker.push_location(
+            van.id,
+            Location(
+                timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon)
+            ),
+        )
 
     return HardwareOKResponse()
