@@ -9,18 +9,16 @@ class Van(Base):
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, nullable=False
     )
-    route_id: Mapped[int] = mapped_column(nullable=False)
-    wheelchair: Mapped[bool] = mapped_column(nullable=False)
+    route_id: Mapped[int] = mapped_column(nullable=True)
+    guid: Mapped[str] = mapped_column(nullable=False)
 
     def __eq__(self, __value: object) -> bool:
         # Exclude ID since it'll always differ, only compare on content
         return (
             isinstance(__value, Van)
             and self.route_id == __value.route_id
-            and self.wheelchair == __value.wheelchair
+            and self.guid == __value.guid
         )
 
     def __repr__(self) -> str:
-        return (
-            f"<Van id={self.id} route_id={self.route_id} wheelchair={self.wheelchair}>"
-        )
+        return f"<Van id={self.id} route_id={self.route_id} guid={self.guid}>"

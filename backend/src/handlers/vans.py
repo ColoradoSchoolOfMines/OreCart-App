@@ -25,7 +25,7 @@ class VanModel(BaseModel):
     """
 
     route_id: int
-    wheelchair: bool
+    guid: str
 
 
 class VanLocation(BaseModel):
@@ -54,11 +54,11 @@ def get_vans(
     with req.app.state.db.session() as session:
         vans: List[Van] = session.query(Van).all()
 
-        resp: List[Dict[str, Optional[Union[int, float, bool]]]] = [
+        resp: List[Dict[str, Optional[Union[int, float, str]]]] = [
             {
                 "id": van.id,
                 "routeId": van.route_id,
-                "wheelchair": van.wheelchair,
+                "guid": van.guid,
             }
             for van in vans
         ]
@@ -83,48 +83,9 @@ def get_van(
         resp = {
             "id": van_id,
             "routeId": van.route_id,
-            "wheelchair": van.wheelchair,
         }
 
     return JSONResponse(content=resp)
-
-
-@router.post("/")
-def post_van(req: Request, van_model: VanModel) -> JSONResponse:
-    with req.app.state.db.session() as session:
-        van = Van(route_id=van_model.route_id, wheelchair=van_model.wheelchair)
-
-        session.add(van)
-        session.commit()
-
-    return JSONResponse(content={"message": "OK"})
-
-
-@router.put("/{van_id}")
-def put_van(req: Request, van_id: int, van_model: VanModel) -> JSONResponse:
-    with req.app.state.db.session() as session:
-        van: Van = session.query(Van).filter_by(id=van_id).first()
-        if van is None:
-            return JSONResponse(content={"message": "Van not found"}, status_code=404)
-
-        van.route_id = van_model.route_id
-        van.wheelchair = van_model.wheelchair
-
-        session.commit()
-
-    return JSONResponse(content={"message": "OK"})
-
-
-@router.delete("/{van_id}")
-def delete_van(req: Request, van_id: int) -> JSONResponse:
-    with req.app.state.db.session() as session:
-        van: Van = session.query(Van).filter_by(id=van_id).first()
-        if van is None:
-            return JSONResponse(content={"message": "Van not found"}, status_code=404)
-        session.query(Van).filter_by(id=van_id).delete()
-        session.commit()
-
-    return JSONResponse(content={"message": "OK"})
 
 
 @router.get("/location/", response_class=Response)
@@ -205,8 +166,33 @@ def get_location_for_van(
     }
 
 
-@router.post("/location/{van_id}")
-async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
+@router.post("/routeselect/{van_guid}")
+async def post_routeselect(req: Request, van_guid: str) -> HardwareOKResponse:
+    body = await req.body()
+    route_id = struct.unpack("<i", body)
+
+    with req.app.state.db.session() as session:
+        van = session.query(Van).filter_by(guid=van_guid).first()
+        if van is None:
+            new_van = Van(guid=van_guid, route_id=route_id)
+            session.add(new_van)
+            session.commit()
+        else:
+            van.route_id = route_id
+            session.commit()
+
+    return HardwareOKResponse()
+
+
+@router.post("/location/{van_guid}")
+async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
+    with req.app.state.db.session() as session:
+        van = session.query(Van).filter_by(guid=van_guid).first()
+        if van is None:
+            new_van = Van(guid=van_guid)
+            session.add(new_van)
+            session.commit()
+
     # byte body: long long for timestamp, double for lat, double for lon
     body = await req.body()
     timestamp_ms, lat, lon = struct.unpack("<Qdd", body)
@@ -230,7 +216,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
 
     # Check that the timestamp is the most recent one for the van. This prevents
     # updates from being sent out of order.
-    van_state = req.app.state.van_tracker.get_van(van_id)
+    van_state = req.app.state.van_tracker.get_van(van_guid)
     if van_state is not None and timestamp < van_state.location.timestamp:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
@@ -239,7 +225,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
     # The van may be starting up for the first time, in which we need to initialize it's
     # cache entry and stop list. It's better to do this once rather than coupling it with
     # push_location due to the very expensive stop query we have to do.
-    if van_id not in req.app.state.van_tracker:
+    if van_guid not in req.app.state.van_tracker:
         with req.app.state.db.session() as session:
             # Need to find the likely list of stops this van will go on. It's assumed that
             # this will only change between van activations, so we can query once and then
@@ -250,7 +236,7 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
                 # Make sure all stops will be in order since that's critical for the time estimate
                 .order_by(RouteStop.position)
                 .join(Van, Van.route_id == RouteStop.route_id)
-                .filter(Van.id == van_id)
+                .filter(Van.guid == van_guid)
                 # Ignore inactive stops we won't be going to and thus don't need to estimate times for
                 .filter(Stop.active == True)
                 .all()
@@ -262,10 +248,10 @@ async def post_location(req: Request, van_id: int) -> HardwareOKResponse:
                     status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
                 )
 
-            req.app.state.van_tracker.init_van(van_id, stops)
+            req.app.state.van_tracker.init_van(van_guid, stops)
 
     req.app.state.van_tracker.push_location(
-        van_id,
+        van_guid,
         Location(
             timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon)
         ),

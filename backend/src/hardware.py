@@ -2,6 +2,7 @@
 Defines middleware and response classes to minimize data use when communicating with
 hardware components.
 """
+
 import struct
 from enum import Enum
 
@@ -39,6 +40,8 @@ class HardwareErrorCode(Enum):
     VAN_NOT_ACTIVE = 2
     TIMESTAMP_NOT_MOST_RECENT = 3
     VAN_DOESNT_EXIST = 4
+    TOO_MANY_ROUTES = 5
+    ROUTE_NAME_TOO_LONG = 6
 
 
 class HardwareHTTPException(Exception):
