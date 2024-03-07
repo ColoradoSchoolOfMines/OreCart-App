@@ -26,6 +26,7 @@ import {
 import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
 
 import { type BasicRoute, type ExtendedRoute } from "./routesSlice";
+import { Oswald_600SemiBold } from "@expo-google-fonts/dev";
 
 interface RouteItemProps {
   mode: "basic" | "extended";
@@ -60,7 +61,7 @@ export const RouteItem = ({
     >
       <View style={styles.innerContainer}>
         <View style={styles.routeInfoContainer}>
-          <Text style={[styles.routeName, routeNameColorStyle]}>
+            <Text style={[styles.routeName, routeNameColorStyle, {fontFamily: "Oswald_600SemiBold"}]}>
             {route.name}
           </Text>
           {route.isActive ? (

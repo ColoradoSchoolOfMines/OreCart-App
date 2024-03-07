@@ -5,6 +5,7 @@ import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { Provider } from "react-redux";
+import { useCallback } from "react";
 
 import Home from "./app/Home";
 import store from "./app/store";
@@ -15,6 +16,9 @@ import { ADARequestScreen } from "./features/ada/ADARequestScreen";
 import { AlertScreen } from "./features/alert/AlertScreen";
 import { BugReportScreen } from "./features/report/BugReportScreen";
 import { SettingsScreen } from "./features/settings/SettingsScreen";
+import { useFonts } from "expo-font";
+import { Oswald_600SemiBold, RobotoMono_400Regular, OpenSans_400Regular } from "@expo-google-fonts/dev";
+import * as SplashScreen from "expo-splash-screen";
 
 // -----
 // DO NOT PUT ANY SUBSTANTIAL UI OR LOGIC INTO THIS FILE. ONLY INCLUDE SYSTEM CONFIGURATION.
@@ -27,11 +31,31 @@ if (Platform.OS === "android") {
 }
 
 const Stack = createStackNavigator<OuterParamList>();
+SplashScreen.preventAutoHideAsync();
+const App = (): React.JSX.Element | null => {
 
-const App = (): React.JSX.Element => (
+  let [fontsLoaded] = useFonts({
+    Oswald_600SemiBold,
+    RobotoMono_400Regular,
+    OpenSans_400Regular,
+  });
+
+  const onLayoutRootView = useCallback(async () => {
+    if (fontsLoaded) {
+      await SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null;
+  }
+
+  return(
   <Provider store={store}>
     <SafeAreaProvider style={LayoutStyle.fill}>
-      <View style={LayoutStyle.fill}>
+      <View 
+      style={LayoutStyle.fill}
+      onLayout={onLayoutRootView}>
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{
@@ -78,6 +102,7 @@ const App = (): React.JSX.Element => (
       </View>
     </SafeAreaProvider>
   </Provider>
-);
+  );
+};
 
 export default App;
