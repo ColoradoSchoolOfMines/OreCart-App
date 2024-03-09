@@ -252,7 +252,6 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
 
                 req.app.state.van_tracker.init_van(van.id, stops)
 
-
     with req.app.state.db.session() as session:
         van = session.query(Van).filter_by(guid=van_guid).first()
         if van is None:
