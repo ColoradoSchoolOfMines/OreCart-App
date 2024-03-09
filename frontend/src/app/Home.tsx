@@ -1,10 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { type RouteProp, type NavigationProp } from "@react-navigation/core";
+import { type NavigationProp, type RouteProp } from "@react-navigation/core";
 import {
   CardStyleInterpolators,
   createStackNavigator,
+  type StackNavigationProp,
 } from "@react-navigation/stack";
-import { type StackNavigationProp } from "@react-navigation/stack";
 import Constants from "expo-constants";
 import React, { useState } from "react";
 import {
