@@ -24,14 +24,13 @@ from starlette.responses import Response
 router = APIRouter(prefix="/vans", tags=["vans"])
 
 
-@router.websocket("/location/subscribe")
+@router.websocket("/v2/location/subscribe")
 async def subscribe_location(websocket: WebSocket) -> None:
     await websocket.accept()
     while True:
         # Check for any sent text, but don't block waiting for text
         try:
-            route_filter = await websocket.receive_text()
-            route_filter = json.loads(route_filter)
+            route_filter: list[int] = json.loads(await websocket.receive_text())
         except:
             # If the websocket is closed, we'll get an exception here
             break
@@ -73,7 +72,7 @@ async def subscribe_location(websocket: WebSocket) -> None:
     await websocket.close()
 
 
-@router.websocket("/arrivals/subscribe")
+@router.websocket("/v2/arrivals/subscribe")
 async def subscribe_arrivals(websocket: WebSocket) -> None:
     await websocket.accept()
     while True:
@@ -134,14 +133,10 @@ async def subscribe_arrivals(websocket: WebSocket) -> None:
                             )
                             if location is not None:
                                 current_distance += _distance_meters(
-                                    Coordinate(
-                                        latitude=location.lat,
-                                        longitude=location.lon,
-                                    ),
-                                    Coordinate(
-                                        latitude=current_stop.lat,
-                                        longitude=current_stop.lon,
-                                    ),
+                                    location.lat,
+                                    location.lon,
+                                    current_stop.lat,
+                                    current_stop.lon,
                                 )
                                 stop_arrivals_json[route_id] = (
                                     current_distance / AVERAGE_VAN_SPEED_MPS
@@ -151,19 +146,13 @@ async def subscribe_arrivals(websocket: WebSocket) -> None:
                         last_stop = current_stop
                         current_stop = stops[stop_index]
                         current_distance += _distance_meters(
-                            Coordinate(
-                                latitude=last_stop.lat,
-                                longitude=last_stop.lon,
-                            ),
-                            Coordinate(
-                                latitude=current_stop.lat,
-                                longitude=current_stop.lon,
-                            ),
+                            last_stop.lat,
+                            last_stop.lon,
+                            current_stop.lat,
+                            current_stop.lon,
                         )
-                if not stop_arrivals_json:
-                    continue
-                arrivals_json[stop_id] = stop_arrivals_json
-
+                if stop_arrivals_json:
+                    arrivals_json[stop_id] = stop_arrivals_json
     await websocket.close()
 
 
@@ -232,6 +221,14 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             raise HardwareHTTPException(
                 status_code=400, error_code=HardwareErrorCode.CREATE_NEW_SESSION
             )
+
+        # Add location to session
+        new_location = VanLocation(
+            session_id=tracker_session.id, timestamp=timestamp, lat=lat, lon=lon
+        )
+        session.add(new_location)
+        session.commit()
+
         stops = (
             session.query(RouteStop)
             .filter(RouteStop.route_id == tracker_session.route_id)
@@ -268,8 +265,10 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             # van locations is consistently within this stop's radius.
             for location in locations:
                 stop_distance_meters = _distance_meters(
-                    Coordinate(latitude=location.lat, longitude=location.lon),
-                    Coordinate(latitude=stop.lat, longitude=stop.lon),
+                    location.lat,
+                    location.lon,
+                    stop.lat,
+                    stop.lon,
                 )
                 if stop_distance_meters < THRESHOLD_RADIUS_M:
                     current_subset.append(location.timestamp)
@@ -317,13 +316,13 @@ class Coordinate(BaseModel):
     longitude: float
 
 
-def _distance_meters(a: Coordinate, b: Coordinate) -> float:
-    dlat = b.latitude - a.latitude
-    dlon = b.longitude - a.longitude
+def _distance_meters(alat: float, alon: float, blat: float, blon: float) -> float:
+    dlat = blat - alat
+    dlon = blat - alat
 
     # Simplified distance calculation that assumes the earth is a sphere. This is good enough for our purposes.
     # https://stackoverflow.com/a/39540339
     dlatkm = dlat * KM_LAT_RATIO
-    dlonkm = dlon * EARTH_CIRCUFERENCE_KM * cos(radians(a.latitude)) / DEGREES_IN_CIRCLE
+    dlonkm = dlon * EARTH_CIRCUFERENCE_KM * cos(radians(alat)) / DEGREES_IN_CIRCLE
 
     return sqrt(dlatkm**2 + dlonkm**2) * 1000
