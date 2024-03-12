@@ -1,15 +1,10 @@
-import asyncio
-import itertools
-import json
 import struct
-import time
 from datetime import datetime, timedelta, timezone
 from math import cos, radians, sqrt
-from typing import Annotated, Dict, List, Optional, Set, Union
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.route import Route
@@ -27,6 +22,7 @@ FIELD_GUID = "guid"
 FIELD_LATITUDE = "latitude"
 FIELD_LONGITUDE = "longitude"
 FIELD_COLOR = "color"
+FIELD_ROUTE_IDS = "routeIds"
 INCLUDES = {
     FIELD_COLOR,
 }
@@ -41,18 +37,18 @@ DEGREES_IN_CIRCLE = 360  # degrees
 
 
 @router.get("/v2")
-async def get_van_locations(
+async def get_vans(
     request: Request,
-    route_filter: Annotated[list[int] | None, Query()] = None,
+    routeIds: Annotated[list[int] | None, Query()] = None,
     include: Annotated[list[str] | None, Query()] = None,
 ) -> list[dict[str, float | str]]:
     include_set = process_include(include, INCLUDES)
     with request.app.state.db.session() as session:
-        return query_vans(session, route_filter, include_set)
+        return query_vans(session, routeIds, include_set)
 
 
 @router.get("/v2/{van_guid}")
-async def get_van_location(
+async def get_van(
     request: Request,
     van_guid: str,
     include: Annotated[list[str] | None, Query()] = None,
@@ -62,39 +58,47 @@ async def get_van_location(
         return query_van(session, van_guid, include_set)
 
 
+class VanSubscriptionFilterModel(BaseModel):
+    by: str
+    guid: Optional[str]
+    routeIds: Optional[list[int]]
+
+
+class VanSubscriptionQueryModel(BaseModel):
+    include: list[str]
+    filter: VanSubscriptionFilterModel
+
+
 @router.websocket("/v2/subscribe")
-async def subscribe_vans(
-    websocket: WebSocket,
-    include: Annotated[list[str] | None, Query()] = None,
-) -> None:
-    include_set = process_include(include, INCLUDES)
+async def subscribe_vans(websocket: WebSocket) -> None:
     await websocket.accept()
     while True:
         try:
             # Given the dynamic nature of subscribing, we actually overload the message
             # sent such that you can specify a vanguid or a route filter rather than
             # having 2 separate http routes.
-            query: str | list[int] = await websocket.receive_json()
+            query: VanSubscriptionQueryModel = await websocket.receive_json()
         except:
             break
 
+        include_set = process_include(query.include, INCLUDES)
         with websocket.app.state.db.session() as session:
-            message: list[dict[str, float | str]] = []
-            if isinstance(query, str):
-                # Easier for the client to conform to the same list response format.
-                message = [query_van(session, query, include_set)]
-            elif isinstance(query, list) and all(
-                isinstance(item, int) for item in query
+            if query.filter.by == FIELD_GUID and query.filter.guid is not None:
+                message = [query_van(session, query.filter.guid, include_set)]
+            elif (
+                query.filter.by == FIELD_ROUTE_IDS and query.filter.routeIds is not None
             ):
-                message = query_vans(session, query, include_set)
+                message = query_vans(session, query.filter.routeIds, include_set)
             else:
                 message = []
             await websocket.send_json(message)
     await websocket.close()
 
 
-def query_van(session, guid: str, include_set) -> dict[str, float | str]:
-    tracker_session = query_active_session(session, VanTrackerSession.van_guid == guid)
+def query_van(session, guid: str, include_set: set[str]) -> dict[str, float | str]:
+    tracker_session = query_active_session(
+        session, VanTrackerSession.van_guid == guid
+    ).first()
     if tracker_session is None:
         raise HTTPException(status_code=404, detail="Van not found")
     return base_query_van(session, tracker_session, include_set)
@@ -111,7 +115,7 @@ def query_vans(
         )
     else:
         tracker_query = query_active_session(session)
-    tracker_sessions = tracker_query.first()
+    tracker_sessions = tracker_query.all()
     locations_json = []
     for tracker_session in tracker_sessions:
         locations_json.append(base_query_van(session, tracker_session, include_set))
@@ -171,7 +175,14 @@ def query_arrivals(
     return arrivals_json
 
 
-def calculate_van_distance(session, stops, stop_index, route_id):
+def index_of_first(list: list, block):
+    return next(
+        (index for index, item in enumerate(list) if block(item)),
+        None,
+    )
+
+
+def calculate_van_distance(session, stops: list[Stop], stop_index: int, route_id: int):
     current_distance = 0.0
     current_stop = stops[stop_index]
     while stop_index > 0:
@@ -253,14 +264,8 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
 
     now = datetime.now(timezone.utc)
     with req.app.state.db.session() as session:
-        tracker_session = (
-            session.query(VanTrackerSession)
-            .filter(
-                VanTrackerSession.van_guid == van_guid,
-                VanTrackerSession.dead == False,
-                VanTrackerSession.created_at > now - timedelta(seconds=300),
-            )
-            .first()
+        tracker_session = query_active_session(
+            session, VanTrackerSession.van_guid == van_guid
         )
         if tracker_session is None:
             raise HardwareHTTPException(
@@ -363,13 +368,6 @@ def query_most_recent_location(session, tracker_session: VanTrackerSession):
         .filter_by(session_id=tracker_session.id)
         .order_by(VanLocation.created_at.desc())
         .first()
-    )
-
-
-def index_of_first(list: list, block):
-    return next(
-        (index for index, item in enumerate(list) if block(item)),
-        None,
     )
 
 
