@@ -5,7 +5,7 @@ import struct
 import time
 from datetime import datetime, timedelta, timezone
 from math import cos, radians, sqrt
-from typing import Dict, List, Optional, Set, Union
+from typing import Annotated, Dict, List, Optional, Set, Union
 
 from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
@@ -23,137 +23,182 @@ from starlette.responses import Response
 
 router = APIRouter(prefix="/vans", tags=["vans"])
 
+FIELD_GUID = "guid"
+FIELD_LATITUDE = "latitude"
+FIELD_LONGITUDE = "longitude"
+FIELD_COLOR = "color"
+INCLUDES = {
+    FIELD_COLOR,
+}
 
-@router.websocket("/v2/location/subscribe")
-async def subscribe_location(websocket: WebSocket) -> None:
+THRESHOLD_RADIUS_M = 30.48  # 100 ft
+THRESHOLD_TIME = timedelta(seconds=30)
+AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
+
+KM_LAT_RATIO = 111.32  # km/degree latitude
+EARTH_CIRCUFERENCE_KM = 40075  # km
+DEGREES_IN_CIRCLE = 360  # degrees
+
+
+@router.get("/v2")
+async def get_van_locations(
+    request: Request,
+    route_filter: Annotated[list[int] | None, Query()] = None,
+    include: Annotated[list[str] | None, Query()] = None,
+) -> list[dict[str, float | str]]:
+    include_set = process_include(include, INCLUDES)
+    with request.app.state.db.session() as session:
+        return query_vans(session, route_filter, include_set)
+
+
+@router.get("/v2/{van_guid}")
+async def get_van_location(
+    request: Request,
+    van_guid: str,
+    include: Annotated[list[str] | None, Query()] = None,
+) -> dict[str, float | str]:
+    include_set = process_include(include, INCLUDES)
+    with request.app.state.db.session() as session:
+        return query_van(session, van_guid, include_set)
+
+
+@router.websocket("/v2/subscribe")
+async def subscribe_vans(
+    websocket: WebSocket,
+    include: Annotated[list[str] | None, Query()] = None,
+) -> None:
+    include_set = process_include(include, INCLUDES)
     await websocket.accept()
     while True:
-        # Check for any sent text, but don't block waiting for text
         try:
-            route_filter: list[int] = json.loads(await websocket.receive_text())
+            # Given the dynamic nature of subscribing, we actually overload the message
+            # sent such that you can specify a vanguid or a route filter rather than
+            # having 2 separate http routes.
+            query: str | list[int] = await websocket.receive_json()
         except:
-            # If the websocket is closed, we'll get an exception here
             break
 
-        # Get all tracker sessions
-        now = datetime.now(timezone.utc)
         with websocket.app.state.db.session() as session:
-            tracker_sessions = (
-                session.query(VanTrackerSession)
-                .filter(
-                    VanTrackerSession.dead == False,
-                    VanTrackerSession.created_at > now - timedelta(seconds=300),
-                    VanTrackerSession.route_id._in(route_filter),
-                )
-                .all()
-            )
-            locations_json = []
-            for tracker_session in tracker_sessions:
-                location = (
-                    session.query(VanLocation)
-                    .filter(
-                        VanLocation.session_id == tracker_session.id,
-                    )
-                    .order_by(VanLocation.created_at.desc())
-                )
-                route = (
-                    session.query(Route)
-                    .filter(Route.id == tracker_session.route_id)
-                    .first()
-                )
-                locations_json.append(
-                    {
-                        "latitude": location.lat,
-                        "longitude": location.lon,
-                        "color": route.color,
-                    }
-                )
-            await websocket.send_json(locations_json)
+            message: list[dict[str, float | str]] = []
+            if isinstance(query, str):
+                # Easier for the client to conform to the same list response format.
+                message = [query_van(session, query, include_set)]
+            elif isinstance(query, list) and all(
+                isinstance(item, int) for item in query
+            ):
+                message = query_vans(session, query, include_set)
+            else:
+                message = []
+            await websocket.send_json(message)
     await websocket.close()
+
+
+def query_van(session, guid: str, include_set) -> dict[str, float | str]:
+    tracker_session = query_active_session(session, VanTrackerSession.van_guid == guid)
+    if tracker_session is None:
+        raise HTTPException(status_code=404, detail="Van not found")
+    return base_query_van(session, tracker_session, include_set)
+
+
+def query_vans(
+    session,
+    route_filter: Optional[list[int]],
+    include_set: set[str],
+) -> list[dict[str, float | str]]:
+    if route_filter is not None:
+        tracker_query = query_active_session(
+            session, VanTrackerSession.route_id.in_(route_filter)
+        )
+    else:
+        tracker_query = query_active_session(session)
+    tracker_sessions = tracker_query.first()
+    locations_json = []
+    for tracker_session in tracker_sessions:
+        locations_json.append(base_query_van(session, tracker_session, include_set))
+    return locations_json
+
+
+def base_query_van(session, tracker_session: VanTrackerSession, include_set: set[str]):
+    location = query_most_recent_location(session, tracker_session)
+    van_json = {
+        FIELD_GUID: tracker_session.van_guid,
+        FIELD_LATITUDE: location.lat,
+        FIELD_LONGITUDE: location.lon,
+    }
+    if FIELD_COLOR in include_set:
+        route = (
+            session.query(Route).filter(Route.id == tracker_session.route_id).first()
+        )
+        van_json[FIELD_COLOR] = route.color
+    return van_json
 
 
 @router.websocket("/v2/arrivals/subscribe")
 async def subscribe_arrivals(websocket: WebSocket) -> None:
     await websocket.accept()
     while True:
-        # Check for any sent text, but don't block waiting for text
         try:
-            stop_filter: dict[int, list[int]] = json.loads(
-                await websocket.receive_text()
-            )
+            stop_filter: dict[int, list[int]] = await websocket.receive_json()
         except:
-            # If the websocket is closed, we'll get an exception here
             break
-        now = datetime.now(timezone.utc)
         with websocket.app.state.db.session() as session:
-            arrivals_json = {}
-            for stop_id in stop_filter:
-                stop_arrivals_json = {}
-                for route_id in stop_filter[stop_id]:
-                    stops = (
-                        session.query(RouteStop)
-                        .filter(
-                            RouteStop.stop_id == stop_id, RouteStop.route_id == route_id
-                        )
-                        .order_by(RouteStop.position)
-                        .all()
-                    )
-                    if not stops:
-                        continue
-                    stop_index = next(
-                        (
-                            index
-                            for index, stop in enumerate(stops)
-                            if stop.stop_id == stop_id
-                        ),
-                        None,
-                    )
-                    if stop_index is None:
-                        continue
-                    current_distance = 0.0
-                    current_stop = stops[stop_index]
-                    while stop_index > 0:
-                        arriving_session = (
-                            session.query(VanTrackerSession)
-                            .filter(
-                                VanTrackerSession.stop_index == stop_index,
-                                VanTrackerSession.route_id == route_id,
-                                VanTrackerSession.dead == False,
-                                VanTrackerSession.created_at
-                                > now - timedelta(hours=12),
-                            )
-                            .first()
-                        )
-                        if arriving_session is not None:
-                            location = (
-                                session.query(VanLocation)
-                                .filter(VanLocation.session_id == arriving_session.id)
-                                .order_by(VanLocation.created_at.desc())
-                                .first()
-                            )
-                            if location is not None:
-                                current_distance += _distance_meters(
-                                    location.lat,
-                                    location.lon,
-                                    current_stop.lat,
-                                    current_stop.lon,
-                                )
-                                stop_arrivals_json[route_id] = (
-                                    current_distance / AVERAGE_VAN_SPEED_MPS
-                                )
-                                break
-                        stop_index -= 1
-                        last_stop = current_stop
-                        current_stop = stops[stop_index]
-                        current_distance += _distance_meters(
-                            last_stop.lat,
-                            last_stop.lon,
-                            current_stop.lat,
-                            current_stop.lon,
-                        )
-                if stop_arrivals_json:
-                    arrivals_json[stop_id] = stop_arrivals_json
+            await websocket.send_json(query_arrivals(session, stop_filter))
     await websocket.close()
+
+
+def query_arrivals(
+    session, stop_filter: dict[int, list[int]]
+) -> dict[int, dict[int, int]]:
+    arrivals_json: dict[int, dict[int, int]] = {}
+    for stop_id in stop_filter:
+        stop_arrivals_json: dict[int, int] = {}
+        for route_id in stop_filter[stop_id]:
+            stops = (
+                session.query(RouteStop)
+                .filter(RouteStop.stop_id == stop_id, RouteStop.route_id == route_id)
+                .order_by(RouteStop.position)
+                .all()
+            )
+            if not stops:
+                continue
+            stop_index = index_of_first(stops, lambda stop: stop.id == stop_id)
+            if stop_index is None:
+                continue
+            distance_m = calculate_van_distance(session, stops, stop_index, route_id)
+            stop_arrivals_json[route_id] = distance_m / AVERAGE_VAN_SPEED_MPS
+        if stop_arrivals_json:
+            arrivals_json[stop_id] = stop_arrivals_json
+    return arrivals_json
+
+
+def calculate_van_distance(session, stops, stop_index, route_id):
+    current_distance = 0.0
+    current_stop = stops[stop_index]
+    while stop_index > 0:
+        arriving_session = query_active_session(
+            session,
+            VanTrackerSession.stop_index == stop_index,
+            VanTrackerSession.route_id == route_id,
+        )
+        if arriving_session is not None:
+            location = query_most_recent_location(session, arriving_session)
+            if location is not None:
+                current_distance += distance_meters(
+                    location.lat,
+                    location.lon,
+                    current_stop.lat,
+                    current_stop.lon,
+                )
+                return current_distance
+        stop_index -= 1
+        last_stop = current_stop
+        current_stop = stops[stop_index]
+        current_distance += distance_meters(
+            last_stop.lat,
+            last_stop.lon,
+            current_stop.lat,
+            current_stop.lon,
+        )
 
 
 @router.post("/routeselect/{van_guid}")  # Called routeselect for backwards compat
@@ -264,7 +309,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
             # van locations is consistently within this stop's radius.
             for location in locations:
-                stop_distance_meters = _distance_meters(
+                stop_distance_meters = distance_meters(
                     location.lat,
                     location.lon,
                     stop.lat,
@@ -302,23 +347,35 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
     return HardwareOKResponse()
 
 
-THRESHOLD_RADIUS_M = 30.48  # 100 ft
-THRESHOLD_TIME = timedelta(seconds=30)
-AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
-
-KM_LAT_RATIO = 111.32  # km/degree latitude
-EARTH_CIRCUFERENCE_KM = 40075  # km
-DEGREES_IN_CIRCLE = 360  # degrees
-
-
-class Coordinate(BaseModel):
-    latitude: float
-    longitude: float
+def query_active_session(session, *filters):
+    now = datetime.now(timezone.utc)
+    query = session.query(VanTrackerSession).filter(
+        VanTrackerSession.dead == False,
+        VanTrackerSession.created_at > now - timedelta(hours=12),
+        *filters
+    )
+    return query
 
 
-def _distance_meters(alat: float, alon: float, blat: float, blon: float) -> float:
+def query_most_recent_location(session, tracker_session: VanTrackerSession):
+    return (
+        session.query(VanLocation)
+        .filter_by(session_id=tracker_session.id)
+        .order_by(VanLocation.created_at.desc())
+        .first()
+    )
+
+
+def index_of_first(list: list, block):
+    return next(
+        (index for index, item in enumerate(list) if block(item)),
+        None,
+    )
+
+
+def distance_meters(alat: float, alon: float, blat: float, blon: float) -> float:
     dlat = blat - alat
-    dlon = blat - alat
+    dlon = blon - alon
 
     # Simplified distance calculation that assumes the earth is a sphere. This is good enough for our purposes.
     # https://stackoverflow.com/a/39540339
