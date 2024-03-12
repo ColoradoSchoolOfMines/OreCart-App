@@ -1,7 +1,10 @@
 import asyncio
+import itertools
 import json
 import struct
+import time
 from datetime import datetime, timedelta, timezone
+from math import cos, radians, sqrt
 from typing import Dict, List, Optional, Set, Union
 
 from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
@@ -13,178 +16,30 @@ from src.model.route import Route
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.van import Van
+from src.model.van_location import VanLocation
+from src.model.van_tracker_session import VanTrackerSession
 from src.request import process_include
-from src.vantracking.coordinate import Coordinate
-from src.vantracking.location import Location
 from starlette.responses import Response
 
-
-class VanModel(BaseModel):
-    """
-    A model for the request body to make a new van or update a van
-    """
-
-    route_id: int
-    guid: str
+router = APIRouter(prefix="/vans", tags=["stops"])
 
 
-class VanLocation(BaseModel):
-    """
-    A model for the request body to make a new van or update a van
-    """
-
-    timestamp: datetime
-    latitude: float
-    longitude: float
-
-
-router = APIRouter(prefix="/vans", tags=["vans"])
-
-INCLUDE_LOCATION = "location"
-INCLUDES: Set[str] = {
-    INCLUDE_LOCATION,
-}
-
-
-@router.get("/")
-def get_vans(
-    req: Request, include: Union[List[str], None] = Query(default=None)
-) -> JSONResponse:
-    include_set = process_include(include=include, allowed=INCLUDES)
-    with req.app.state.db.session() as session:
-        vans: List[Van] = session.query(Van).order_by(Van.id).all()
-
-        last_id = vans[0].id if vans else None
-        resp: List[Dict[str, Optional[Union[int, float, str]]]] = []
-        for van in vans:
-            if last_id is not None:
-                gap = van.id - last_id
-                for i in range(1, gap):
-                    resp.append(
-                        {"id": last_id + i, "routeId": van.route_id, "guid": "16161616"}
-                    )
-            resp.append(
-                {
-                    "id": van.id,
-                    "routeId": van.route_id,
-                    "guid": van.guid,
-                }
-            )
-            last_id = van.id
-
-    return JSONResponse(content=resp)
-
-
-@router.get("/{van_id}")
-def get_van(
-    req: Request, van_id: int, include: Union[List[str], None] = Query(default=None)
-) -> JSONResponse:
-    include_set = process_include(include=include, allowed=INCLUDES)
-    with req.app.state.db.session() as session:
-        van: Van = session.query(Van).filter_by(id=van_id).first()
-        if van is None:
-            return JSONResponse(content={"message": "Van not found"}, status_code=404)
-
-        resp = {
-            "id": van_id,
-            "routeId": van.route_id,
-        }
-
-    return JSONResponse(content=resp)
-
-
-@router.get("/location/", response_class=Response)
-def get_locations(req: Request):
-    vans = get_all_van_ids(req)
-    return JSONResponse(content=get_location_for_vans(req, vans))
-
-
-@router.websocket("/location/subscribe/")
-async def subscribe_locations(websocket: WebSocket) -> None:
-    await websocket.accept()
-
-    vans = get_all_van_ids(websocket)
-    while True:
-        locations_json = get_location_for_vans(websocket, vans)
-        await websocket.send_json(locations_json)
-        await asyncio.sleep(2)
-
-
-@router.get("/location/{van_id}")
-def get_location(req: Request, van_id: int) -> JSONResponse:
-    if van_id not in req.app.state.van_locations:
-        raise HTTPException(detail="Van not found", status_code=404)
-
-    location_json = get_location_for_van(req, van_id)
-    return JSONResponse(content=location_json)
-
-
-@router.websocket("/location/{van_id}/subscribe")
-async def subscribe_location(websocket: WebSocket, van_id: int) -> None:
-    if van_id not in websocket.app.state.van_locations:
-        raise HTTPException(detail="Van not found", status_code=404)
-
-    await websocket.accept()
-
-    while True:
-        location_json = get_location_for_van(websocket, van_id)
-        await websocket.send_json(location_json)
-        await asyncio.sleep(2)
-
-
-def get_all_van_ids(req: Union[Request, WebSocket]) -> List[int]:
-    with req.app.state.db.session() as session:
-        return [van_id for (van_id,) in session.query(Van).with_entities(Van.id).all()]
-
-
-def get_location_for_vans(
-    req: Union[Request, WebSocket], van_ids: List[int]
-) -> Dict[int, dict[str, Union[str, int]]]:
-    locations_json: Dict[int, dict[str, Union[str, int]]] = {}
-    for van_id in van_ids:
-        state = req.app.state.van_tracker.get_van(van_id)
-        if state is None:
-            continue
-        locations_json[van_id] = {
-            "timestamp": int(state.location.timestamp.timestamp()),
-            "latitude": state.location.coordinate.latitude,
-            "longitude": state.location.coordinate.longitude,
-            "nextStopId": state.next_stop.id,
-            "secondsToNextStop": int(state.seconds_to_next_stop.total_seconds()),
-        }
-
-    return locations_json
-
-
-def get_location_for_van(
-    req: Union[Request, WebSocket], van_id: int
-) -> dict[str, Union[str, int]]:
-    state = req.app.state.van_tracker.get_van(van_id)
-    if state is None:
-        return {}
-    return {
-        "timestamp": int(state.location.timestamp.timestamp()),
-        "latitude": state.location.coordinate.latitude,
-        "longitude": state.location.coordinate.longitude,
-        "nextStopId": state.next_stop.id,
-        "secondsToNextStop": int(state.seconds_to_next_stop.total_seconds()),
-    }
-
-
-@router.post("/routeselect/{van_guid}")
-async def post_routeselect(req: Request, van_guid: str) -> HardwareOKResponse:
+@router.post("/routeselect/{van_guid}")  # Called routeselect for backwards compat
+async def begin_session(req: Request, van_guid: str) -> HardwareOKResponse:
     body = await req.body()
     route_id = struct.unpack("<i", body)
 
     with req.app.state.db.session() as session:
-        van = session.query(Van).filter_by(guid=van_guid).first()
-        if van is None:
-            new_van = Van(guid=van_guid, route_id=route_id)
-            session.add(new_van)
-            session.commit()
-        else:
-            van.route_id = route_id
-            session.commit()
+        van_tracker_session = (
+            session.query(VanTrackerSession).filter_by(van_guid=van_guid).first()
+        )
+        if van_tracker_session is not None:
+            van_tracker_session.dead = True
+        new_van_tracker_session = VanTrackerSession(
+            van_guid=van_guid, route_id=route_id
+        )
+        session.add(new_van_tracker_session)
+        session.commit()
 
     return HardwareOKResponse()
 
@@ -219,57 +74,113 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_IN_FUTURE
         )
 
-    # Check that the timestamp is the most recent one for the van. This prevents
-    # updates from being sent out of order.
+    now = datetime.now(timezone.utc)
     with req.app.state.db.session() as session:
-        van = session.query(Van).filter_by(guid=van_guid).first()
-        van_state = req.app.state.van_tracker.get_van(van.id)
-        if van_state is not None and timestamp < van_state.location.timestamp:
-            raise HardwareHTTPException(
-                status_code=400, error_code=HardwareErrorCode.TIMESTAMP_NOT_MOST_RECENT
+        tracker_session = (
+            session.query(VanTrackerSession)
+            .filter(
+                VanTrackerSession.van_guid == van_guid,
+                VanTrackerSession.dead == False,
+                VanTrackerSession.created_at > now - timedelta(seconds=300),
             )
-
-        # The van may be starting up for the first time, in which we need to initialize it's
-        # cache entry and stop list. It's better to do this once rather than coupling it with
-        # push_location due to the very expensive stop query we have to do.
-        if van.id not in req.app.state.van_tracker:
-            with req.app.state.db.session() as session:
-                # Need to find the likely list of stops this van will go on. It's assumed that
-                # this will only change between van activations, so we can query once and then
-                # cache this list.
-                stops = (
-                    session.query(Stop)
-                    .join(RouteStop, Stop.id == RouteStop.stop_id)
-                    # Make sure all stops will be in order since that's critical for the time estimate
-                    .order_by(RouteStop.position)
-                    .join(Van, Van.route_id == RouteStop.route_id)
-                    .filter(Van.guid == van_guid)
-                    # Ignore inactive stops we won't be going to and thus don't need to estimate times for
-                    .filter(Stop.active == True)
-                    .all()
-                )
-
-                if not stops:
-                    # No stops implies a van that does not exist
-                    raise HardwareHTTPException(
-                        status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
-                    )
-
-                req.app.state.van_tracker.init_van(van.id, stops)
-
-    with req.app.state.db.session() as session:
-        van = session.query(Van).filter_by(guid=van_guid).first()
-        if van is None:
+            .first()
+        )
+        if tracker_session is None:
             raise HardwareHTTPException(
-                status_code=400, error_code=HardwareErrorCode.VAN_DOESNT_EXIST
+                status_code=400, error_code=HardwareErrorCode.CREATE_NEW_SESSION
             )
-
-        # Update the van's location
-        req.app.state.van_tracker.push_location(
-            van.id,
-            Location(
-                timestamp=timestamp, coordinate=Coordinate(latitude=lat, longitude=lon)
-            ),
+        stops = (
+            session.query(RouteStop)
+            .filter(RouteStop.route_id == tracker_session.route_id)
+            .order_by(RouteStop.position)
+            .join(Stop, RouteStop.stop_id == Stop.id)
+            .all()
         )
 
+        # To find an accurate time estimate for a stop, we need to remove vans that are not arriving at a stop, either
+        # because they aren't arriving at the stop or because they have departed it. We achieve this currently by
+        # implementing a state machine that tracks the (guessed) current stop of each van. We can then use that to find
+        # the next logical stop and estimate the time to arrive to that.
+
+        # We want to consider all of the stops that are coming up for this van, as that allows to handle cases where a
+        # stop is erroneously skipped. Also make sure we include subsequent stops that wrap around. The wrap around slice
+        # needs to be bounded to 0 to prevent a negative index causing weird slicing behavior.
+        subsequent_stops = (
+            stops[tracker_session.stop_index + 1 :]
+            + stops[: max(tracker_session.stop_index - 1, 0)]
+        )
+        locations = (
+            session.query(VanLocation)
+            .filter(
+                VanLocation.session_id == tracker_session.id,
+                VanLocation.created_at > now - timedelta(seconds=300),
+            )
+            .order_by(VanLocation.created_at.desc())
+        )
+        for i, stop in enumerate(subsequent_stops):
+            longest_subset: list[datetime] = []
+            current_subset: list[datetime] = []
+
+            # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
+            # van locations is consistently within this stop's radius.
+            for location in locations:
+                stop_distance_meters = _distance_meters(
+                    Coordinate(latitude=location.lat, longitude=location.lon),
+                    Coordinate(latitude=stop.lat, longitude=stop.lon),
+                )
+                if stop_distance_meters < THRESHOLD_RADIUS_M:
+                    current_subset.append(location.timestamp)
+                else:
+                    if len(current_subset) > len(longest_subset):
+                        longest_subset = current_subset
+                    current_subset = []
+            if len(current_subset) > len(longest_subset):
+                longest_subset = current_subset
+
+            if longest_subset:
+                # A streak exists, find the overall duration that this van was within the stop's radius. Since locations
+                # are ordered from oldest to newest, we can just subtract the first and last timestamps.
+                duration = longest_subset[-1] - longest_subset[0]
+            else:
+                # No streak, so we weren't at the stop for any amount of time.
+                duration = timedelta(seconds=0)
+
+            if duration >= THRESHOLD_TIME:
+                # We were at this stop for long enough, move to it. Since the stops iterated through are relative to the
+                # current stop, we have to add the current stop index to the current index in the loop to get the actual
+                # stop index.
+                # Note: It's possible that the van was at another stop's radius for even longer, but this is not considered
+                # until real-world testing shows this edge case to be important.
+                tracker_session.stop_index = (tracker_session.stop_index + i + 1) % len(
+                    stops
+                )
+                session.commit()
+                break
+
     return HardwareOKResponse()
+
+
+THRESHOLD_RADIUS_M = 30.48  # 100 ft
+THRESHOLD_TIME = timedelta(seconds=30)
+AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
+
+KM_LAT_RATIO = 111.32  # km/degree latitude
+EARTH_CIRCUFERENCE_KM = 40075  # km
+DEGREES_IN_CIRCLE = 360  # degrees
+
+
+class Coordinate(BaseModel):
+    latitude: float
+    longitude: float
+
+
+def _distance_meters(a: Coordinate, b: Coordinate) -> float:
+    dlat = b.latitude - a.latitude
+    dlon = b.longitude - a.longitude
+
+    # Simplified distance calculation that assumes the earth is a sphere. This is good enough for our purposes.
+    # https://stackoverflow.com/a/39540339
+    dlatkm = dlat * KM_LAT_RATIO
+    dlonkm = dlon * EARTH_CIRCUFERENCE_KM * cos(radians(a.latitude)) / DEGREES_IN_CIRCLE
+
+    return sqrt(dlatkm**2 + dlonkm**2) * 1000

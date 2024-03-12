@@ -34,7 +34,7 @@ def upgrade() -> None:
         ),
         sa.Column("van_guid", sa.String, nullable=False),
         sa.Column("route_id", sa.Integer, nullable=False),
-        sa.Column("stop_id", sa.Integer, nullable=False),
+        sa.Column("stop_index", sa.Integer, nullable=False, server_default="-1"),
         sa.Column("dead", sa.Boolean, nullable=False, default=False),
     )
 

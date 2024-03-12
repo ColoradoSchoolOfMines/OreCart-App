@@ -42,6 +42,7 @@ class HardwareErrorCode(Enum):
     VAN_DOESNT_EXIST = 4
     TOO_MANY_ROUTES = 5
     ROUTE_NAME_TOO_LONG = 6
+    CREATE_NEW_SESSION = 7
 
 
 class HardwareHTTPException(Exception):
