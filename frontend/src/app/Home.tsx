@@ -29,6 +29,7 @@ import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
 import { RouteScreen } from "../features/routes/RouteScreen";
 import { StopScreen } from "../features/stops/StopScreen";
+import { fonts } from "../common/style/fonts";
 
 export interface HomeScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Home">;
@@ -89,7 +90,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
             >
               <View style={styles.drawerItem}>
                 <MaterialIcons name="error-outline" size={24} color="black" />
-                <Text style={styles.drawerItemText}>Upcoming Alerts</Text>
+                <Text style={[styles.drawerItemText, fonts.heading]}>Upcoming Alerts</Text>
               </View>
             </TouchableOpacity>
             {/* 
@@ -115,7 +116,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
               </View>
             </TouchableOpacity> */}
 
-            <Text>Version {expoVersion}</Text>
+            <Text style={fonts.body}>Version {expoVersion}</Text>
           </View>
         );
       }}

@@ -24,9 +24,9 @@ import {
   type ExtendedStop,
 } from "../stops/stopsSlice";
 import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
+import { fonts } from "../../common/style/fonts";
 
 import { type BasicRoute, type ExtendedRoute } from "./routesSlice";
-import { Oswald_600SemiBold } from "@expo-google-fonts/dev";
 
 interface RouteItemProps {
   mode: "basic" | "extended";
@@ -61,29 +61,29 @@ export const RouteItem = ({
     >
       <View style={styles.innerContainer}>
         <View style={styles.routeInfoContainer}>
-            <Text style={[styles.routeName, routeNameColorStyle, {fontFamily: "Oswald_600SemiBold"}]}>
+            <Text style={[styles.routeName, routeNameColorStyle, fonts.heading]}>
             {route.name}
           </Text>
           {route.isActive ? (
             closestStop !== undefined ? (
               <>
-                <Text style={styles.routeStatus}>
+                <Text style={[styles.routeStatus, fonts.body]}>
                   Next OreCart in{" "}
-                  <Text style={styles.routeStatusEmphasis}>
+                  <Text style={[styles.routeStatusEmphasis, fonts.body]}>
                     {closestStop.vanArrivalTime}
                   </Text>
                 </Text>
                 {mode === "extended" ? (
-                  <Text style={styles.routeContext}>
+                  <Text style={[styles.routeContext, fonts.body]}>
                     At {closestStop.name} ({closestStop.distanceFromUser})
                   </Text>
                 ) : null}
               </>
             ) : (
-              <Text style={styles.routeStatus}>Running</Text>
+              <Text style={[styles.routeStatus, fonts.body]}>Running</Text>
             )
           ) : (
-            <Text style={styles.routeStatus}>Not running</Text>
+            <Text style={[styles.routeStatus, fonts.body]}>Not running</Text>
           )}
         </View>
         <MaterialIcons
@@ -158,9 +158,9 @@ export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
   return (
     <View style={[styles.innerContainer, style]}>
       <View style={styles.routeInfoContainer}>
-        <TextSkeleton widthFraction={0.4} style={[styles.routeName]} />
-        <TextSkeleton widthFraction={0.6} style={[styles.routeStatus]} />
-        <TextSkeleton widthFraction={0.5} style={[styles.routeContext]} />
+        <TextSkeleton widthFraction={0.4} style={styles.routeName} />
+        <TextSkeleton widthFraction={0.6} style={styles.routeStatus} />
+        <TextSkeleton widthFraction={0.5} style={styles.routeContext} />
       </View>
     </View>
   );

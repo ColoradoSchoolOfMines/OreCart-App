@@ -10,6 +10,7 @@ import Color from "../../common/style/color";
 
 import { AlertItem, AlertItemSkeleton } from "./AlertItem";
 import { useGetFutureAlertsQuery } from "./alertSlice";
+import { fonts } from "../../common/style/fonts";
 
 export interface AlertsScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Alerts">;
@@ -64,7 +65,7 @@ export const AlertScreen = ({
         />
       ) : isError ? (
         <>
-          <Text style={styles.header}>
+          <Text style={[styles.header, fonts.heading]}>
             We couldn't fetch the alerts right now. Try again later.
           </Text>
           <RetryButton retry={retry} />

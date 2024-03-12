@@ -17,7 +17,7 @@ import { AlertScreen } from "./features/alert/AlertScreen";
 import { BugReportScreen } from "./features/report/BugReportScreen";
 import { SettingsScreen } from "./features/settings/SettingsScreen";
 import { useFonts } from "expo-font";
-import { Oswald_600SemiBold, RobotoMono_400Regular, OpenSans_400Regular } from "@expo-google-fonts/dev";
+import { Oswald_700Bold, RobotoMono_400Regular, OpenSans_400Regular, OpenSans_700Bold } from "@expo-google-fonts/dev";
 import * as SplashScreen from "expo-splash-screen";
 
 // -----
@@ -35,9 +35,10 @@ SplashScreen.preventAutoHideAsync();
 const App = (): React.JSX.Element | null => {
 
   let [fontsLoaded] = useFonts({
-    Oswald_600SemiBold,
+    Oswald_700Bold,
     RobotoMono_400Regular,
     OpenSans_400Regular,
+    OpenSans_700Bold,
   });
 
   const onLayoutRootView = useCallback(async () => {

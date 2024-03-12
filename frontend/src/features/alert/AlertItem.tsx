@@ -4,6 +4,7 @@ import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
 
 import { type Alert } from "./alertSlice";
+import { fonts } from "../../common/style/fonts";
 
 /**
  * The props for the {@interface AlertItem} component.
@@ -69,11 +70,11 @@ export const AlertItem = ({
 
   return (
     <View {...rest}>
-      <Text style={styles.alertText}>{alert.text}</Text>
+      <Text style={[styles.alertText, fonts.heading]}>{alert.text}</Text>
       {startTimestamp !== undefined ? (
-        <Text style={styles.alertSubtext}>Starts {startTimestamp}</Text>
+        <Text style={[styles.alertSubtext, fonts.body]}>Starts {startTimestamp}</Text>
       ) : null}
-      <Text style={styles.alertSubtext}>Ends {endTimestamp}</Text>
+      <Text style={[styles.alertSubtext, fonts.body]}>Ends {endTimestamp}</Text>
     </View>
   );
 };
