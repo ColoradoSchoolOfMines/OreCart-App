@@ -21,7 +21,150 @@ from src.model.van_tracker_session import VanTrackerSession
 from src.request import process_include
 from starlette.responses import Response
 
-router = APIRouter(prefix="/vans", tags=["stops"])
+router = APIRouter(prefix="/vans", tags=["vans"])
+
+
+@router.websocket("/location/subscribe")
+async def subscribe_location(websocket: WebSocket) -> None:
+    await websocket.accept()
+    while True:
+        # Check for any sent text, but don't block waiting for text
+        try:
+            route_filter = await websocket.receive_text()
+            route_filter = json.loads(route_filter)
+        except:
+            # If the websocket is closed, we'll get an exception here
+            break
+
+        # Get all tracker sessions
+        now = datetime.now(timezone.utc)
+        with websocket.app.state.db.session() as session:
+            tracker_sessions = (
+                session.query(VanTrackerSession)
+                .filter(
+                    VanTrackerSession.dead == False,
+                    VanTrackerSession.created_at > now - timedelta(seconds=300),
+                    VanTrackerSession.route_id._in(route_filter),
+                )
+                .all()
+            )
+            locations_json = []
+            for tracker_session in tracker_sessions:
+                location = (
+                    session.query(VanLocation)
+                    .filter(
+                        VanLocation.session_id == tracker_session.id,
+                    )
+                    .order_by(VanLocation.created_at.desc())
+                )
+                route = (
+                    session.query(Route)
+                    .filter(Route.id == tracker_session.route_id)
+                    .first()
+                )
+                locations_json.append(
+                    {
+                        "latitude": location.lat,
+                        "longitude": location.lon,
+                        "color": route.color,
+                    }
+                )
+            await websocket.send_json(locations_json)
+    await websocket.close()
+
+
+@router.websocket("/arrivals/subscribe")
+async def subscribe_arrivals(websocket: WebSocket) -> None:
+    await websocket.accept()
+    while True:
+        # Check for any sent text, but don't block waiting for text
+        try:
+            stop_filter: dict[int, list[int]] = json.loads(
+                await websocket.receive_text()
+            )
+        except:
+            # If the websocket is closed, we'll get an exception here
+            break
+        now = datetime.now(timezone.utc)
+        with websocket.app.state.db.session() as session:
+            arrivals_json = {}
+            for stop_id in stop_filter:
+                stop_arrivals_json = {}
+                for route_id in stop_filter[stop_id]:
+                    stops = (
+                        session.query(RouteStop)
+                        .filter(
+                            RouteStop.stop_id == stop_id, RouteStop.route_id == route_id
+                        )
+                        .order_by(RouteStop.position)
+                        .all()
+                    )
+                    if not stops:
+                        continue
+                    stop_index = next(
+                        (
+                            index
+                            for index, stop in enumerate(stops)
+                            if stop.stop_id == stop_id
+                        ),
+                        None,
+                    )
+                    if stop_index is None:
+                        continue
+                    current_distance = 0.0
+                    current_stop = stops[stop_index]
+                    while stop_index > 0:
+                        arriving_session = (
+                            session.query(VanTrackerSession)
+                            .filter(
+                                VanTrackerSession.stop_index == stop_index,
+                                VanTrackerSession.route_id == route_id,
+                                VanTrackerSession.dead == False,
+                                VanTrackerSession.created_at
+                                > now - timedelta(hours=12),
+                            )
+                            .first()
+                        )
+                        if arriving_session is not None:
+                            location = (
+                                session.query(VanLocation)
+                                .filter(VanLocation.session_id == arriving_session.id)
+                                .order_by(VanLocation.created_at.desc())
+                                .first()
+                            )
+                            if location is not None:
+                                current_distance += _distance_meters(
+                                    Coordinate(
+                                        latitude=location.lat,
+                                        longitude=location.lon,
+                                    ),
+                                    Coordinate(
+                                        latitude=current_stop.lat,
+                                        longitude=current_stop.lon,
+                                    ),
+                                )
+                                stop_arrivals_json[route_id] = (
+                                    current_distance / AVERAGE_VAN_SPEED_MPS
+                                )
+                                break
+                        stop_index -= 1
+                        last_stop = current_stop
+                        current_stop = stops[stop_index]
+                        current_distance += _distance_meters(
+                            Coordinate(
+                                latitude=last_stop.lat,
+                                longitude=last_stop.lon,
+                            ),
+                            Coordinate(
+                                latitude=current_stop.lat,
+                                longitude=current_stop.lon,
+                            ),
+                        )
+                if not stop_arrivals_json:
+                    continue
+                arrivals_json[stop_id] = stop_arrivals_json
+
+    await websocket.close()
 
 
 @router.post("/routeselect/{van_guid}")  # Called routeselect for backwards compat
