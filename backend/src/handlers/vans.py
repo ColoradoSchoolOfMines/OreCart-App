@@ -52,16 +52,25 @@ def get_vans(
 ) -> JSONResponse:
     include_set = process_include(include=include, allowed=INCLUDES)
     with req.app.state.db.session() as session:
-        vans: List[Van] = session.query(Van).all()
+        vans: List[Van] = session.query(Van).order_by(Van.id).all()
 
-        resp: List[Dict[str, Optional[Union[int, float, str]]]] = [
-            {
-                "id": van.id,
-                "routeId": van.route_id,
-                "guid": van.guid,
-            }
-            for van in vans
-        ]
+        last_id = vans[0].id if vans else None
+        resp: List[Dict[str, Optional[Union[int, float, str]]]] = []
+        for van in vans:
+            if last_id is not None:
+                gap = van.id - last_id
+                for i in range(1, gap):
+                    resp.append(
+                        {"id": last_id + i, "routeId": van.route_id, "guid": "16161616"}
+                    )
+            resp.append(
+                {
+                    "id": van.id,
+                    "routeId": van.route_id,
+                    "guid": van.guid,
+                }
+            )
+            last_id = van.id
 
     if INCLUDE_LOCATION in include_set:
         for van in resp:
