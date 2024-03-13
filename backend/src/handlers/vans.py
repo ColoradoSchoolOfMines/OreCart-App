@@ -72,10 +72,6 @@ def get_vans(
             )
             last_id = van.id
 
-    if INCLUDE_LOCATION in include_set:
-        for van in resp:
-            van["location"] = req.app.state.van_locations[van["vanId"]]
-
     return JSONResponse(content=resp)
 
 
