@@ -19,6 +19,7 @@ import { SettingsScreen } from "./features/settings/SettingsScreen";
 import { useFonts } from "expo-font";
 import { Oswald_700Bold, RobotoMono_400Regular, OpenSans_400Regular, OpenSans_700Bold } from "@expo-google-fonts/dev";
 import * as SplashScreen from "expo-splash-screen";
+import { fonts } from "./common/style/fonts";
 
 // -----
 // DO NOT PUT ANY SUBSTANTIAL UI OR LOGIC INTO THIS FILE. ONLY INCLUDE SYSTEM CONFIGURATION.
@@ -69,8 +70,11 @@ const App = (): React.JSX.Element | null => {
                 shadowOpacity: 0.3,
                 shadowRadius: 4.65,
               },
-              cardStyle: { backgroundColor: Color.generic.white },
+              cardStyle: { backgroundColor: Color.generic.white},
+              headerTitleStyle: fonts.heading,
+              headerBackTitleStyle: fonts.heading
             }}
+            
           >
             <Stack.Screen
               name="Home"
