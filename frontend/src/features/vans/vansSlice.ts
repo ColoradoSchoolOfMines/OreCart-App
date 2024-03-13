@@ -43,7 +43,7 @@ const vansApiSlice = apiSlice.injectEndpoints({
       query: () => "/vans/",
       async onCacheEntryAdded(
         _,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved },
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         // By coupling location tracking with the cached vans fetch results,
         // we can not only collate van information with location information,
@@ -53,6 +53,7 @@ const vansApiSlice = apiSlice.injectEndpoints({
 
         const locationListener = (event: MessageEvent): void => {
           const locations: VanLocations = JSON.parse(event.data);
+          console.log(event.data);
           updateCachedData((vans) => {
             for (const id in locations) {
               // Need to convert from the stringed JSON IDs to numbered ones.
@@ -62,6 +63,7 @@ const vansApiSlice = apiSlice.injectEndpoints({
                 van.location = locations[id];
               }
             }
+            console.log(vans);
           });
         };
 
@@ -77,7 +79,7 @@ const vansApiSlice = apiSlice.injectEndpoints({
           // no-op in case `cacheEntryRemoved` resolves before `cacheDataLoaded`,
           // in which case `cacheDataLoaded` will throw
           console.error(
-            "Cache entry removed before cache data loaded, ignoring",
+            "Cache entry removed before cache data loaded, ignoring"
           );
         }
 
