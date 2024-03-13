@@ -14,6 +14,7 @@ export type Vans = Van[];
 export interface Van {
   id: number;
   routeId: number;
+  guid: string;
   wheelchair: boolean;
   location?: VanLocation;
 }
@@ -53,11 +54,12 @@ const vansApiSlice = apiSlice.injectEndpoints({
         const locationListener = (event: MessageEvent): void => {
           const locations: VanLocations = JSON.parse(event.data);
           updateCachedData((vans) => {
-            for (const vanId in locations) {
+            for (const id in locations) {
               // Need to convert from the stringed JSON IDs to numbered ones.
-              const id = parseInt(vanId, 10);
-              if (id in vans) {
-                vans[id].location = locations[vanId];
+              const vanId = parseInt(id, 10);
+              const van = vans.find((van) => van.id === vanId);
+              if (van !== undefined) {
+                van.location = locations[id];
               }
             }
           });
