@@ -71,6 +71,16 @@ You can then create a production build with this:
 npx eas build -p android --local -e production --output builds/OreCart_Production.apk
 ```
 
+## Building on iOS
+
+Run the following command:
+
+```
+npx eas build -p ios --local
+```
+
+Note: You may need Xcode simulator runtimes if the build terminates on the "run fastlane" step; see [this article](https://developer.apple.com/documentation/xcode/installing-additional-simulator-runtimes) for more information.
+
 # Development Overview
 
 The Ore Cart Frontend will be used by students of Mines and residents of Golden to better utilize the Ore Cart. 
