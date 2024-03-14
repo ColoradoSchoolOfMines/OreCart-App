@@ -18,7 +18,7 @@
     "@reduxjs/toolkit": "^2.0.1",
     "d3": "^7.8.5",
     "d3-shape": "^3.2.0",
-    "expo": "^50.0.8",
+    "expo": "~50.0.13",
     "expo-checkbox": "~2.7.0",
     "expo-location": "~16.5.5",
     "expo-navigation-bar": "~2.8.1",
