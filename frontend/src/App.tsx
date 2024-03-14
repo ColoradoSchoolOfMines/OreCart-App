@@ -27,7 +27,6 @@ import { AlertScreen } from "./features/alert/AlertScreen";
 import { BugReportScreen } from "./features/report/BugReportScreen";
 import { SettingsScreen } from "./features/settings/SettingsScreen";
 
-
 // -----
 // DO NOT PUT ANY SUBSTANTIAL UI OR LOGIC INTO THIS FILE. ONLY INCLUDE SYSTEM CONFIGURATION.
 // -----
@@ -45,7 +44,7 @@ if (Platform.OS === "android") {
 }
 
 const Stack = createStackNavigator<OuterParamList>();
-SplashScreen.preventAutoHideAsync().catch(()=>{});
+SplashScreen.preventAutoHideAsync().catch(() => {});
 const App = (): React.JSX.Element | null => {
   const [fontsLoaded] = useFonts({
     Oswald_700Bold,
@@ -56,7 +55,7 @@ const App = (): React.JSX.Element | null => {
 
   const onLayoutRootView = useCallback(() => {
     if (fontsLoaded) {
-      SplashScreen.hideAsync().catch(()=>{});
+      SplashScreen.hideAsync().catch(() => {});
     }
   }, [fontsLoaded]);
 

@@ -72,7 +72,9 @@ export const AlertItem = ({
     <View {...rest}>
       <Text style={[styles.alertText, fonts.heading]}>{alert.text}</Text>
       {startTimestamp !== undefined ? (
-        <Text style={[styles.alertSubtext, fonts.body]}>Starts {startTimestamp}</Text>
+        <Text style={[styles.alertSubtext, fonts.body]}>
+          Starts {startTimestamp}
+        </Text>
       ) : null}
       <Text style={[styles.alertSubtext, fonts.body]}>Ends {endTimestamp}</Text>
     </View>

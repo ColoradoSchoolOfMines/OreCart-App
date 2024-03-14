@@ -90,7 +90,9 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
             >
               <View style={styles.drawerItem}>
                 <MaterialIcons name="error-outline" size={24} color="black" />
-                <Text style={[styles.drawerItemText, fonts.heading]}>Upcoming Alerts</Text>
+                <Text style={[styles.drawerItemText, fonts.heading]}>
+                  Upcoming Alerts
+                </Text>
               </View>
             </TouchableOpacity>
             {/* 

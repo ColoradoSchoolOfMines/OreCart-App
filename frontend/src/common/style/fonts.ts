@@ -8,7 +8,7 @@ export const fonts = StyleSheet.create({
     fontFamily: "OpenSans_400Regular",
   },
   bodyBold: {
-    fontFamily: "OpenSans_700Bold"
+    fontFamily: "OpenSans_700Bold",
   },
   other: {
     fontFamily: "RobotoMono_400Regular",

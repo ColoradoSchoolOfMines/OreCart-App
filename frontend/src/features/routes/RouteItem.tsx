@@ -61,7 +61,7 @@ export const RouteItem = ({
     >
       <View style={styles.innerContainer}>
         <View style={styles.routeInfoContainer}>
-            <Text style={[styles.routeName, routeNameColorStyle, fonts.heading]}>
+          <Text style={[styles.routeName, routeNameColorStyle, fonts.heading]}>
             {route.name}
           </Text>
           {route.isActive ? (

@@ -75,8 +75,12 @@ const RouteHeader = ({ route }: { route: BasicRoute }): React.JSX.Element => {
 
   return (
     <View style={styles.container}>
-      <Text style={[styles.routeName, routeNameColorStyle, fonts.heading]}>{route?.name}</Text>
-      <Text style={[styles.routeDesc, fonts.body]}>{getDescriptionWorkaround(route)}</Text>
+      <Text style={[styles.routeName, routeNameColorStyle, fonts.heading]}>
+        {route?.name}
+      </Text>
+      <Text style={[styles.routeDesc, fonts.body]}>
+        {getDescriptionWorkaround(route)}
+      </Text>
     </View>
   );
 };
