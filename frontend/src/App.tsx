@@ -45,7 +45,7 @@ if (Platform.OS === "android") {
 }
 
 const Stack = createStackNavigator<OuterParamList>();
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch();
 const App = (): React.JSX.Element | null => {
   const [fontsLoaded] = useFonts({
     Oswald_700Bold,
@@ -56,7 +56,7 @@ const App = (): React.JSX.Element | null => {
 
   const onLayoutRootView = useCallback(async () => {
     if (fontsLoaded) {
-      await SplashScreen.hideAsync();
+      return await SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
 
