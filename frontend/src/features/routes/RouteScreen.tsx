@@ -7,9 +7,9 @@ import ErrorMessage from "../../common/components/ErrorMessage";
 import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
 import Color from "../../common/style/color";
+import { fonts } from "../../common/style/fonts";
 import StopList from "../stops/StopList";
 import { useGetStopsQuery } from "../stops/stopsSlice";
-import { fonts } from "../../common/style/fonts";
 
 import { useGetRouteQuery, type BasicRoute } from "./routesSlice";
 

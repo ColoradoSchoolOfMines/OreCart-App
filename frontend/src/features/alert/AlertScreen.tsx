@@ -7,10 +7,10 @@ import SkeletonList from "../../common/components/SkeletonList";
 import Spacer from "../../common/components/Spacer";
 import { type OuterParamList } from "../../common/navTypes";
 import Color from "../../common/style/color";
+import { fonts } from "../../common/style/fonts";
 
 import { AlertItem, AlertItemSkeleton } from "./AlertItem";
 import { useGetFutureAlertsQuery } from "./alertSlice";
-import { fonts } from "../../common/style/fonts";
 
 export interface AlertsScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Alerts">;

@@ -8,9 +8,9 @@ import {
   View,
 } from "react-native";
 
-import { fonts } from "../../common/style/fonts";
 import Spacer from "../../common/components/Spacer";
 import Color from "../../common/style/color";
+import { fonts } from "../../common/style/fonts";
 
 import { AlertItem } from "./AlertItem";
 import { useGetActiveAlertsQuery } from "./alertSlice";

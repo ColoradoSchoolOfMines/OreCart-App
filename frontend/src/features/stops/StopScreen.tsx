@@ -8,11 +8,11 @@ import ErrorMessage from "../../common/components/ErrorMessage";
 import TextSkeleton from "../../common/components/TextSkeleton";
 import { type InnerParamList } from "../../common/navTypes";
 import Color from "../../common/style/color";
+import { fonts } from "../../common/style/fonts";
 import { useLocationStatus, type Coordinate } from "../location/locationSlice";
 import { distance, formatMiles, geoDistanceToMiles } from "../location/util";
 import RouteList from "../routes/RouteList";
 import { useGetRoutesQuery } from "../routes/routesSlice";
-import { fonts } from "../../common/style/fonts";
 
 import { useGetStopQuery, type BasicStop } from "./stopsSlice";
 

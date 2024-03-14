@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import FloatingButton from "../common/components/FloatingButton";
 import { type InnerParamList, type OuterParamList } from "../common/navTypes";
 import Color from "../common/style/color";
+import { fonts } from "../common/style/fonts";
 import LayoutStyle from "../common/style/layout";
 import SpacingStyle from "../common/style/spacing";
 import { LandingScreen } from "../features/landing/LandingScreen";
@@ -29,7 +30,6 @@ import Map from "../features/map/Map";
 import Sheet from "../features/navigation/Sheet";
 import { RouteScreen } from "../features/routes/RouteScreen";
 import { StopScreen } from "../features/stops/StopScreen";
-import { fonts } from "../common/style/fonts";
 
 export interface HomeScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Home">;

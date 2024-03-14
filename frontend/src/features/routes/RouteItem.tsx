@@ -10,6 +10,7 @@ import {
 
 import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
+import { fonts } from "../../common/style/fonts";
 import { useLocation } from "../location/locationSlice";
 import {
   closest,
@@ -24,7 +25,6 @@ import {
   type ExtendedStop,
 } from "../stops/stopsSlice";
 import { useGetVansQuery, type VanLocation } from "../vans/vansSlice";
-import { fonts } from "../../common/style/fonts";
 
 import { type BasicRoute, type ExtendedRoute } from "./routesSlice";
 

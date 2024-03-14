@@ -2,9 +2,9 @@ import { View, Text, StyleSheet, type ViewProps } from "react-native";
 
 import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
+import { fonts } from "../../common/style/fonts";
 
 import { type Alert } from "./alertSlice";
-import { fonts } from "../../common/style/fonts";
 
 /**
  * The props for the {@interface AlertItem} component.
