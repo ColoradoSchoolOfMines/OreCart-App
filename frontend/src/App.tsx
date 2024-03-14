@@ -1,6 +1,7 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import * as NavigationBar from "expo-navigation-bar";
+import { StatusBar } from "expo-status-bar";
 import { Platform, View } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -29,6 +30,12 @@ if (Platform.OS === "android") {
   NavigationBar.setBackgroundColorAsync(Color.generic.white).catch(
     console.error,
   );
+  // Enable later to do full edge-to-edge
+  // NavigationBar.setPositionAsync("absolute");
+  // // transparent backgrounds to see through
+  // NavigationBar.setBackgroundColorAsync("#ffffff00");
+  // // changes the color of the button icons "dark||light"
+  // NavigationBar.setButtonStyleAsync("dark");
 }
 
 const Stack = createStackNavigator<OuterParamList>();
@@ -54,6 +61,7 @@ const App = (): React.JSX.Element | null => {
 
   return(
   <Provider store={store}>
+    <StatusBar style="auto" translucent backgroundColor="transparent" />
     <SafeAreaProvider style={LayoutStyle.fill}>
       <View 
       style={LayoutStyle.fill}
