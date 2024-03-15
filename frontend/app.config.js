@@ -12,7 +12,7 @@ if (process.env.ORECART_API_SECURE === "1") {
 module.exports = {
   name: "OreCart",
   slug: "orecart",
-  version: "1.0.3",
+  version: "1.0.4",
   orientation: "portrait",
   icon: "./assets/icon.png",
   userInterfaceStyle: "light",
@@ -26,7 +26,6 @@ module.exports = {
   ],
   ios: {
     supportsTablet: true,
-    buildNumber: 3,
     bundleIdentifier: "edu.mines.orecart.app",
     config: {
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS
