@@ -1,8 +1,8 @@
 diff --git a/node_modules/@react-native-community/datetimepicker/ios/RNDateTimePickerShadowView.m b/node_modules/@react-native-community/datetimepicker/ios/RNDateTimePickerShadowView.m
-index ba0273b..f5b091c 100644
+index c139440..4ff3362 100644
 --- a/node_modules/@react-native-community/datetimepicker/ios/RNDateTimePickerShadowView.m
 +++ b/node_modules/@react-native-community/datetimepicker/ios/RNDateTimePickerShadowView.m
-@@ -31,7 +31,7 @@ - (void)setDisplayIOS:(UIDatePickerStyle)displayIOS {
+@@ -41,7 +41,7 @@ - (void)setTimeZoneName:(NSString *)timeZoneName {
    YGNodeMarkDirty(self.yogaNode);
  }
  
