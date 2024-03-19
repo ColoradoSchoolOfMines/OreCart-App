@@ -165,7 +165,6 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
           <Marker
             key={stop.id}
             coordinate={stop}
-            tracksViewChanges={false}
             anchor={{ x: 0.5, y: 0.5 }}
           >
             <View style={[styles.marker]}>
