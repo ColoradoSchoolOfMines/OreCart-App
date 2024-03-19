@@ -4,7 +4,6 @@ from math import cos, radians, sqrt
 from typing import Annotated, Optional
 
 from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.route import Route
@@ -14,7 +13,6 @@ from src.model.van import Van
 from src.model.van_location import VanLocation
 from src.model.van_tracker_session import VanTrackerSession
 from src.request import process_include
-from starlette.responses import Response
 
 router = APIRouter(prefix="/vans", tags=["vans"])
 
@@ -39,12 +37,12 @@ DEGREES_IN_CIRCLE = 360  # degrees
 @router.get("/v2")
 async def get_vans(
     request: Request,
-    routeIds: Annotated[list[int] | None, Query()] = None,
+    route_ids: Annotated[list[int] | None, Query()] = None,
     include: Annotated[list[str] | None, Query()] = None,
 ) -> list[dict[str, float | str]]:
     include_set = process_include(include, INCLUDES)
     with request.app.state.db.session() as session:
-        return query_vans(session, routeIds, include_set)
+        return query_vans(session, route_ids, include_set)
 
 
 @router.get("/v2/{van_guid}")
@@ -96,7 +94,7 @@ async def subscribe_vans(websocket: WebSocket) -> None:
 
 
 def query_van(session, guid: str, include_set: set[str]) -> dict[str, float | str]:
-    tracker_session = query_active_session(
+    tracker_session = action_session_query(
         session, VanTrackerSession.van_guid == guid
     ).first()
     if tracker_session is None:
@@ -110,11 +108,11 @@ def query_vans(
     include_set: set[str],
 ) -> list[dict[str, float | str]]:
     if route_filter is not None:
-        tracker_query = query_active_session(
+        tracker_query = action_session_query(
             session, VanTrackerSession.route_id.in_(route_filter)
         )
     else:
-        tracker_query = query_active_session(session)
+        tracker_query = action_session_query(session)
     tracker_sessions = tracker_query.all()
     locations_json = []
     for tracker_session in tracker_sessions:
@@ -186,7 +184,7 @@ def calculate_van_distance(session, stops: list[Stop], stop_index: int, route_id
     current_distance = 0.0
     current_stop = stops[stop_index]
     while stop_index > 0:
-        arriving_session = query_active_session(
+        arriving_session = action_session_query(
             session,
             VanTrackerSession.stop_index == stop_index,
             VanTrackerSession.route_id == route_id,
@@ -264,9 +262,9 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
 
     now = datetime.now(timezone.utc)
     with req.app.state.db.session() as session:
-        tracker_session = query_active_session(
+        tracker_session = action_session_query(
             session, VanTrackerSession.van_guid == van_guid
-        )
+        ).first()
         if tracker_session is None:
             raise HardwareHTTPException(
                 status_code=400, error_code=HardwareErrorCode.CREATE_NEW_SESSION
@@ -274,16 +272,16 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
 
         # Add location to session
         new_location = VanLocation(
-            session_id=tracker_session.id, timestamp=timestamp, lat=lat, lon=lon
+            session_id=tracker_session.id, created_at=timestamp, lat=lat, lon=lon
         )
         session.add(new_location)
         session.commit()
 
         stops = (
-            session.query(RouteStop)
+            session.query(Stop)  # Query Stop instead of RouteStop
+            .join(RouteStop, RouteStop.stop_id == Stop.id)
             .filter(RouteStop.route_id == tracker_session.route_id)
             .order_by(RouteStop.position)
-            .join(Stop, RouteStop.stop_id == Stop.id)
             .all()
         )
 
@@ -352,7 +350,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
     return HardwareOKResponse()
 
 
-def query_active_session(session, *filters):
+def action_session_query(session, *filters):
     now = datetime.now(timezone.utc)
     query = session.query(VanTrackerSession).filter(
         VanTrackerSession.dead == False,
