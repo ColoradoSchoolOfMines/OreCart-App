@@ -162,11 +162,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
           />
         ))}
         {stops?.map((stop, index) => (
-          <Marker
-            key={stop.id}
-            coordinate={stop}
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
+          <Marker key={stop.id} coordinate={stop} anchor={{ x: 0.5, y: 0.5 }}>
             <View style={[styles.marker]}>
               {/* 
               Create a similar border to that of the van indicators, but segment it

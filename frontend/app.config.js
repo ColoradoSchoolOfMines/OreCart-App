@@ -19,19 +19,18 @@ module.exports = {
   splash: {
     image: "./assets/splash.png",
     resizeMode: "contain",
-    backgroundColor: "#ffffff"
+    backgroundColor: "#ffffff",
   },
-  assetBundlePatterns: [
-    "**/*"
-  ],
+  assetBundlePatterns: ["**/*"],
   ios: {
     supportsTablet: true,
     bundleIdentifier: "edu.mines.orecart.app",
     config: {
-      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS
+      googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS,
     },
     infoPlist: {
-      NSLocationWhenInUseUsageDescription: "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you."
+      NSLocationWhenInUseUsageDescription:
+        "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you.",
     },
   },
   android: {
@@ -39,36 +38,37 @@ module.exports = {
     versionCode: 3,
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
-      backgroundColor: "#ffffff"
+      backgroundColor: "#ffffff",
     },
     permissions: [
       "android.permission.ACCESS_COARSE_LOCATION",
       "android.permission.ACCESS_FINE_LOCATION",
-      "android.permission.FOREGROUND_SERVICE"
+      "android.permission.FOREGROUND_SERVICE",
     ],
     config: {
       googleMaps: {
-        apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID
-      }
-    }
+        apiKey: process.env.GOOGLE_MAPS_API_KEY_ANDROID,
+      },
+    },
   },
   web: {
-    favicon: "./assets/favicon.png"
+    favicon: "./assets/favicon.png",
   },
   plugins: [
     [
       "expo-location",
       {
-        locationAlwaysAndWhenInUsePermission: "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you."
-      }
-    ]
+        locationAlwaysAndWhenInUsePermission:
+          "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you.",
+      },
+    ],
   ],
   extra: {
     httpApiUrl,
     wsApiUrl,
     eas: {
-      projectId: "a3e0fe9f-6732-488e-8a42-be63d20b24f9"
-    }
+      projectId: "a3e0fe9f-6732-488e-8a42-be63d20b24f9",
+    },
   },
-  owner: "orecart"
-}
+  owner: "orecart",
+};
