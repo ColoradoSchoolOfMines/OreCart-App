@@ -9,6 +9,7 @@ import Constants from "expo-constants";
 import React, { useState } from "react";
 import {
   Dimensions,
+  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -51,8 +52,13 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
   // being inset accordingly.
   const screenHeight = Dimensions.get("window").height;
   const [open, setOpen] = useState(false);
-  const mapInsets = { bottom: screenHeight * SHEET_EXTENT };
   const insets = useSafeAreaInsets();
+  const mapInsets = {
+    bottom:
+      Platform.OS === "ios"
+        ? (screenHeight - insets.top) * SHEET_EXTENT
+        : screenHeight / SHEET_EXTENT,
+  };
   const drawerInsets = { top: insets.top };
   const expoVersion = Constants.expoConfig?.version;
   const [atLanding, setAtLanding] = useState<boolean>(true);
