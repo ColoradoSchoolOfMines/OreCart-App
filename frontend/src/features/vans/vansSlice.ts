@@ -53,7 +53,6 @@ const vansApiSlice = apiSlice.injectEndpoints({
 
         const locationListener = (event: MessageEvent): void => {
           const locations: VanLocations = JSON.parse(event.data);
-          console.log(event.data);
           updateCachedData((vans) => {
             for (const id in locations) {
               // Need to convert from the stringed JSON IDs to numbered ones.
@@ -63,7 +62,6 @@ const vansApiSlice = apiSlice.injectEndpoints({
                 van.location = locations[id];
               }
             }
-            console.log(vans);
           });
         };
 
