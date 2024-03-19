@@ -7,7 +7,6 @@ import MapView, {
   Polyline,
   type Region,
 } from "react-native-maps";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../../common/components/FloatingButton";
 import Color from "../../common/style/color";
@@ -80,14 +79,11 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
     });
   }
 
-  // Combine given insets with the status bar height to ensure that the map
-  // is fully in-bounds.
-  const safeAreaInsets = useSafeAreaInsets();
   const padding = {
-    top: (insets?.top ?? 0) + safeAreaInsets.top,
-    left: insets?.left ?? 0 + safeAreaInsets.left,
-    bottom: insets?.bottom ?? 0 + safeAreaInsets.bottom,
-    right: insets?.right ?? 0 + safeAreaInsets.right,
+    top: insets?.top ?? 0,
+    right: insets?.right ?? 0,
+    bottom: insets?.bottom ?? 0,
+    left: insets?.left ?? 0,
   };
 
   const { data: vans } = useGetVansQuery();

@@ -54,10 +54,13 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
   const [open, setOpen] = useState(false);
   const insets = useSafeAreaInsets();
   const mapInsets = {
-    bottom:
-      Platform.OS === "ios"
-        ? (screenHeight - insets.top) * SHEET_EXTENT
-        : screenHeight / SHEET_EXTENT,
+    top: insets.top,
+    left: insets.left,
+    right: insets.right,
+    bottom: Platform.select({
+      ios: (screenHeight - insets.top) * SHEET_EXTENT,
+      android: screenHeight * SHEET_EXTENT,
+    }),
   };
   const drawerInsets = { top: insets.top };
   const expoVersion = Constants.expoConfig?.version;
