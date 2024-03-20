@@ -19,12 +19,10 @@ class VanTrackerSession(Base):
     updated_at: Mapped[datetime] = mapped_column(
         TZDateTime, nullable=False, server_default=func.now(), onupdate=func.now()
     )
-    van_guid: Mapped[String] = mapped_column(String, nullable=False)
-    route_id: Mapped[int] = mapped_column(Integer, nullable=False)
-    stop_index: Mapped[int] = mapped_column(
-        Integer, nullable=False, server_default="-1"
-    )
-    dead: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    van_guid: Mapped[str] = mapped_column(nullable=False)
+    route_id: Mapped[int] = mapped_column(nullable=False)
+    stop_index: Mapped[int] = mapped_column(nullable=False, server_default="-1")
+    dead: Mapped[bool] = mapped_column(nullable=False, default=False)
 
     def __eq__(self, __value: object) -> bool:
         return (
@@ -38,4 +36,4 @@ class VanTrackerSession(Base):
         )
 
     def __repr__(self) -> str:
-        return f"<VanTrackerSession id={self.id} created_at={self.created_at} updated_at={self.updated_at} van_guid={self.van_guid} route_id={self.route_id} stop_id={self.stop_index} dead={self.dead}>"
+        return f"<VanTrackerSession id={self.id} created_at={self.created_at} updated_at={self.updated_at} van_guid={self.van_guid} route_id={self.route_id} stop_index={self.stop_index} dead={self.dead}>"

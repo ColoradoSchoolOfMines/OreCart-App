@@ -1,10 +1,11 @@
 import struct
 from datetime import datetime, timedelta, timezone
 from math import cos, radians, sqrt
-from typing import Annotated, Optional
+from typing import Annotated, Dict, List, Optional, Union
 
 from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from pydantic import BaseModel
+from sqlalchemy import func
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.route import Route
 from src.model.route_stop import RouteStop
@@ -21,9 +22,11 @@ FIELD_LATITUDE = "latitude"
 FIELD_LONGITUDE = "longitude"
 FIELD_COLOR = "color"
 FIELD_ROUTE_IDS = "routeIds"
-INCLUDES = {
-    FIELD_COLOR,
-}
+FIELD_ALIVE = "alive"
+FIELD_LOCATION = "location"
+FIELD_CREATED_AT = "started"
+FIELD_UPDATED_AT = "updated"
+INCLUDES = {FIELD_COLOR, FIELD_LOCATION}
 
 THRESHOLD_RADIUS_M = 30.48  # 100 ft
 THRESHOLD_TIME = timedelta(seconds=30)
@@ -37,37 +40,42 @@ DEGREES_IN_CIRCLE = 360  # degrees
 @router.get("/v2")
 async def get_vans(
     request: Request,
-    route_ids: Annotated[list[int] | None, Query()] = None,
-    include: Annotated[list[str] | None, Query()] = None,
-) -> list[dict[str, float | str]]:
+    alive: Optional[bool] = None,
+    route_ids: Annotated[List[int] | None, Query()] = None,
+    include: Annotated[List[str] | None, Query()] = None,
+) -> List[Dict[str, Union[bool, float, str, int, Dict[str, float]]]]:
     include_set = process_include(include, INCLUDES)
+    now = datetime.now(timezone.utc)
     with request.app.state.db.session() as session:
-        return query_vans(session, route_ids, include_set)
+        result = query_latest_vans(session, now, alive, route_ids, include_set)
+        return result
 
 
 @router.get("/v2/{van_guid}")
 async def get_van(
     request: Request,
     van_guid: str,
-    include: Annotated[list[str] | None, Query()] = None,
-) -> dict[str, float | str]:
+    include: Annotated[List[str] | None, Query()] = None,
+) -> Dict[str, Union[bool, float, str, int, Dict[str, float]]]:
     include_set = process_include(include, INCLUDES)
+    now = datetime.now(timezone.utc)
     with request.app.state.db.session() as session:
-        return query_van(session, van_guid, include_set)
+        return query_latest_van(session, now, van_guid, include_set)
 
 
 class VanSubscriptionFilterModel(BaseModel):
     by: str
-    guid: Optional[str]
-    routeIds: Optional[list[int]]
+    guid: Optional[str] = None
+    alive: Optional[bool] = None
+    routeIds: Optional[List[int]] = None
 
 
 class VanSubscriptionQueryModel(BaseModel):
-    include: list[str]
+    include: List[str]
     filter: VanSubscriptionFilterModel
 
 
-@router.websocket("/v2/subscribe")
+@router.websocket("/v2/subscribe/")
 async def subscribe_vans(websocket: WebSocket) -> None:
     await websocket.accept()
     while True:
@@ -75,58 +83,91 @@ async def subscribe_vans(websocket: WebSocket) -> None:
             # Given the dynamic nature of subscribing, we actually overload the message
             # sent such that you can specify a vanguid or a route filter rather than
             # having 2 separate http routes.
-            query: VanSubscriptionQueryModel = await websocket.receive_json()
+            query_json = await websocket.receive_json()
         except:
             break
+        try:
+            query = VanSubscriptionQueryModel(**query_json)
+        except:
+            await websocket.send_json([])
 
         include_set = process_include(query.include, INCLUDES)
+        now = datetime.now(timezone.utc)
         with websocket.app.state.db.session() as session:
-            if query.filter.by == FIELD_GUID and query.filter.guid is not None:
-                message = [query_van(session, query.filter.guid, include_set)]
-            elif (
-                query.filter.by == FIELD_ROUTE_IDS and query.filter.routeIds is not None
-            ):
-                message = query_vans(session, query.filter.routeIds, include_set)
-            else:
-                message = []
+            message: List[Dict[str, Union[float, str, bool, int, Dict[str, float]]]] = (
+                []
+            )
+            if query.filter.by == "van" and query.filter.guid is not None:
+                message = [
+                    query_latest_van(session, now, query.filter.guid, include_set)
+                ]
+            elif query.filter.by == "vans":
+                message = query_latest_vans(
+                    session, now, query.filter.alive, query.filter.routeIds, include_set
+                )
             await websocket.send_json(message)
     await websocket.close()
 
 
-def query_van(session, guid: str, include_set: set[str]) -> dict[str, float | str]:
-    tracker_session = action_session_query(
-        session, VanTrackerSession.van_guid == guid
-    ).first()
+def query_latest_van(
+    session, now: datetime, guid: str, include_set: set[str]
+) -> Dict[str, Union[float, str, bool, int, Dict[str, float]]]:
+    tracker_session = (
+        session.query(VanTrackerSession)
+        .filter(VanTrackerSession.van_guid == guid)
+        .first()
+    )
     if tracker_session is None:
         raise HTTPException(status_code=404, detail="Van not found")
-    return base_query_van(session, tracker_session, include_set)
+    return base_query_van(session, now, tracker_session, include_set)
 
 
-def query_vans(
+def query_latest_vans(
     session,
-    route_filter: Optional[list[int]],
+    now: datetime,
+    alive: Optional[bool],
+    route_ids: Optional[List[int]],
     include_set: set[str],
-) -> list[dict[str, float | str]]:
-    if route_filter is not None:
-        tracker_query = action_session_query(
-            session, VanTrackerSession.route_id.in_(route_filter)
+) -> List[Dict[str, Union[float, str, bool, int, Dict[str, float]]]]:
+    tracker_query = (
+        session.query(VanTrackerSession)
+        .order_by(VanTrackerSession.van_guid, VanTrackerSession.created_at.desc())
+        .distinct(VanTrackerSession.van_guid)
+    )
+
+    query_filter = []
+    if alive:
+        query_filter.append(
+            not VanTrackerSession.dead and not_stale(now, VanTrackerSession.created_at)
         )
-    else:
-        tracker_query = action_session_query(session)
-    tracker_sessions = tracker_query.all()
-    locations_json = []
+    if route_ids is not None:
+        query_filter.append(VanTrackerSession.route_id.in_(route_ids))
+    tracker_sessions = tracker_query.filter(*query_filter).all()
+    locations_json: List[Dict[str, Union[float, str, bool, int, Dict[str, float]]]] = []
     for tracker_session in tracker_sessions:
-        locations_json.append(base_query_van(session, tracker_session, include_set))
+        locations_json.append(
+            base_query_van(session, now, tracker_session, include_set)
+        )
     return locations_json
 
 
-def base_query_van(session, tracker_session: VanTrackerSession, include_set: set[str]):
-    location = query_most_recent_location(session, tracker_session)
-    van_json = {
-        FIELD_GUID: tracker_session.van_guid,
-        FIELD_LATITUDE: location.lat,
-        FIELD_LONGITUDE: location.lon,
+def base_query_van(
+    session, now: datetime, tracker_session: VanTrackerSession, include_set: set[str]
+) -> Dict[str, Union[float, str, bool, int, Dict[str, float]]]:
+    van_json: Dict[str, Union[float, str, bool, int, Dict[str, float]]] = {
+        FIELD_GUID: str(tracker_session.van_guid),
+        FIELD_ALIVE: not tracker_session.dead
+        and not_stale(now, tracker_session.created_at),
+        FIELD_CREATED_AT: int(tracker_session.created_at.timestamp()),
+        FIELD_UPDATED_AT: int(tracker_session.updated_at.timestamp()),
     }
+    if FIELD_LOCATION in include_set:
+        location = query_most_recent_location(session, tracker_session)
+        if location is not None:
+            van_json[FIELD_LOCATION] = {
+                FIELD_LATITUDE: location.lat,
+                FIELD_LONGITUDE: location.lon,
+            }
     if FIELD_COLOR in include_set:
         route = (
             session.query(Route).filter(Route.id == tracker_session.route_id).first()
@@ -140,55 +181,61 @@ async def subscribe_arrivals(websocket: WebSocket) -> None:
     await websocket.accept()
     while True:
         try:
-            stop_filter: dict[int, list[int]] = await websocket.receive_json()
+            stop_filter: Dict[str, List[int]] = await websocket.receive_json()
         except:
             break
+        now = datetime.now(timezone.utc)
         with websocket.app.state.db.session() as session:
-            await websocket.send_json(query_arrivals(session, stop_filter))
+            await websocket.send_json(query_arrivals(session, now, stop_filter))
     await websocket.close()
 
 
 def query_arrivals(
-    session, stop_filter: dict[int, list[int]]
-) -> dict[int, dict[int, int]]:
-    arrivals_json: dict[int, dict[int, int]] = {}
-    for stop_id in stop_filter:
-        stop_arrivals_json: dict[int, int] = {}
-        for route_id in stop_filter[stop_id]:
+    session, now: datetime, stop_filter: Dict[str, List[int]]
+) -> Dict[int, Dict[int, int]]:
+    arrivals_json: Dict[int, Dict[int, int]] = {}
+    for stop_id_str in stop_filter:
+        stop_id = int(stop_id_str)
+        stop_arrivals_json: Dict[int, int] = {}
+        for route_id in stop_filter[stop_id_str]:
             stops = (
-                session.query(RouteStop)
-                .filter(RouteStop.stop_id == stop_id, RouteStop.route_id == route_id)
+                session.query(Stop)
+                .join(RouteStop)
+                .filter(RouteStop.route_id == route_id)
                 .order_by(RouteStop.position)
                 .all()
             )
             if not stops:
                 continue
-            stop_index = index_of_first(stops, lambda stop: stop.id == stop_id)
+            stop_index = next(
+                (index for index, stop in enumerate(stops) if stop.id == stop_id),
+                None,
+            )
             if stop_index is None:
                 continue
-            distance_m = calculate_van_distance(session, stops, stop_index, route_id)
+            distance_m = calculate_van_distance(
+                session, now, stops, stop_index, route_id
+            )
+            if not distance_m:
+                continue
             stop_arrivals_json[route_id] = distance_m / AVERAGE_VAN_SPEED_MPS
         if stop_arrivals_json:
             arrivals_json[stop_id] = stop_arrivals_json
     return arrivals_json
 
 
-def index_of_first(list: list, block):
-    return next(
-        (index for index, item in enumerate(list) if block(item)),
-        None,
-    )
-
-
-def calculate_van_distance(session, stops: list[Stop], stop_index: int, route_id: int):
+def calculate_van_distance(
+    session, now: datetime, stops: List[Stop], stop_index: int, route_id: int
+):
     current_distance = 0.0
     current_stop = stops[stop_index]
-    while stop_index > 0:
-        arriving_session = action_session_query(
+    while stop_index > -1:
+        arriving_session = active_session_query(
             session,
-            VanTrackerSession.stop_index == stop_index,
+            now,
             VanTrackerSession.route_id == route_id,
-        )
+            VanTrackerSession.stop_index == stop_index - 1,
+        ).first()
         if arriving_session is not None:
             location = query_most_recent_location(session, arriving_session)
             if location is not None:
@@ -216,11 +263,11 @@ async def begin_session(req: Request, van_guid: str) -> HardwareOKResponse:
     route_id = struct.unpack("<i", body)
 
     with req.app.state.db.session() as session:
-        van_tracker_session = (
-            session.query(VanTrackerSession).filter_by(van_guid=van_guid).first()
+        tracker_sessions = (
+            session.query(VanTrackerSession).filter_by(van_guid=van_guid).all()
         )
-        if van_tracker_session is not None:
-            van_tracker_session.dead = True
+        for tracker_session in tracker_sessions:
+            tracker_session.dead = True
         new_van_tracker_session = VanTrackerSession(
             van_guid=van_guid, route_id=route_id
         )
@@ -244,26 +291,25 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
     timestamp_ms, lat, lon = struct.unpack("<Qdd", body)
     timestamp = datetime.fromtimestamp(timestamp_ms / 1000.0, timezone.utc)
 
-    current_time = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc)
 
     # Check that the timestamp is not too far in the past. This implies a statistics
     # update that was delayed in transit and may be irrelevant now.
-    if current_time - timestamp > timedelta(minutes=1):
+    if now - timestamp > timedelta(minutes=1):
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_TOO_FAR_IN_PAST
         )
 
     # Check that the timestamp is not in the future. This implies a hardware clock
     # malfunction.
-    if timestamp > current_time:
+    if timestamp > now:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_IN_FUTURE
         )
 
-    now = datetime.now(timezone.utc)
     with req.app.state.db.session() as session:
-        tracker_session = action_session_query(
-            session, VanTrackerSession.van_guid == van_guid
+        tracker_session = active_session_query(
+            session, now, VanTrackerSession.van_guid == van_guid
         ).first()
         if tracker_session is None:
             raise HardwareHTTPException(
@@ -275,6 +321,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             session_id=tracker_session.id, created_at=timestamp, lat=lat, lon=lon
         )
         session.add(new_location)
+        tracker_session.updated_at = timestamp
         session.commit()
 
         stops = (
@@ -306,8 +353,8 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             .order_by(VanLocation.created_at.desc())
         )
         for i, stop in enumerate(subsequent_stops):
-            longest_subset: list[datetime] = []
-            current_subset: list[datetime] = []
+            longest_subset: List[datetime] = []
+            current_subset: List[datetime] = []
 
             # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
             # van locations is consistently within this stop's radius.
@@ -319,7 +366,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                     stop.lon,
                 )
                 if stop_distance_meters < THRESHOLD_RADIUS_M:
-                    current_subset.append(location.timestamp)
+                    current_subset.append(location.created_at)
                 else:
                     if len(current_subset) > len(longest_subset):
                         longest_subset = current_subset
@@ -350,14 +397,17 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
     return HardwareOKResponse()
 
 
-def action_session_query(session, *filters):
-    now = datetime.now(timezone.utc)
+def active_session_query(session, now: datetime, *filters):
     query = session.query(VanTrackerSession).filter(
         VanTrackerSession.dead == False,
-        VanTrackerSession.created_at > now - timedelta(hours=12),
+        not_stale(now, VanTrackerSession.created_at),
         *filters
     )
     return query
+
+
+def not_stale(now: datetime, datetimeish):
+    return now - datetimeish < timedelta(hours=12)
 
 
 def query_most_recent_location(session, tracker_session: VanTrackerSession):
