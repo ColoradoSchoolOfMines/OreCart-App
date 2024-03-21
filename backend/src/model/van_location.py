@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import Float, ForeignKey, Integer
+from sqlalchemy import ForeignKey, ForeignKeyConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 from src.db import Base
@@ -9,18 +9,19 @@ from src.model.types import TZDateTime
 
 class VanLocation(Base):
     __tablename__ = "van_location"
+    __table_args__ = (ForeignKeyConstraint(["session_id"], ["van_tracker_session.id"]),)
 
     id: Mapped[int] = mapped_column(
-        Integer, primary_key=True, autoincrement=True, nullable=False
+        primary_key=True, autoincrement=True, nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(
         TZDateTime, nullable=False, server_default=func.now()
     )
     session_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("van_tracker_session.id"), nullable=False
+        ForeignKey("van_tracker_session.id"), nullable=False
     )
-    lat: Mapped[Float] = mapped_column(Float, nullable=False)
-    lon: Mapped[Float] = mapped_column(Float, nullable=False)
+    lat: Mapped[float] = mapped_column(nullable=False)
+    lon: Mapped[float] = mapped_column(nullable=False)
 
     def __eq__(self, other: object) -> bool:
         return (

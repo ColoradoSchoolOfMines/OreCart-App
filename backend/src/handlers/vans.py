@@ -1,7 +1,8 @@
+import asyncio
 import struct
 from datetime import datetime, timedelta, timezone
 from math import cos, radians, sqrt
-from typing import Annotated, Dict, List, Optional, Union
+from typing import Annotated, Any, Dict, List, Optional, Union
 
 from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from pydantic import BaseModel
@@ -17,16 +18,19 @@ from src.request import process_include
 
 router = APIRouter(prefix="/vans", tags=["vans"])
 
+FIELD_ID = "id"
 FIELD_GUID = "guid"
 FIELD_LATITUDE = "latitude"
 FIELD_LONGITUDE = "longitude"
 FIELD_COLOR = "color"
+FIELD_ROUTE_ID = "routeId"
 FIELD_ROUTE_IDS = "routeIds"
 FIELD_ALIVE = "alive"
 FIELD_LOCATION = "location"
 FIELD_CREATED_AT = "started"
 FIELD_UPDATED_AT = "updated"
-INCLUDES = {FIELD_COLOR, FIELD_LOCATION}
+INCLUDES_V1 = {FIELD_LOCATION}
+INCLUDES_V2 = {FIELD_COLOR, FIELD_LOCATION}
 
 THRESHOLD_RADIUS_M = 30.48  # 100 ft
 THRESHOLD_TIME = timedelta(seconds=30)
@@ -37,29 +41,104 @@ EARTH_CIRCUFERENCE_KM = 40075  # km
 DEGREES_IN_CIRCLE = 360  # degrees
 
 
+@router.get("/")
+async def get_van_v1(
+    req: Request,
+    include: Annotated[List[str] | None, Query()] = None,
+) -> List[Dict[str, Union[int, str]]]:
+    include_set = process_include(include, INCLUDES_V1)
+    with req.app.state.db.session() as session:
+        tracker_sessions = (
+            session.query(VanTrackerSession)
+            .order_by(VanTrackerSession.van_guid, VanTrackerSession.created_at.desc())
+            .distinct(VanTrackerSession.van_guid)
+            .all()
+        )
+        locations_json: List[Dict[str, Union[int, str]]] = []
+        for tracker_session in tracker_sessions:
+            van_json = {
+                FIELD_ID: tracker_session.van_guid,
+                FIELD_ROUTE_ID: tracker_session.route_id,
+                FIELD_GUID: tracker_session.van_guid,
+            }
+            if FIELD_LOCATION in include_set:
+                van_json[FIELD_LOCATION] = query_most_recent_location(
+                    session, tracker_session
+                )
+            locations_json.append(van_json)
+        return locations_json
+
+
+@router.websocket("/location/subscribe/")
+async def subscribe_location_v1(websocket: WebSocket):
+    await websocket.accept()
+
+    while True:
+        now = datetime.now(timezone.utc)
+        with websocket.app.state.db.session() as session:
+            tracker_sessions = (
+                session.query(VanTrackerSession)
+                .filter(
+                    VanTrackerSession.dead == False,
+                    not_stale(now, VanTrackerSession.created_at),
+                )
+                .order_by(
+                    VanTrackerSession.van_guid, VanTrackerSession.created_at.desc()
+                )
+                .distinct(VanTrackerSession.van_guid)
+                .all()
+            )
+            locations_json: Dict[int, Dict[str, Union[str, int, float]]] = {}
+            for tracker_session in tracker_sessions:
+                location = query_most_recent_location(session, tracker_session)
+                stops = (
+                    session.query(Stop)
+                    .join(RouteStop)
+                    .filter(RouteStop.route_id == tracker_session.route_id)
+                    .order_by(RouteStop.position)
+                    .all()
+                )
+                next_stop_index = (tracker_session.stop_index + 1) % len(stops)
+                stop = stops[next_stop_index]
+                distance_m = distance_meters(
+                    stop.lat, stop.lon, location.lat, location.lon
+                )
+                seconds_to_next_stop = distance_m / AVERAGE_VAN_SPEED_MPS
+                location_json: Dict[str, Union[str, int, float]] = {
+                    "timestamp": int(location.created_at.timestamp()),
+                    "latitude": location.lat,
+                    "longitude": location.lon,
+                    "nextStopId": stop.id,
+                    "secondsToNextStop": seconds_to_next_stop,
+                }
+                locations_json[tracker_session.van_guid] = location_json
+            await websocket.send_json(locations_json)
+            await asyncio.sleep(2)
+
+
 @router.get("/v2")
-async def get_vans(
-    request: Request,
+async def get_vans_v2(
+    req: Request,
     alive: Optional[bool] = None,
     route_ids: Annotated[List[int] | None, Query()] = None,
     include: Annotated[List[str] | None, Query()] = None,
 ) -> List[Dict[str, Union[bool, float, str, int, Dict[str, float]]]]:
-    include_set = process_include(include, INCLUDES)
+    include_set = process_include(include, INCLUDES_V2)
     now = datetime.now(timezone.utc)
-    with request.app.state.db.session() as session:
+    with req.app.state.db.session() as session:
         result = query_latest_vans(session, now, alive, route_ids, include_set)
         return result
 
 
 @router.get("/v2/{van_guid}")
-async def get_van(
-    request: Request,
+async def get_van_v2(
+    req: Request,
     van_guid: str,
     include: Annotated[List[str] | None, Query()] = None,
 ) -> Dict[str, Union[bool, float, str, int, Dict[str, float]]]:
-    include_set = process_include(include, INCLUDES)
+    include_set = process_include(include, INCLUDES_V2)
     now = datetime.now(timezone.utc)
-    with request.app.state.db.session() as session:
+    with req.app.state.db.session() as session:
         return query_latest_van(session, now, van_guid, include_set)
 
 
@@ -91,7 +170,7 @@ async def subscribe_vans(websocket: WebSocket) -> None:
         except:
             await websocket.send_json([])
 
-        include_set = process_include(query.include, INCLUDES)
+        include_set = process_include(query.include, INCLUDES_V2)
         now = datetime.now(timezone.utc)
         with websocket.app.state.db.session() as session:
             message: List[Dict[str, Union[float, str, bool, int, Dict[str, float]]]] = (
@@ -135,7 +214,7 @@ def query_latest_vans(
         .distinct(VanTrackerSession.van_guid)
     )
 
-    query_filter = []
+    query_filter: List[Any] = []
     if alive:
         query_filter.append(
             not VanTrackerSession.dead and not_stale(now, VanTrackerSession.created_at)
@@ -266,13 +345,22 @@ async def begin_session(req: Request, van_guid: str) -> HardwareOKResponse:
         tracker_sessions = (
             session.query(VanTrackerSession).filter_by(van_guid=van_guid).all()
         )
+        print(tracker_sessions)
         for tracker_session in tracker_sessions:
             tracker_session.dead = True
         new_van_tracker_session = VanTrackerSession(
-            van_guid=van_guid, route_id=route_id
+            van_guid=van_guid,
+            route_id=route_id,
         )
         session.add(new_van_tracker_session)
         session.commit()
+        print(
+            active_session_query(
+                session,
+                datetime.now(timezone.utc),
+                VanTrackerSession.van_guid == van_guid,
+            ).first()
+        )
 
     return HardwareOKResponse()
 
@@ -308,6 +396,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
         )
 
     with req.app.state.db.session() as session:
+        print(van_guid)
         tracker_session = active_session_query(
             session, now, VanTrackerSession.van_guid == van_guid
         ).first()
@@ -406,11 +495,13 @@ def active_session_query(session, now: datetime, *filters):
     return query
 
 
-def not_stale(now: datetime, datetimeish):
+def not_stale(now: datetime, datetimeish) -> bool:
     return now - datetimeish < timedelta(hours=12)
 
 
-def query_most_recent_location(session, tracker_session: VanTrackerSession):
+def query_most_recent_location(
+    session, tracker_session: VanTrackerSession
+) -> VanLocation:
     return (
         session.query(VanLocation)
         .filter_by(session_id=tracker_session.id)
