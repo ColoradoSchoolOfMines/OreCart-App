@@ -33,7 +33,7 @@ INCLUDES_V1 = {FIELD_LOCATION}
 INCLUDES_V2 = {FIELD_COLOR, FIELD_LOCATION}
 
 THRESHOLD_RADIUS_M = 30.48  # 100 ft
-THRESHOLD_TIME = timedelta(seconds=30)
+THRESHOLD_TIME = timedelta(seconds=15)
 AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
 
 KM_LAT_RATIO = 111.32  # km/degree latitude
@@ -57,7 +57,7 @@ async def get_van_v1(
         locations_json: List[Dict[str, Union[int, str]]] = []
         for tracker_session in tracker_sessions:
             van_json = {
-                FIELD_ID: tracker_session.van_guid,
+                FIELD_ID: int(tracker_session.van_guid),
                 FIELD_ROUTE_ID: tracker_session.route_id,
                 FIELD_GUID: tracker_session.van_guid,
             }
@@ -345,7 +345,6 @@ async def begin_session(req: Request, van_guid: str) -> HardwareOKResponse:
         tracker_sessions = (
             session.query(VanTrackerSession).filter_by(van_guid=van_guid).all()
         )
-        print(tracker_sessions)
         for tracker_session in tracker_sessions:
             tracker_session.dead = True
         new_van_tracker_session = VanTrackerSession(
@@ -354,13 +353,6 @@ async def begin_session(req: Request, van_guid: str) -> HardwareOKResponse:
         )
         session.add(new_van_tracker_session)
         session.commit()
-        print(
-            active_session_query(
-                session,
-                datetime.now(timezone.utc),
-                VanTrackerSession.van_guid == van_guid,
-            ).first()
-        )
 
     return HardwareOKResponse()
 
@@ -396,7 +388,6 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
         )
 
     with req.app.state.db.session() as session:
-        print(van_guid)
         tracker_session = active_session_query(
             session, now, VanTrackerSession.van_guid == van_guid
         ).first()
@@ -405,14 +396,6 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                 status_code=400, error_code=HardwareErrorCode.CREATE_NEW_SESSION
             )
 
-        # Add location to session
-        new_location = VanLocation(
-            session_id=tracker_session.id, created_at=timestamp, lat=lat, lon=lon
-        )
-        session.add(new_location)
-        tracker_session.updated_at = timestamp
-        session.commit()
-
         stops = (
             session.query(Stop)  # Query Stop instead of RouteStop
             .join(RouteStop, RouteStop.stop_id == Stop.id)
@@ -420,6 +403,29 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             .order_by(RouteStop.position)
             .all()
         )
+
+        # Add location to session
+        new_location = VanLocation(
+            session_id=tracker_session.id, created_at=timestamp, lat=lat, lon=lon
+        )
+        session.add(new_location)
+        
+        if tracker_session.created_at == tracker_session.updated_at:
+            stop_pairs = []
+            for i in range(len(stops) - 1):
+                left, right = stops[i], stops[i+1]
+                l_distance = distance_meters(lat, lon, left.lat, left.lon)
+                r_distance = distance_meters(lat, lon, right.lat, right.lon)
+                stop_pairs.append((i, i+1, l_distance, r_distance))
+            closest_stop_pair = min(stop_pairs, key=lambda x: min(x[2], x[3]))
+            if closest_stop_pair[2] >= closest_stop_pair[3]:
+                tracker_session.stop_index = closest_stop_pair[1]
+            else:
+                tracker_session.stop_index = closest_stop_pair[0]
+        
+        tracker_session.updated_at = timestamp
+        session.commit()
+
 
         # To find an accurate time estimate for a stop, we need to remove vans that are not arriving at a stop, either
         # because they aren't arriving at the stop or because they have departed it. We achieve this currently by
@@ -439,7 +445,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                 VanLocation.session_id == tracker_session.id,
                 VanLocation.created_at > now - timedelta(seconds=300),
             )
-            .order_by(VanLocation.created_at.desc())
+            .order_by(VanLocation.created_at)
         )
         for i, stop in enumerate(subsequent_stops):
             longest_subset: List[datetime] = []
