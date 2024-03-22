@@ -405,6 +405,11 @@ async def create_route(req: Request, kml_file: UploadFile):
 
         await kml_file.close()
 
+        tracker_sessions = session.query(VanTrackerSession).all()
+        for tracker_session in tracker_sessions:
+            tracker_session.dead = True
+        session.commit()
+
         session.commit()
 
     return JSONResponse(status_code=200, content={"message": "OK"})
