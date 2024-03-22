@@ -355,6 +355,11 @@ async def begin_session(req: Request, van_guid: str) -> HardwareOKResponse:
     route_id = struct.unpack("<i", body)
 
     with req.app.state.db.session() as session:
+        if not session.query(Route).filter_by(id=route_id).first():
+            raise HardwareHTTPException(
+                status_code=400, error_code=HardwareErrorCode.INVALID_ROUTE_ID
+            )
+
         tracker_sessions = (
             session.query(VanTrackerSession).filter_by(van_guid=van_guid).all()
         )

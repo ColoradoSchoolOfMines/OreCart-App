@@ -43,6 +43,7 @@ class HardwareErrorCode(Enum):
     TOO_MANY_ROUTES = 5
     ROUTE_NAME_TOO_LONG = 6
     CREATE_NEW_SESSION = 7
+    INVALID_ROUTE_ID = 8
 
 
 class HardwareHTTPException(Exception):
