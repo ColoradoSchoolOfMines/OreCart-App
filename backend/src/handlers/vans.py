@@ -317,12 +317,13 @@ def calculate_van_distance(
 ):
     current_distance = 0.0
     current_stop = stops[stop_index]
-    while stop_index > -1:
+    start = stop_index
+    while True:
         arriving_session = active_session_query(
             session,
             now,
             VanTrackerSession.route_id == route_id,
-            VanTrackerSession.stop_index == stop_index - 1,
+            VanTrackerSession.stop_index + 1 == stop_index,
         ).first()
         if arriving_session is not None:
             location = query_most_recent_location(session, arriving_session)
@@ -334,7 +335,10 @@ def calculate_van_distance(
                     current_stop.lon,
                 )
                 return current_distance
-        stop_index -= 1
+        # backtrack by decrementing stop_index, wrapping around if necessary
+        stop_index = (stop_index - 1) % len(stops)
+        if stop_index == start:
+            break
         last_stop = current_stop
         current_stop = stops[stop_index]
         current_distance += distance_meters(
