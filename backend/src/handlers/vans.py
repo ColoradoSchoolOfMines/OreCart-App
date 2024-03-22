@@ -427,23 +427,22 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             session_id=tracker_session.id, created_at=timestamp, lat=lat, lon=lon
         )
         session.add(new_location)
-        
+
         if tracker_session.created_at == tracker_session.updated_at:
             stop_pairs = []
             for i in range(len(stops) - 1):
-                left, right = stops[i], stops[i+1]
+                left, right = stops[i], stops[i + 1]
                 l_distance = distance_meters(lat, lon, left.lat, left.lon)
                 r_distance = distance_meters(lat, lon, right.lat, right.lon)
-                stop_pairs.append((i, i+1, l_distance, r_distance))
+                stop_pairs.append((i, i + 1, l_distance, r_distance))
             closest_stop_pair = min(stop_pairs, key=lambda x: min(x[2], x[3]))
             if closest_stop_pair[2] >= closest_stop_pair[3]:
                 tracker_session.stop_index = closest_stop_pair[1]
             else:
                 tracker_session.stop_index = closest_stop_pair[0]
-        
+
         tracker_session.updated_at = timestamp
         session.commit()
-
 
         # To find an accurate time estimate for a stop, we need to remove vans that are not arriving at a stop, either
         # because they aren't arriving at the stop or because they have departed it. We achieve this currently by
