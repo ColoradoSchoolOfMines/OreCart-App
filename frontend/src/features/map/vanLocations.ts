@@ -38,7 +38,7 @@ export const useVanLocations = (routes?: Route[]): Query<VanLocation[]> => {
       include: ["color", "location"],
       filter: {
         by: "vans",
-        // TODO: Add alive parameter
+        alive: true,
         // routeIds: routes?.map((route) => route.id),
       }
     }
