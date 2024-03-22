@@ -11,7 +11,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.sql import ColumnElement
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
-from backend.src.model.ridership_analytics import RidershipAnalytics
+from src.model.ridership_analytics import RidershipAnalytics
 from src.model.van_tracker_session import VanTrackerSession
 
 router = APIRouter(prefix="/analytics", tags=["analytics", "ridership"])
@@ -162,8 +162,3 @@ async def post_ridership_stats(req: Request, van_guid: int):
         session.commit()
 
     return HardwareOKResponse()
-
-
-def active_session_query(session, now: datetime, *filters):
-    query = 
-    return query
