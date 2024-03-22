@@ -214,14 +214,23 @@ def query_latest_vans(
         .distinct(VanTrackerSession.van_guid)
     )
 
-    query_filter: List[Any] = []
-    if alive:
-        query_filter.append(
-            not VanTrackerSession.dead and not_stale(now, VanTrackerSession.created_at)
-        )
+    tracker_sessions = tracker_query.all()
+
+    if alive is not None:
+        tracker_sessions = [
+            tracker_session
+            for tracker_session in tracker_sessions
+            if not tracker_session.dead == alive and not_stale(now, tracker_session.created_at) 
+        ]
+
     if route_ids is not None:
-        query_filter.append(VanTrackerSession.route_id.in_(route_ids))
-    tracker_sessions = tracker_query.filter(*query_filter).all()
+        tracker_sessions = [
+            tracker_session
+            for tracker_session in tracker_sessions
+            if tracker_session.route_id in route_ids
+        ]
+        
+
     locations_json: List[Dict[str, Union[float, str, bool, int, Dict[str, float]]]] = []
     for tracker_session in tracker_sessions:
         locations_json.append(
