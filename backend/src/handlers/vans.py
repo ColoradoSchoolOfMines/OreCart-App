@@ -11,7 +11,6 @@ from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKRes
 from src.model.route import Route
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
-from src.model.van import Van
 from src.model.van_location import VanLocation
 from src.model.van_tracker_session import VanTrackerSession
 from src.request import process_include
