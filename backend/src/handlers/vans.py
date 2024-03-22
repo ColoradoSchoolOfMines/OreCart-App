@@ -168,6 +168,7 @@ async def subscribe_vans(websocket: WebSocket) -> None:
             query = VanSubscriptionQueryModel(**query_json)
         except:
             await websocket.send_json([])
+            continue
 
         include_set = process_include(query.include, INCLUDES_V2)
         now = datetime.now(timezone.utc)
