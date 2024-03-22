@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, StyleSheet, type TextProps, Dimensions } from "react-native";
+import { Dimensions, StyleSheet, Text, type TextProps } from "react-native";
 
 import Color from "../style/color";
 

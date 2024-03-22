@@ -27,10 +27,16 @@ function QueryText<T>({
     );
   }
   if (query.isLoading) {
-    return <TextSkeleton widthFraction={skeletonWidth} {...props} />;
+    return (
+      <TextSkeleton style={style} widthFraction={skeletonWidth} {...props} />
+    );
   }
   if (query.isError) {
-    return <Text {...props}>{error ?? ""}</Text>;
+    return (
+      <Text style={style} {...props}>
+        {error ?? ""}
+      </Text>
+    );
   }
   return <Text {...props} />;
 }

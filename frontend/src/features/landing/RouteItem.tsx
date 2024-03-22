@@ -13,7 +13,11 @@ import TextSkeleton from "../../common/components/TextSkeleton";
 import { mapQuery, type Query } from "../../common/query";
 import Color from "../../common/style/color";
 import { useClosest, type Closest } from "../location/locationSlice";
-import { formatMiles, formatSecondsAsMinutes } from "../location/util";
+import {
+  formatMiles,
+  formatSecondsAsMinutes,
+  geoDistanceToMiles,
+} from "../location/util";
 import { type ParentRoute } from "../routes/routesSlice";
 import { useArrivalEstimateQuery } from "../stops/arrivalSlice";
 import { type Stop } from "../stops/stopsSlice";
@@ -33,11 +37,13 @@ export const RouteItem = ({
     color: route.color,
   };
   const closestStop: Query<Closest<Stop>> = useClosest(route.stops);
-  const stop: Query<Stop> = mapQuery(
-    closestStop,
-    (closest: Closest<Stop>) => closest.value
+  const stop = mapQuery(closestStop, (closestStop) => closestStop.value);
+  const arrivalEstimate: Query<number | undefined> = useArrivalEstimateQuery(
+    stop,
+    route
   );
-  const arrivalEstimate: Query<number> = useArrivalEstimateQuery(stop, route);
+
+  console.log(closestStop);
 
   return (
     <TouchableHighlight
@@ -54,22 +60,26 @@ export const RouteItem = ({
           </Text>
           <QueryText
             style={styles.routeStatus}
-            query={arrivalEstimate}
-            body={(arrivalEstimate: number) =>
-              `Next OreCart in ${formatSecondsAsMinutes(arrivalEstimate)}`
+            query={closestStop}
+            body={(closestStop: Closest<Stop>) =>
+              `Closest stop at ${closestStop.value.name} (${formatMiles(
+                geoDistanceToMiles(closestStop.distance)
+              )} away)`
             }
-            skeletonWidth={0.6}
-            error={route.isActive ? "Running" : "Not running"}
+            skeletonWidth={0.5}
           />
           <QueryText
             style={styles.routeStatus}
-            query={closestStop}
-            body={(closestStop: Closest<Stop>) =>
-              `At ${closestStop.value.name} (${formatMiles(
-                closestStop.distance
-              )})`
+            query={arrivalEstimate}
+            body={(arrivalEstimate: number | undefined) =>
+              arrivalEstimate !== undefined
+                ? `Next OreCart in ${formatSecondsAsMinutes(arrivalEstimate)}`
+                : route.isActive
+                  ? "Running"
+                  : "Not running"
             }
-            skeletonWidth={0.5}
+            skeletonWidth={0.6}
+            error={route.isActive ? "Running" : "Not running"}
           />
         </View>
         <MaterialIcons
@@ -89,9 +99,9 @@ export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
   return (
     <View style={[styles.innerContainer, style]}>
       <View style={styles.routeInfoContainer}>
-        <TextSkeleton widthFraction={0.4} style={[styles.routeName]} />
-        <TextSkeleton widthFraction={0.6} style={[styles.routeStatus]} />
-        <TextSkeleton widthFraction={0.5} style={[styles.routeStatus]} />
+        <TextSkeleton widthFraction={0.4} style={styles.routeName} />
+        <TextSkeleton widthFraction={0.6} style={styles.routeStatus} />
+        <TextSkeleton widthFraction={0.5} style={styles.routeStatus} />
       </View>
     </View>
   );
@@ -115,7 +125,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   routeStatus: {
-    marginVertical: 4,
+    marginTop: 4,
   },
   routeStatusEmphasis: {
     fontWeight: "bold",

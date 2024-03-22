@@ -2,6 +2,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import React from "react";
 import {
   StyleSheet,
+  Text,
   TouchableHighlight,
   View,
   type ViewProps,
@@ -11,7 +12,11 @@ import QueryText from "../../common/components/QueryText";
 import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
 import { useDistance } from "../location/locationSlice";
-import { formatMiles, formatSecondsAsMinutes } from "../location/util";
+import {
+  formatMiles,
+  formatSecondsAsMinutes,
+  geoDistanceToMiles,
+} from "../location/util";
 import { useArrivalEstimate } from "../stops/arrivalSlice";
 import { type Stop } from "../stops/stopsSlice";
 
@@ -49,19 +54,26 @@ export const RouteStopItem = ({
     >
       <View style={styles.innerContainer}>
         <View style={styles.stopInfoContainer}>
+          <Text style={styles.stopName}>{stop.name}</Text>
           <QueryText
             style={styles.stopStatus}
             query={arrivalEstimate}
-            body={(arrivalEstimate: number) =>
-              `Next OreCart in ${formatSecondsAsMinutes(arrivalEstimate)}`
+            body={(arrivalEstimate: number | undefined) =>
+              arrivalEstimate !== undefined
+                ? `Next OreCart in ${formatSecondsAsMinutes(arrivalEstimate)}`
+                : route.isActive
+                  ? "Running"
+                  : "Not running"
             }
-            skeletonWidth={0.6}
+            skeletonWidth={0.5}
             error={stop.isActive ? "Running" : "Not running"}
           />
           <QueryText
             style={styles.stopStatus}
             query={distance}
-            body={(distance: number) => `${formatMiles(distance)} away`}
+            body={(distance: number) =>
+              `${formatMiles(geoDistanceToMiles(distance))} away`
+            }
             skeletonWidth={0.6}
           />
         </View>
@@ -82,9 +94,9 @@ export const StopItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
   return (
     <View style={[styles.innerContainer, style]}>
       <View style={styles.stopInfoContainer}>
-        <TextSkeleton widthFraction={0.4} style={[styles.stopName]} />
-        <TextSkeleton widthFraction={0.5} style={[styles.stopStatus]} />
-        <TextSkeleton widthFraction={0.6} style={[styles.stopStatus]} />
+        <TextSkeleton widthFraction={0.4} style={styles.stopName} />
+        <TextSkeleton widthFraction={0.5} style={styles.stopStatus} />
+        <TextSkeleton widthFraction={0.6} style={styles.stopStatus} />
       </View>
     </View>
   );

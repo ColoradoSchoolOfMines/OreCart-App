@@ -37,14 +37,16 @@ export function success<T>(data: T): SuccessQuery<T> {
   };
 }
 
+const LOADING: LoadingQuery = {
+  data: undefined,
+  isSuccess: false,
+  isLoading: true,
+  isError: false,
+  error: undefined,
+}; 
+
 export function loading(): LoadingQuery {
-  return {
-    data: undefined,
-    isSuccess: false,
-    isLoading: true,
-    isError: false,
-    error: undefined,
-  };
+  return LOADING;
 }
 
 export function error(

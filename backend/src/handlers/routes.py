@@ -23,6 +23,7 @@ from src.model.route import Route
 from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
+from src.model.stop_disable import StopDisable
 from src.model.van_tracker_session import VanTrackerSession
 from src.model.waypoint import Waypoint
 from src.request import process_include
@@ -36,11 +37,8 @@ FIELD_IS_ACTIVE = "isActive"
 FIELD_LATITUDE = "latitude"
 FIELD_LONGITUDE = "longitude"
 FIELD_DESCRIPTION = "description"
-INCLUDES = {
-    FIELD_STOP_IDS,
-    FIELD_WAYPOINTS,
-    FIELD_IS_ACTIVE,
-}
+FIELD_STOPS = "stops"
+INCLUDES = {FIELD_STOP_IDS, FIELD_WAYPOINTS, FIELD_IS_ACTIVE, FIELD_STOPS}
 
 router = APIRouter(prefix="/routes", tags=["routes"])
 
@@ -70,6 +68,7 @@ def get_routes(
                 FIELD_ID: route.id,
                 FIELD_NAME: route.name,
                 FIELD_DESCRIPTION: route.description,
+                FIELD_COLOR: route.color,
             }
 
             # Add related values to the route if included
@@ -214,6 +213,7 @@ def get_route(
             FIELD_ID: route.id,
             FIELD_NAME: route.name,
             FIELD_DESCRIPTION: route.description,
+            FIELD_COLOR: route.color,
         }
 
         # Add related values to the route if included

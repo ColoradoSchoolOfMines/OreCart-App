@@ -51,8 +51,12 @@ export const StopRouteItem = ({
           <QueryText
             style={styles.routeStatus}
             query={arrivalEstimate}
-            body={(arrivalEstimate: number) =>
-              `Next OreCart in ${formatSecondsAsMinutes(arrivalEstimate)}`
+            body={(arrivalEstimate: number | undefined) =>
+              arrivalEstimate !== undefined
+                ? `Next OreCart in ${formatSecondsAsMinutes(arrivalEstimate)}`
+                : route.isActive
+                  ? "Running"
+                  : "Not running"
             }
             skeletonWidth={0.6}
             error={route.isActive ? "Running" : "Not running"}

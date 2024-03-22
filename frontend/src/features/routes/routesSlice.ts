@@ -13,6 +13,7 @@ export interface Route {
 
 export interface ParentRoute extends Route {
   stops: Stop[];
+  description: string;
 }
 
 export interface WaypointRoute extends Route {}
@@ -27,8 +28,7 @@ const routesApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     getRoutes: builder.query<WaypointRoute[], void>({
-      query: () =>
-        "/routes/?include=stops&include=waypoints&include=isActive&include=color",
+      query: () => "/routes/?include=stops&include=waypoints&include=isActive",
       providesTags: ["Routes"],
     }),
     getRoute: builder.query<ParentRoute, number>({

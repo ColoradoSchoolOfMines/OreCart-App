@@ -12,58 +12,12 @@ export interface Coordinate {
   longitude: number;
 }
 
-/**
- * The status of location updates.
- */
-export type LocationStatus =
-  | Active
-  | Inactive
-  | Initializing
-  | NotGranted
-  | Error;
-
-/**
- * Location updates are currently being sent.
- */
-export interface Active {
-  type: "active";
-  location: Coordinate;
-}
-
-/**
- * Location updates are being initialized.
- */
-export interface Initializing {
-  type: "initializing";
-}
-
-/**
- * Location updates are not currently being sent.
- */
-export interface Inactive {
-  type: "inactive";
-}
-
-/**
- * The user has not granted location permissions yet.
- */
-export interface NotGranted {
-  type: "not_granted";
-}
-
-/**
- * An error occurred while trying to get location updates.
- */
-export interface Error {
-  type: "error";
-}
-
 interface LocationState {
-  status: LocationStatus;
+  status: Query<Coordinate>;
 }
 
 const initialState: LocationState = {
-  status: { type: "inactive" },
+  status: loading(),
 };
 
 /*
@@ -78,7 +32,7 @@ const locationSlice = createSlice({
   name: "location",
   initialState,
   reducers: {
-    updateLocationStatus: (state, action: PayloadAction<LocationStatus>) => {
+    updateLocationStatus: (state, action: PayloadAction<Query<Coordinate>>) => {
       state.status = action.payload;
     },
   },
@@ -88,22 +42,8 @@ const locationSlice = createSlice({
  * Hook for querying the current location. Will be undefined if not currently
  * available.
  */
-export const useLocation = (): Query<Coordinate> =>
-  useAppSelector((state) => {
-    switch (state.location.status.type) {
-      case "active":
-        return success(state.location.status.location);
-      case "inactive":
-        return loading();
-      case "initializing":
-        return loading();
-      case "not_granted":
-        return error("Not granted");
-      case "error":
-        return error("Unknown error");
-    }
-  });
-
+export const useLocation = (): Query<Coordinate> => 
+  useAppSelector((state) => state.location.status);
 export interface Closest<T> {
   value: T;
   distance: number;

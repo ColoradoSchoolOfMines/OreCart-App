@@ -30,6 +30,7 @@ import { manageLocationMiddleware } from "../features/location/locationMiddlewar
 import Map from "../features/map/Map";
 import { RouteScreen } from "../features/routes/RouteScreen";
 import { StopScreen } from "../features/stops/StopScreen";
+import { manageArrivalEstimates } from "../features/stops/arrivalSlice";
 
 export interface HomeScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Home">;
@@ -67,6 +68,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
   const [atLanding, setAtLanding] = useState<boolean>(true);
 
   manageLocationMiddleware();
+  manageArrivalEstimates();
 
   return (
     <Drawer

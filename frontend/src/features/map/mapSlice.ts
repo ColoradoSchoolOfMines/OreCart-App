@@ -3,6 +3,7 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { useAppDispatch, useAppSelector } from "../../common/hooks";
 import { type ParentRoute } from "../routes/routesSlice";
 import { type ParentStop } from "../stops/stopsSlice";
+import { useEffect } from "react";
 
 export type MapFocus = None | SingleRoute | SingleStop;
 
@@ -12,12 +13,12 @@ export interface None {
 
 export interface SingleRoute {
   type: "SingleRoute";
-  route: ParentRoute;
+  routeId: number;
 }
 
 export interface SingleStop {
   type: "SingleStop";
-  stop: ParentStop;
+  stopId: number;
 }
 
 export interface MapState {
@@ -41,10 +42,16 @@ export const mapSlice = createSlice({
 const { focusMap } = mapSlice.actions;
 
 export const changeMapFocus = (focus?: MapFocus): void => {
-  const dispatch = useAppDispatch();
-  if (focus !== undefined) {
-    dispatch(focusMap(focus));
-  }
+  // const dispatch = useAppDispatch();
+  // if (focus !== undefined) {
+  //   dispatch(focusMap(focus));
+  // }
+  // const dispatch = useAppDispatch();
+  // useEffect(() => {
+  //   if (focus !== undefined) {
+  //     dispatch(focusMap(focus));
+  //   }
+  // }, [focus]);
 };
 
 export const useMapFocus = (): MapFocus => {

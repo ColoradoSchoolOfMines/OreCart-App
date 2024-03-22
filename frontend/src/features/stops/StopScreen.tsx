@@ -35,6 +35,7 @@ export const StopScreen = ({
       }
     : undefined;
   changeMapFocus(focus);
+  console.log(stop.error)
 
   return (
     <ParentChildList
@@ -72,7 +73,7 @@ const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
         body={(distance: number) =>
           `Next OreCart in ${formatSecondsAsMinutes(distance)}`
         }
-        skeletonWidth={0.6}
+        skeletonWidth={0.3}
       />
       <TouchableHighlight
         underlayColor={Color.generic.location_highlight}

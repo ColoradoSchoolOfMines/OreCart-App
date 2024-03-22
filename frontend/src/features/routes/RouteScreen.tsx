@@ -27,6 +27,7 @@ export const RouteScreen = ({
     ? { type: "SingleRoute", route: route.data }
     : undefined;
   changeMapFocus(focus);
+  console.log(route.isError);
 
   return (
     <ParentChildList
@@ -58,7 +59,7 @@ const RouteHeader = ({ route }: { route: ParentRoute }): React.JSX.Element => {
   return (
     <View style={styles.container}>
       <Text style={[styles.routeName, routeNameColorStyle]}>{route?.name}</Text>
-      <Text style={styles.routeDesc}>{route.desc}</Text>
+      <Text style={styles.routeDesc}>{route.description}</Text>
     </View>
   );
 };

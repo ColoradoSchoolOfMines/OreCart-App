@@ -1,21 +1,29 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
-import { useEffect } from "react";
+import { createAction, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "../../common/hooks";
-import { deepMapQuery, loading, success, type Query } from "../../common/query";
+import { loading, success, type Query } from "../../common/query";
 import { type Route } from "../routes/routesSlice";
 import { type Stop } from "../stops/stopsSlice";
 
-import {
-  subscribeArrival,
-  unsubscribeArrival,
-  type ArrivalSubscription,
-} from "./arrivalMiddleware";
+import Constants from "expo-constants";
 
+export const subscribeArrival =
+  createAction<ArrivalSubscription>("arrivals/subscribe");
+export const unsubscribeArrival = createAction<ArrivalSubscription>(
+  "arrivals/unsubscribe"
+);
 type StopId = number;
 type RouteId = number;
-type ArrivalSubscribers = Record<StopId, Record<RouteId, number>>;
-type ArrivalTimes = Record<StopId, Record<RouteId, number>>;
+type Handle  = number;
+type ArrivalSubscribers = Record<Handle, ArrivalSubscription>;
+type ArrivalTimes = Record<Handle, Query<number | undefined>>;
+type ArrivalResponse = Record<StopId, Record<RouteId, number>>;
+
+interface ArrivalSubscription {
+  stopId: number;
+  routeId: number;
+}
 
 interface ArrivalsState {
   subscribers: ArrivalSubscribers;
@@ -24,88 +32,130 @@ interface ArrivalsState {
 
 const initialState: ArrivalsState = {
   subscribers: {},
-  times: {},
+  times: {}
 };
+
+interface SubscribeArrivals {
+  handle: number;
+  stopId: number;
+  routeId: number;
+}
 
 export const arrivalsSlice = createSlice({
   name: "arrivals",
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   initialState,
   reducers: {
-    addSubscribers: (state, action: PayloadAction<ArrivalSubscription>) => {
-      const { stop, route } = action.payload;
-      if (state.subscribers[stop.id] === undefined) {
-        state.subscribers[stop.id] = {};
-      }
-      if (state.subscribers[stop.id][route.id] === undefined) {
-        state.subscribers[stop.id][route.id] = 0;
-      }
-      state.subscribers[stop.id][route.id]++;
+    setSubscribers: (state, action: PayloadAction<SubscribeArrivals>) => {
+      state.subscribers[action.payload.handle] = action.payload;
+      state.times[action.payload.handle] = loading();
     },
-    removeSubscribers: (state, action: PayloadAction<ArrivalSubscription>) => {
-      const { stop, route } = action.payload;
-      if (state.subscribers[stop.id] !== undefined) {
-        if (state.subscribers[stop.id][route.id] !== undefined) {
-          state.subscribers[stop.id][route.id]--;
-        }
+    removeSubscribers: (state, action: PayloadAction<number>) => {
+      // I have no choice but to use dynamic delete here, Redux hates the Map object.
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete state.subscribers[action.payload];
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete state.times[action.payload];
+    },
+    setArrivalTimes: (state, action: PayloadAction<ArrivalResponse>) => {
+      for (const handle in state.subscribers) {
+        const { stopId, routeId } = state.subscribers[handle];
+        state.times[handle] = success(action.payload[stopId]?.[routeId]);
       }
-    },
-    setArrivalTimes: (state, action: PayloadAction<ArrivalTimes>) => {
-      state.times = action.payload;
-    },
+    }
   },
 });
 
-export const { addSubscribers, removeSubscribers, setArrivalTimes } =
+export const { setSubscribers, removeSubscribers, setArrivalTimes} =
   arrivalsSlice.actions;
 
-export const useArrivalEstimate = (stop: Stop, route: Route): Query<number> => {
+const stopArrivalsApiUrl = `${Constants.expoConfig?.extra?.wsApiUrl}/vans/v2/arrivals/subscribe`;
+
+export const manageArrivalEstimates = () => {
+  const [ws, setWs] = useState<WebSocket | undefined>(undefined);
+  const [intervalHandle, setIntervalHandle] = useState<NodeJS.Timeout | undefined>(undefined);
+  const dispatch = useAppDispatch();
+  const subscribers = useAppSelector((state) => state.arrivals.subscribers);
+  const [stupidCounter, setStupidCounter] = useState<number>(0);
+
+  function send(): void {
+    const query: Record<number, number[]> = {};
+    for (const handle in subscribers) {
+      const { stopId, routeId } = subscribers[handle];
+      if (query[stopId] === undefined) {
+        query[stopId] = [];
+      }
+      if (query[stopId].includes(routeId)) {
+        continue;
+      }
+      query[stopId].push(routeId);
+    }
+    console.log("send: ", query, subscribers);
+    ws?.send(JSON.stringify(query));
+  }
+
+  useEffect(() => {
+    if (ws === undefined) {      
+      const ws = new WebSocket(stopArrivalsApiUrl);
+      ws.addEventListener("message", (event) => {
+        console.log("recv: ", event.data)
+        dispatch(setArrivalTimes(JSON.parse(event.data)));
+      });
+      ws.addEventListener("open", () => {
+        setWs(ws)
+      });
+      ws.addEventListener("close", () => {
+        setWs(undefined);
+      });
+      ws.addEventListener("error", (e) => {
+        console.log("Websocket error");
+        setWs(undefined);
+      });
+      const handle = setInterval(() => { setStupidCounter((i) => i + 1) }, 2000);
+      setIntervalHandle(handle);
+    }
+    return () => {
+      ws?.close();
+      setWs(undefined);
+      clearInterval(handle);
+      setIntervalHandle(undefined);
+    }
+  }, [])
+
+  useEffect(() => { send(); }, [ws, subscribers, stupidCounter]);
+  
+}
+
+export const useArrivalEstimate = (stop: Stop, route: Route): Query<number | undefined> => {
+  const [handle] = useState<number>(Math.random());
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    dispatch(subscribeArrival({ stop, route }));
+    dispatch(setSubscribers({ handle, stopId: stop.id, routeId: route.id }));
     return () => {
-      dispatch(unsubscribeArrival({ stop, route }));
+      dispatch(removeSubscribers(handle));
     };
-  }, [stop]);
+  }, [stop, route]);
 
-  return useAppSelector((state) => {
-    const entry = state.arrivals.times[stop.id];
-    if (entry !== undefined) {
-      const seconds = entry[route.id];
-      if (seconds !== undefined) {
-        return success(seconds);
-      }
-    }
-    return loading();
-  });
+  return useAppSelector((state) => state.arrivals.times[handle] ?? loading());
 };
 
 export const useArrivalEstimateQuery = (
   stop: Query<Stop>,
   route: Route
-): Query<number> => {
+): Query<number | undefined> => {
+  const [handle] = useState<number>(Math.random());
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (stop.isSuccess) {
-      dispatch(subscribeArrival({ stop: stop.data, route }));
-      return () => {
-        dispatch(unsubscribeArrival({ stop: stop.data, route }));
-      };
+    if (!stop.isSuccess) {
+      return;
     }
-  }, [stop]);
+    dispatch(setSubscribers({ handle, stopId: stop.data.id, routeId: route.id }));
+    return () => {
+      dispatch(removeSubscribers(handle));
+    };
+  }, [stop.data, route]);
 
-  return useAppSelector((state) =>
-    deepMapQuery(stop, (stop) => {
-      const entry = state.arrivals.times[stop.id];
-      if (entry !== undefined) {
-        const seconds = entry[route.id];
-        if (seconds !== undefined) {
-          return success(seconds);
-        }
-      }
-      return loading();
-    })
-  );
+  return useAppSelector((state) => state.arrivals.times[handle] ?? loading());
 };
