@@ -8,9 +8,9 @@ import { wrapReduxQuery } from "../../common/query";
 import AlertBanner from "../alert/AlertBanner";
 import { useGetActiveAlertsQuery, type Alert } from "../alert/alertSlice";
 import LocationPermissionPrompt from "../location/LocationPermissionPrompt";
+import { changeMapFocus } from "../map/mapSlice";
 import { useGetRoutesQuery, type ParentRoute } from "../routes/routesSlice";
 
-import { changeMapFocus } from "../map/mapSlice";
 import { RouteItem, RouteItemSkeleton } from "./RouteItem";
 
 export interface LandingScreenProps {

@@ -42,7 +42,7 @@ const locationSlice = createSlice({
  * Hook for querying the current location. Will be undefined if not currently
  * available.
  */
-export const useLocation = (): Query<Coordinate> => 
+export const useLocation = (): Query<Coordinate> =>
   useAppSelector((state) => state.location.status);
 export interface Closest<T> {
   value: T;
@@ -50,7 +50,7 @@ export interface Closest<T> {
 }
 
 export const useClosest = <T extends Coordinate>(
-  of: T[]
+  of: T[],
 ): Query<Closest<T>> => {
   const location = useLocation();
   if (!location.isSuccess) {
@@ -61,14 +61,14 @@ export const useClosest = <T extends Coordinate>(
     (acc: Closest<T> | undefined, cur: T) => {
       const distance = Math.sqrt(
         Math.pow(cur.latitude - location.data.latitude, 2) +
-          Math.pow(cur.longitude - location.data.longitude, 2)
+          Math.pow(cur.longitude - location.data.longitude, 2),
       );
       if (acc === undefined || distance < acc.distance) {
         return { value: cur, distance };
       }
       return acc;
     },
-    undefined
+    undefined,
   );
 
   if (closest === undefined) {
@@ -86,7 +86,7 @@ export const useDistance = <T extends Coordinate>(at: T): Query<number> => {
 
   const distance = Math.sqrt(
     Math.pow(at.latitude - location.data.latitude, 2) +
-      Math.pow(at.longitude - location.data.longitude, 2)
+      Math.pow(at.longitude - location.data.longitude, 2),
   );
 
   return success(distance);

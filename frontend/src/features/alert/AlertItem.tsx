@@ -41,11 +41,11 @@ export const AlertItem = ({
     const endDate = new Date(alert.endDateTime * 1000);
     startTimestamp = `${startDate.toLocaleDateString()} at ${startDate.toLocaleTimeString(
       [],
-      { hour: "2-digit", minute: "2-digit" }
+      { hour: "2-digit", minute: "2-digit" },
     )}`;
     endTimestamp = `${endDate.toLocaleDateString()} at ${endDate.toLocaleTimeString(
       [],
-      { hour: "2-digit", minute: "2-digit" }
+      { hour: "2-digit", minute: "2-digit" },
     )}`;
   } else {
     // This is an ongoing alert, so we want to indicate only when it ends in a more

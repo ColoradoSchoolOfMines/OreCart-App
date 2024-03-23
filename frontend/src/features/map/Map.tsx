@@ -50,7 +50,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
   const mapRef = useRef<MapView>(null);
   const [followingLocation, setFollowingLocation] = useState<boolean>(true);
   const [lastLocation, setLastLocation] = useState<Coordinate | undefined>(
-    undefined
+    undefined,
   );
 
   const focus = useMapFocus();

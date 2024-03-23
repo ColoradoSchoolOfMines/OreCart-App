@@ -3,8 +3,8 @@ import * as Location from "expo-location";
 import { useEffect } from "react";
 
 import { useAppDispatch } from "../../common/hooks";
-
 import { error, loading, success } from "../../common/query";
+
 import { updateLocationStatus } from "./locationSlice";
 
 const locationMiddleware = createListenerMiddleware();
@@ -61,12 +61,19 @@ locationMiddleware.startListening({
           // Forward updates to the companion slice so that components can
           // use the current state.
           listenerApi.dispatch(
-            updateLocationStatus(success({ latitude: newLocation.coords.latitude, longitude: newLocation.coords.longitude })),
+            updateLocationStatus(
+              success({
+                latitude: newLocation.coords.latitude,
+                longitude: newLocation.coords.longitude,
+              }),
+            ),
           );
         },
       );
     } catch (e) {
-      listenerApi.dispatch(updateLocationStatus(error("Failed to start location tracking.")));
+      listenerApi.dispatch(
+        updateLocationStatus(error("Failed to start location tracking.")),
+      );
     }
   },
 });

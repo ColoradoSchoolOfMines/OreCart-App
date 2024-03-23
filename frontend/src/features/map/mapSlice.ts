@@ -1,9 +1,9 @@
+import { useFocusEffect } from "@react-navigation/native";
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
-import { useFocusEffect } from "@react-navigation/native";
 import { useAppDispatch, useAppSelector } from "../../common/hooks";
-import { ParentRoute } from "../routes/routesSlice";
-import { ParentStop } from "../stops/stopsSlice";
+import { type ParentRoute } from "../routes/routesSlice";
+import { type ParentStop } from "../stops/stopsSlice";
 
 export type MapFocus = None | SingleRoute | SingleStop;
 

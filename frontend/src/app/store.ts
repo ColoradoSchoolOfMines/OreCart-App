@@ -21,7 +21,7 @@ const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .concat(apiSlice.middleware)
-      .concat(locationMiddleware.middleware)
+      .concat(locationMiddleware.middleware),
 });
 
 /**

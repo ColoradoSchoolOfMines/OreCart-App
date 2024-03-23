@@ -43,14 +43,14 @@ const LOADING: LoadingQuery = {
   isLoading: true,
   isError: false,
   error: undefined,
-}; 
+};
 
 export function loading(): LoadingQuery {
   return LOADING;
 }
 
 export function error(
-  error: string | FetchBaseQueryError | SerializedError
+  error: string | FetchBaseQueryError | SerializedError,
 ): ErrorQuery {
   return {
     data: undefined,
@@ -73,7 +73,7 @@ export const wrapReduxQuery = <T>(
     | undefined
     | FetchBaseQueryError
     | SerializedError
-  >
+  >,
 ): Query<T> => {
   if (query.isSuccess as boolean) {
     return success(query.data as T);
@@ -86,7 +86,7 @@ export const wrapReduxQuery = <T>(
 
 export const mapQuery = <T, U>(
   query: Query<T>,
-  block: (data: T) => U
+  block: (data: T) => U,
 ): Query<U> => {
   if (query.isSuccess) {
     return {
@@ -99,7 +99,7 @@ export const mapQuery = <T, U>(
 
 export const deepMapQuery = <T, U>(
   query: Query<T>,
-  block: (data: T) => Query<U>
+  block: (data: T) => Query<U>,
 ): Query<U> => {
   if (query.isSuccess) {
     return block(query.data);

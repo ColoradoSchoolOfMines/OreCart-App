@@ -40,7 +40,7 @@ export const RouteItem = ({
   const stop = mapQuery(closestStop, (closestStop) => closestStop.value);
   const arrivalEstimate: Query<number | undefined> = useArrivalEstimateQuery(
     stop,
-    route
+    route,
   );
 
   return (
@@ -61,7 +61,7 @@ export const RouteItem = ({
             query={closestStop}
             body={(closestStop: Closest<Stop>) =>
               `Closest stop at ${closestStop.value.name} (${formatMiles(
-                geoDistanceToMiles(closestStop.distance)
+                geoDistanceToMiles(closestStop.distance),
               )} away)`
             }
             skeletonWidth={0.5}

@@ -1,4 +1,9 @@
-import { createAction, createSlice, type PayloadAction } from "@reduxjs/toolkit";
+import {
+  createAction,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit";
+import Constants from "expo-constants";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "../../common/hooks";
@@ -6,16 +11,15 @@ import { loading, success, type Query } from "../../common/query";
 import { type Route } from "../routes/routesSlice";
 import { type Stop } from "../stops/stopsSlice";
 
-import Constants from "expo-constants";
 
 export const subscribeArrival =
   createAction<ArrivalSubscription>("arrivals/subscribe");
 export const unsubscribeArrival = createAction<ArrivalSubscription>(
-  "arrivals/unsubscribe"
+  "arrivals/unsubscribe",
 );
 type StopId = number;
 type RouteId = number;
-type Handle  = number;
+type Handle = number;
 type ArrivalSubscribers = Record<Handle, ArrivalSubscription>;
 type ArrivalTimes = Record<Handle, Query<number | undefined>>;
 type ArrivalResponse = Record<StopId, Record<RouteId, number>>;
@@ -32,7 +36,7 @@ interface ArrivalsState {
 
 const initialState: ArrivalsState = {
   subscribers: {},
-  times: {}
+  times: {},
 };
 
 interface SubscribeArrivals {
@@ -62,23 +66,25 @@ export const arrivalsSlice = createSlice({
         const { stopId, routeId } = state.subscribers[handle];
         state.times[handle] = success(action.payload[stopId]?.[routeId]);
       }
-    }
+    },
   },
 });
 
-export const { setSubscribers, removeSubscribers, setArrivalTimes} =
+export const { setSubscribers, removeSubscribers, setArrivalTimes } =
   arrivalsSlice.actions;
 
 const stopArrivalsApiUrl = `${Constants.expoConfig?.extra?.wsApiUrl}/vans/v2/arrivals/subscribe`;
 
-export const manageArrivalEstimates = () => {
+export const manageArrivalEstimates = (): void => {
   const [ws, setWs] = useState<WebSocket | undefined>(undefined);
-  const [intervalHandle, setIntervalHandle] = useState<NodeJS.Timeout | undefined>(undefined);
+  const [intervalHandle, setIntervalHandle] = useState<
+    NodeJS.Timeout | undefined
+  >(undefined);
   const dispatch = useAppDispatch();
   const subscribers = useAppSelector((state) => state.arrivals.subscribers);
   const [stupidCounter, setStupidCounter] = useState<number>(0);
 
-  function send(): void {
+  const send = (): void => {
     const query: Record<number, number[]> = {};
     for (const handle in subscribers) {
       const { stopId, routeId } = subscribers[handle];
@@ -94,13 +100,13 @@ export const manageArrivalEstimates = () => {
   }
 
   useEffect(() => {
-    if (ws === undefined) {      
+    if (ws === undefined) {
       const ws = new WebSocket(stopArrivalsApiUrl);
       ws.addEventListener("message", (event) => {
         dispatch(setArrivalTimes(JSON.parse(event.data)));
       });
       ws.addEventListener("open", () => {
-        setWs(ws)
+        setWs(ws);
       });
       ws.addEventListener("close", () => {
         setWs(undefined);
@@ -108,7 +114,9 @@ export const manageArrivalEstimates = () => {
       ws.addEventListener("error", (e) => {
         setWs(undefined);
       });
-      const handle = setInterval(() => { setStupidCounter((i) => i + 1) }, 2000);
+      const handle = setInterval(() => {
+        setStupidCounter((i) => i + 1);
+      }, 2000);
       setIntervalHandle(handle);
     }
     return () => {
@@ -116,14 +124,18 @@ export const manageArrivalEstimates = () => {
       setWs(undefined);
       clearInterval(intervalHandle);
       setIntervalHandle(undefined);
-    }
-  }, [])
+    };
+  }, []);
 
-  useEffect(() => { send(); }, [ws, subscribers, stupidCounter]);
-  
-}
+  useEffect(() => {
+    send();
+  }, [ws, subscribers, stupidCounter]);
+};
 
-export const useArrivalEstimate = (stop: Stop, route: Route): Query<number | undefined> => {
+export const useArrivalEstimate = (
+  stop: Stop,
+  route: Route,
+): Query<number | undefined> => {
   const [handle] = useState<number>(Math.random());
   const dispatch = useAppDispatch();
 
@@ -139,7 +151,7 @@ export const useArrivalEstimate = (stop: Stop, route: Route): Query<number | und
 
 export const useArrivalEstimateQuery = (
   stop: Query<Stop>,
-  route: Route
+  route: Route,
 ): Query<number | undefined> => {
   const [handle] = useState<number>(Math.random());
   const dispatch = useAppDispatch();
@@ -148,7 +160,9 @@ export const useArrivalEstimateQuery = (
     if (!stop.isSuccess) {
       return;
     }
-    dispatch(setSubscribers({ handle, stopId: stop.data.id, routeId: route.id }));
+    dispatch(
+      setSubscribers({ handle, stopId: stop.data.id, routeId: route.id }),
+    );
     return () => {
       dispatch(removeSubscribers(handle));
     };
