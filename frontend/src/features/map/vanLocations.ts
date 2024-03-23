@@ -63,7 +63,6 @@ export const useVanLocations = (routes?: Route[]): Query<VanLocation[]> => {
 
       ws.addEventListener("error", (e) => {
         setWs(undefined);
-        console.log(e);
         setLocations(error("Failed to connect to van location websocket"));
       });
 

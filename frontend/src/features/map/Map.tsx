@@ -13,7 +13,7 @@ import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
 import { useLocation, type Coordinate } from "../location/locationSlice";
-import { useGetRoutesQuery, type WaypointRoute } from "../routes/routesSlice";
+import { useGetRoutesQuery, type Route } from "../routes/routesSlice";
 import {
   useGetStopsQuery,
   type ColorStop,
@@ -40,12 +40,13 @@ interface MapProps extends ViewProps {
    * obscured. Note that status bar insets will already be applied, so don't include those.
    */
   insets?: Insets;
+  onStopPressed: (stop: Stop) => void;
 }
 
 /**
  * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
  */
-const Map = ({ insets }: MapProps): React.JSX.Element => {
+const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
   const mapRef = useRef<MapView>(null);
   const [followingLocation, setFollowingLocation] = useState<boolean>(true);
   const [lastLocation, setLastLocation] = useState<Coordinate | undefined>(
@@ -56,15 +57,6 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
   const location = useLocation();
   const { data: routes } = useGetRoutesQuery();
   const { data: stops } = useGetStopsQuery();
-
-  // let vanRouteFilter: Route[] | undefined;
-  // if (focus.type === "None") {
-  //   vanRouteFilter = undefined;
-  // } else if (focus.type === "SingleRoute") {
-  //   vanRouteFilter = [focus.route];
-  // } else if (focus.type === "SingleStop") {
-  //   vanRouteFilter = focus.stop.routes;
-  // }
   const { data: vans } = useVanLocations();
 
   function panToLocation(location: Coordinate | undefined): void {
@@ -102,7 +94,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
    * Given a function of waypoints, return a region from the most top-left to the most bottom-right
    * points in the list.
    */
-  function routeBounds(route: WaypointRoute): Region {
+  function routeBounds(route: Route): Region {
     let minLat = route.waypoints[0].latitude;
     let maxLat = route.waypoints[0].latitude;
     let minLon = route.waypoints[0].longitude;
@@ -141,15 +133,9 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
         panToLocation(location.data);
       }
     } else if (focus.type === "SingleRoute") {
-      const route = routes?.find(
-        (route: WaypointRoute) => route.id === focus.route.id
-      );
-      if (route === undefined) return;
-      mapRef.current?.animateToRegion(routeBounds(route));
+      mapRef.current?.animateToRegion(routeBounds(focus.route));
     } else if (focus.type === "SingleStop") {
-      const stop = stops?.find((stop: Stop) => stop.id === focus.stop.id);
-      if (stop === undefined) return;
-      mapRef.current?.animateToRegion(stopBounds(stop));
+      mapRef.current?.animateToRegion(stopBounds(focus.stop));
     }
   }, [focus]);
 
@@ -163,7 +149,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
     return true;
   }
 
-  function isRouteVisible(route: WaypointRoute): boolean {
+  function isRouteVisible(route: Route): boolean {
     if (focus.type === "SingleRoute") {
       return route.id === focus.route.id;
     }
@@ -219,6 +205,10 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
         {stops?.map((stop) => (
           <Marker
             key={stop.id}
+            onPress={(e) => {
+              e.preventDefault();
+              onStopPressed(stop);
+            }}
             zIndex={2 + (isStopVisible(stop) ? 1 : 0)}
             coordinate={stop}
             tracksViewChanges={false}

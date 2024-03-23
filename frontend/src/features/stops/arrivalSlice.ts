@@ -90,7 +90,6 @@ export const manageArrivalEstimates = () => {
       }
       query[stopId].push(routeId);
     }
-    console.log("send: ", query, subscribers);
     ws?.send(JSON.stringify(query));
   }
 
@@ -98,7 +97,6 @@ export const manageArrivalEstimates = () => {
     if (ws === undefined) {      
       const ws = new WebSocket(stopArrivalsApiUrl);
       ws.addEventListener("message", (event) => {
-        console.log("recv: ", event.data)
         dispatch(setArrivalTimes(JSON.parse(event.data)));
       });
       ws.addEventListener("open", () => {
@@ -108,7 +106,6 @@ export const manageArrivalEstimates = () => {
         setWs(undefined);
       });
       ws.addEventListener("error", (e) => {
-        console.log("Websocket error");
         setWs(undefined);
       });
       const handle = setInterval(() => { setStupidCounter((i) => i + 1) }, 2000);

@@ -28,7 +28,7 @@ export const StopScreen = ({
   navigation,
 }: StopScreenProps): React.JSX.Element => {
   const stop = useGetStopQuery(route.params.stopId);
-  const stopFocus: MapFocus = stop.isSuccess
+  const stopFocus: MapFocus | undefined = stop.isSuccess
     ? { type: "SingleStop", stop: stop.data }
     : undefined;
   changeMapFocus(stopFocus);

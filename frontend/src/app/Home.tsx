@@ -21,7 +21,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../common/components/FloatingButton";
 import Sheet from "../common/components/Sheet";
-import { useAppDispatch } from "../common/hooks";
 import { type InnerParamList, type OuterParamList } from "../common/navTypes";
 import Color from "../common/style/color";
 import LayoutStyle from "../common/style/layout";
@@ -67,7 +66,6 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
   const drawerInsets = { top: insets.top };
   const expoVersion = Constants.expoConfig?.version;
   const [atLanding, setAtLanding] = useState<boolean>(true);
-  const dispatch = useAppDispatch();
 
   manageLocationMiddleware();
   manageArrivalEstimates();
@@ -134,7 +132,13 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
       }}
     >
       <GestureHandlerRootView>
-        <Map style={LayoutStyle.fill} insets={mapInsets} />
+        <Map
+          style={LayoutStyle.fill}
+          insets={mapInsets}
+          onStopPressed={(stop) => {
+            navigation.push("Stop", { stopId: stop.id });
+          }}
+        />
         <View style={[LayoutStyle.overlay, SpacingStyle.pad(drawerInsets, 16)]}>
           <FloatingButton
             onPress={() => {
@@ -157,6 +161,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
         <Sheet collapsedFraction={SHEET_EXTENT} expandedInset={96}>
           {/* Should disable headers on these screens since they arent full size. */}
           <Stack.Navigator
+            id={"Inner"}
             screenOptions={{
               headerShown: false,
               cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,

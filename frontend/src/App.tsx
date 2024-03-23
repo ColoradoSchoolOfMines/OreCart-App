@@ -23,7 +23,7 @@ import { SettingsScreen } from "./features/settings/SettingsScreen";
 
 if (Platform.OS === "android") {
   NavigationBar.setBackgroundColorAsync(Color.generic.white).catch(
-    console.error,
+    console.error
   );
   // Enable later to do full edge-to-edge
   // NavigationBar.setPositionAsync("absolute");
@@ -42,6 +42,7 @@ const App = (): React.JSX.Element => (
       <View style={LayoutStyle.fill}>
         <NavigationContainer>
           <Stack.Navigator
+            id={"Outer"}
             screenOptions={{
               headerStyle: {
                 shadowColor: "#000",

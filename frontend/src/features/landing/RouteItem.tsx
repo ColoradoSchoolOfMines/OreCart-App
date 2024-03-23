@@ -43,8 +43,6 @@ export const RouteItem = ({
     route
   );
 
-  console.log(closestStop);
-
   return (
     <TouchableHighlight
       onPress={() => {
