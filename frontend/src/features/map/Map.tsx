@@ -1,10 +1,10 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Image, StyleSheet, View, type ViewProps } from "react-native";
 import MapView, {
   Marker,
-  PROVIDER_GOOGLE,
   Polyline,
+  PROVIDER_GOOGLE,
   type Region,
 } from "react-native-maps";
 
@@ -13,9 +13,14 @@ import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
 import { useLocation, type Coordinate } from "../location/locationSlice";
-import { useGetRoutesQuery } from "../routes/routesSlice";
-import { useGetStopsQuery } from "../stops/stopsSlice";
+import { useGetRoutesQuery, type WaypointRoute } from "../routes/routesSlice";
+import {
+  useGetStopsQuery,
+  type ColorStop,
+  type Stop,
+} from "../stops/stopsSlice";
 
+import { useMapFocus } from "./mapSlice";
 import Pie from "./Pie";
 import { useVanLocations } from "./vanLocations";
 
@@ -47,6 +52,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
     undefined
   );
 
+  const focus = useMapFocus();
   const location = useLocation();
   const { data: routes } = useGetRoutesQuery();
   const { data: stops } = useGetStopsQuery();
@@ -75,7 +81,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
     // us to pan the camera to whatever location we were last given. Always track
     // this regardless of if following is currently on.
     setLastLocation(location);
-    if (followingLocation) {
+    if (followingLocation && focus.type === "None") {
       panToLocation(location);
     }
   }
@@ -96,73 +102,76 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
    * Given a function of waypoints, return a region from the most top-left to the most bottom-right
    * points in the list.
    */
-  // function routeBounds(route: Route): Region {
-  //   let minLat = route.waypoints[0].latitude;
-  //   let maxLat = route.waypoints[0].latitude;
-  //   let minLon = route.waypoints[0].longitude;
-  //   let maxLon = route.waypoints[0].longitude;
-  //   for (let i = 1; i < route.waypoints.length; i++) {
-  //     const waypoint = route.waypoints[i];
-  //     if (waypoint.latitude < minLat) minLat = waypoint.latitude;
-  //     if (waypoint.latitude > maxLat) maxLat = waypoint.latitude;
-  //     if (waypoint.longitude < minLon) minLon = waypoint.longitude;
-  //     if (waypoint.longitude > maxLon) maxLon = waypoint.longitude;
-  //   }
-  //   return {
-  //     latitude: (minLat + maxLat) / 2,
-  //     latitudeDelta: maxLat - minLat,
-  //     longitude: (minLon + maxLon) / 2,
-  //     longitudeDelta: maxLon - minLon,
-  //   };
-  // }
+  function routeBounds(route: WaypointRoute): Region {
+    let minLat = route.waypoints[0].latitude;
+    let maxLat = route.waypoints[0].latitude;
+    let minLon = route.waypoints[0].longitude;
+    let maxLon = route.waypoints[0].longitude;
+    for (let i = 1; i < route.waypoints.length; i++) {
+      const waypoint = route.waypoints[i];
+      if (waypoint.latitude < minLat) minLat = waypoint.latitude;
+      if (waypoint.latitude > maxLat) maxLat = waypoint.latitude;
+      if (waypoint.longitude < minLon) minLon = waypoint.longitude;
+      if (waypoint.longitude > maxLon) maxLon = waypoint.longitude;
+    }
+    minLat -= 0.0025;
+    maxLat += 0.0025;
+    minLon -= 0.0025;
+    maxLon += 0.0025;
+    return {
+      latitude: (minLat + maxLat) / 2,
+      latitudeDelta: maxLat - minLat,
+      longitude: (minLon + maxLon) / 2,
+      longitudeDelta: maxLon - minLon,
+    };
+  }
 
-  // function stopBounds(stop: Stop): Region {
-  //   return {
-  //     latitude: stop.latitude,
-  //     latitudeDelta: 0.01,
-  //     longitude: stop.longitude,
-  //     longitudeDelta: 0.01,
-  //   };
-  // }
+  function stopBounds(stop: Stop): Region {
+    return {
+      latitude: stop.latitude,
+      latitudeDelta: 0.0025,
+      longitude: stop.longitude,
+      longitudeDelta: 0.0025,
+    };
+  }
 
-  // useEffect(() => {
-  //   if (focus.type === "None") {
-  //     if (followingLocation && location.isSuccess) {
-  //       panToLocation(location.data);
-  //     } else {
-  //       mapRef.current?.animateToRegion(lastRegion);
-  //     }
-  //   } else if (focus.type === "SingleRoute") {
-  //     const route = routes?.find((route: Route) => route.id === focus.routeId);
-  //     if (route === undefined) return;
-  //     mapRef.current?.animateToRegion(routeBounds(route));
-  //   } else if (focus.type === "SingleStop") {
-  //     const stop = stops?.find((stop: Stop) => stop.id === focus.stopId);
-  //     if (stop === undefined) return;
-  //     mapRef.current?.animateToRegion(stopBounds(stop));
-  //   }
-  // }, [focus]);
+  useEffect(() => {
+    if (focus.type === "None") {
+      if (followingLocation && location.isSuccess) {
+        panToLocation(location.data);
+      }
+    } else if (focus.type === "SingleRoute") {
+      const route = routes?.find(
+        (route: WaypointRoute) => route.id === focus.route.id
+      );
+      if (route === undefined) return;
+      mapRef.current?.animateToRegion(routeBounds(route));
+    } else if (focus.type === "SingleStop") {
+      const stop = stops?.find((stop: Stop) => stop.id === focus.stop.id);
+      if (stop === undefined) return;
+      mapRef.current?.animateToRegion(stopBounds(stop));
+    }
+  }, [focus]);
 
-  // function isStopOpaque(stop: Stop): boolean {
-  //   if (focus.type === "SingleRoute") {
-  //     const route = routes?.find((route: Route) => route.id === focus.routeId);
-  //     return route?.stops.some((other) => other.id === stop.id);
-  //   }
-  //   if (focus.type === "SingleStop") {
-  //     return stop.id === focus.stop.id;
-  //   }
-  //   return true;
-  // }
+  function isStopVisible(stop: ColorStop): boolean {
+    if (focus.type === "SingleRoute") {
+      return focus.route.stops.some((other) => stop.id === other.id);
+    }
+    if (focus.type === "SingleStop") {
+      return stop.id === focus.stop.id;
+    }
+    return true;
+  }
 
-  // function isRouteOpaque(route: Route): boolean {
-  //   if (focus.type === "SingleRoute") {
-  //     return route.id === focus.route.id;
-  //   }
-  //   if (focus.type === "SingleStop") {
-  //     return focus.stop.routes.some((other) => other.id === route.id);
-  //   }
-  //   return true;
-  // }
+  function isRouteVisible(route: WaypointRoute): boolean {
+    if (focus.type === "SingleRoute") {
+      return route.id === focus.route.id;
+    }
+    if (focus.type === "SingleStop") {
+      return focus.stop.routes.some((other) => route.id === other.id);
+    }
+    return true;
+  }
 
   const padding = {
     top: insets?.top ?? 0,
@@ -188,7 +197,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
           // that they haven't granted location permissions. We won't pan
           // back to their location until they re-toggle the location button.
           // That's not very good UX.
-          if (location.isSuccess) {
+          if (location.isSuccess && focus.type === "None") {
             setFollowingLocation(false);
           }
         }}
@@ -196,32 +205,9 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
           updateLocation(event.nativeEvent.coordinate);
         }}
       >
-        {vans?.map((van) => (
-          <Marker
-            key={van.guid}
-            tracksViewChanges={false}
-            coordinate={van.location}
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
-            <View
-              style={[
-                styles.marker,
-                {
-                  borderColor: van.color,
-                  padding: 4,
-                  borderWidth: 4,
-                },
-              ]}
-            >
-              <Image
-                style={styles.indicator}
-                source={require("../../../assets/van_indicator.png")}
-              />
-            </View>
-          </Marker>
-        ))}
         {routes?.map((route) => (
           <Polyline
+            zIndex={0 + (isRouteVisible(route) ? 1 : 0)}
             key={route.id}
             coordinates={route.waypoints}
             strokeColor={route.color}
@@ -233,9 +219,9 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
         {stops?.map((stop) => (
           <Marker
             key={stop.id}
+            zIndex={2 + (isStopVisible(stop) ? 1 : 0)}
             coordinate={stop}
             tracksViewChanges={false}
-            // opacity={isStopOpaque(stop) ? 1 : 0.5}
             anchor={{ x: 0.5, y: 0.5 }}
           >
             <View style={[styles.marker]}>
@@ -259,6 +245,31 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
             </View>
           </Marker>
         ))}
+        {vans?.map((van) => (
+          <Marker
+            key={van.guid}
+            zIndex={4}
+            tracksViewChanges={false}
+            coordinate={van.location}
+            anchor={{ x: 0.5, y: 0.5 }}
+          >
+            <View
+              style={[
+                styles.marker,
+                {
+                  borderColor: van.color,
+                  padding: 4,
+                  borderWidth: 4,
+                },
+              ]}
+            >
+              <Image
+                style={styles.indicator}
+                source={require("../../../assets/van_indicator.png")}
+              />
+            </View>
+          </Marker>
+        ))}
       </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View
@@ -268,7 +279,7 @@ const Map = ({ insets }: MapProps): React.JSX.Element => {
           styles.locationButtonContainer,
         ]}
       >
-        {location.isSuccess ? (
+        {location.isSuccess && focus.type === "None" ? (
           <FloatingButton
             onPress={() => {
               flipFollowingLocation();

@@ -117,7 +117,7 @@ export const manageArrivalEstimates = () => {
     return () => {
       ws?.close();
       setWs(undefined);
-      clearInterval(handle);
+      clearInterval(intervalHandle);
       setIntervalHandle(undefined);
     }
   }, [])

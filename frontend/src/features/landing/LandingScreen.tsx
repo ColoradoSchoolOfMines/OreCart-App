@@ -8,9 +8,9 @@ import { wrapReduxQuery } from "../../common/query";
 import AlertBanner from "../alert/AlertBanner";
 import { useGetActiveAlertsQuery, type Alert } from "../alert/alertSlice";
 import LocationPermissionPrompt from "../location/LocationPermissionPrompt";
-import { changeMapFocus, type MapFocus } from "../map/mapSlice";
 import { useGetRoutesQuery, type ParentRoute } from "../routes/routesSlice";
 
+import { changeMapFocus } from "../map/mapSlice";
 import { RouteItem, RouteItemSkeleton } from "./RouteItem";
 
 export interface LandingScreenProps {
@@ -24,12 +24,9 @@ export const LandingScreen = ({
 }: LandingScreenProps): React.JSX.Element => {
   const routes = useGetRoutesQuery();
   const alerts = useGetActiveAlertsQuery();
-  const focus: MapFocus | undefined = routes.isSuccess
-    ? {
-        type: "None",
-      }
-    : undefined;
-  changeMapFocus(focus);
+  changeMapFocus({
+    type: "None",
+  });
 
   return (
     <List
@@ -46,7 +43,7 @@ export const LandingScreen = ({
         <RouteItem
           route={route}
           onPress={(route: ParentRoute) => {
-            navigation.navigate("Route", { routeId: route.id });
+            navigation.push("Route", { routeId: route.id });
           }}
         />
       )}

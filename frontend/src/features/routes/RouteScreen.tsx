@@ -23,11 +23,10 @@ export const RouteScreen = ({
   navigation,
 }: RouteScreenProps): React.JSX.Element => {
   const route = useGetRouteQuery(navRoute.params.routeId);
-  const focus: MapFocus | undefined = route.isSuccess
+  const routeFocus: MapFocus = route.isSuccess
     ? { type: "SingleRoute", route: route.data }
     : undefined;
-  changeMapFocus(focus);
-  console.log(route.isError);
+  changeMapFocus(routeFocus);
 
   return (
     <ParentChildList
@@ -38,7 +37,7 @@ export const RouteScreen = ({
           route={route}
           stop={stop}
           onPress={(stop: Stop) => {
-            navigation.navigate("Stop", { stopId: stop.id });
+            navigation.push("Stop", { stopId: stop.id });
           }}
         />
       )}

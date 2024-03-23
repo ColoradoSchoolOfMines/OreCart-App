@@ -21,6 +21,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import FloatingButton from "../common/components/FloatingButton";
 import Sheet from "../common/components/Sheet";
+import { useAppDispatch } from "../common/hooks";
 import { type InnerParamList, type OuterParamList } from "../common/navTypes";
 import Color from "../common/style/color";
 import LayoutStyle from "../common/style/layout";
@@ -29,8 +30,8 @@ import { LandingScreen } from "../features/landing/LandingScreen";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
 import { RouteScreen } from "../features/routes/RouteScreen";
-import { StopScreen } from "../features/stops/StopScreen";
 import { manageArrivalEstimates } from "../features/stops/arrivalSlice";
+import { StopScreen } from "../features/stops/StopScreen";
 
 export interface HomeScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Home">;
@@ -66,6 +67,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
   const drawerInsets = { top: insets.top };
   const expoVersion = Constants.expoConfig?.version;
   const [atLanding, setAtLanding] = useState<boolean>(true);
+  const dispatch = useAppDispatch();
 
   manageLocationMiddleware();
   manageArrivalEstimates();

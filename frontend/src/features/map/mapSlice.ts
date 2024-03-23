@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
+import { useFocusEffect } from "@react-navigation/native";
 import { useAppDispatch, useAppSelector } from "../../common/hooks";
-import { type ParentRoute } from "../routes/routesSlice";
-import { type ParentStop } from "../stops/stopsSlice";
-import { useEffect } from "react";
+import { ParentRoute } from "../routes/routesSlice";
+import { ParentStop } from "../stops/stopsSlice";
 
 export type MapFocus = None | SingleRoute | SingleStop;
 
@@ -13,12 +13,12 @@ export interface None {
 
 export interface SingleRoute {
   type: "SingleRoute";
-  routeId: number;
+  route: ParentRoute;
 }
 
 export interface SingleStop {
   type: "SingleStop";
-  stopId: number;
+  stop: ParentStop;
 }
 
 export interface MapState {
@@ -39,19 +39,15 @@ export const mapSlice = createSlice({
   },
 });
 
-const { focusMap } = mapSlice.actions;
+export const { focusMap } = mapSlice.actions;
 
 export const changeMapFocus = (focus?: MapFocus): void => {
-  // const dispatch = useAppDispatch();
-  // if (focus !== undefined) {
-  //   dispatch(focusMap(focus));
-  // }
-  // const dispatch = useAppDispatch();
-  // useEffect(() => {
-  //   if (focus !== undefined) {
-  //     dispatch(focusMap(focus));
-  //   }
-  // }, [focus]);
+  const dispatch = useAppDispatch();
+  useFocusEffect(() => {
+    if (focus !== undefined) {
+      dispatch(focusMap(focus));
+    }
+  });
 };
 
 export const useMapFocus = (): MapFocus => {

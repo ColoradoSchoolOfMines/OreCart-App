@@ -28,14 +28,10 @@ export const StopScreen = ({
   navigation,
 }: StopScreenProps): React.JSX.Element => {
   const stop = useGetStopQuery(route.params.stopId);
-  const focus: MapFocus | undefined = stop.isSuccess
-    ? {
-        type: "SingleStop",
-        stop: stop.data,
-      }
+  const stopFocus: MapFocus = stop.isSuccess
+    ? { type: "SingleStop", stop: stop.data }
     : undefined;
-  changeMapFocus(focus);
-  console.log(stop.error)
+  changeMapFocus(stopFocus);
 
   return (
     <ParentChildList
@@ -46,7 +42,7 @@ export const StopScreen = ({
           route={route}
           stop={stop}
           onPress={(route: Route) => {
-            navigation.navigate("Route", { routeId: route.id });
+            navigation.push("Route", { routeId: route.id });
           }}
         />
       )}
