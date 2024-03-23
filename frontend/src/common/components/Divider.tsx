@@ -14,7 +14,7 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: Color.csm.primary.pale_blue,
-    margin: 8,
+    marginVertical: 8,
   },
 });
 

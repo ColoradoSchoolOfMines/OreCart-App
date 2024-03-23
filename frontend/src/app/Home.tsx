@@ -175,6 +175,8 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 const typedInnerNavigation =
                   innerNavigation as NavigationProp<InnerParamList>;
                 setAtLanding(!typedInnerNavigation.canGoBack());
+
+                // TODO: Store sheet state in history so we can restore it when navigating back.
               },
             })}
           >

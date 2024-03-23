@@ -32,6 +32,7 @@ function QueryText<T>({
     );
   }
   if (query.isError) {
+    // TODO: Show an error icon here (should be configurable)
     return (
       <Text style={style} {...props}>
         {error ?? ""}

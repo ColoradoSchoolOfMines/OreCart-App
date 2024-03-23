@@ -11,7 +11,7 @@ import { type InnerParamList } from "../../common/navTypes";
 import { wrapReduxQuery } from "../../common/query";
 import Color from "../../common/style/color";
 import { useDistance, type Coordinate } from "../location/locationSlice";
-import { formatSecondsAsMinutes } from "../location/util";
+import { formatMiles, geoDistanceToMiles } from "../location/util";
 import { changeMapFocus, type MapFocus } from "../map/mapSlice";
 import { type Route } from "../routes/routesSlice";
 
@@ -59,7 +59,13 @@ export const StopScreen = ({
   );
 };
 
-const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
+const StopHeader = ({
+  stop,
+  route,
+}: {
+  stop: ParentStop;
+  route: Route;
+}): React.JSX.Element => {
   const distance = useDistance(stop);
 
   return (
@@ -69,7 +75,7 @@ const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
         style={styles.stopDesc}
         query={distance}
         body={(distance: number) =>
-          `Next OreCart in ${formatSecondsAsMinutes(distance)}`
+          `${formatMiles(geoDistanceToMiles(distance))} away`
         }
         skeletonWidth={0.3}
       />

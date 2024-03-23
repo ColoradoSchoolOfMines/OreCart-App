@@ -74,7 +74,7 @@ export const RouteStopItem = ({
             body={(distance: number) =>
               `${formatMiles(geoDistanceToMiles(distance))} away`
             }
-            skeletonWidth={0.6}
+            skeletonWidth={0.3}
           />
         </View>
         <MaterialIcons

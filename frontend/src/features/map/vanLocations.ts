@@ -28,6 +28,7 @@ interface VanLocationQuery {
 }
 
 export const useVanLocations = (routes?: Route[]): Query<VanLocation[]> => {
+  // TODO: Handle errors here
   const [ws, setWs] = useState<WebSocket | undefined>(undefined);
   const [intervalHandle, setIntervalHandle] = useState<
     NodeJS.Timeout | undefined

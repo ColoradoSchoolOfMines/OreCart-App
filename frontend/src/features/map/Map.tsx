@@ -13,7 +13,11 @@ import Color from "../../common/style/color";
 import LayoutStyle from "../../common/style/layout";
 import SpacingStyle, { type Insets } from "../../common/style/spacing";
 import { useLocation, type Coordinate } from "../location/locationSlice";
-import { useGetRoutesQuery, type Route } from "../routes/routesSlice";
+import {
+  useGetRoutesQuery,
+  type Route,
+  type WaypointRoute,
+} from "../routes/routesSlice";
 import {
   useGetStopsQuery,
   type ColorStop,
@@ -50,7 +54,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
   const mapRef = useRef<MapView>(null);
   const [followingLocation, setFollowingLocation] = useState<boolean>(true);
   const [lastLocation, setLastLocation] = useState<Coordinate | undefined>(
-    undefined,
+    undefined
   );
 
   const focus = useMapFocus();
@@ -94,7 +98,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
    * Given a function of waypoints, return a region from the most top-left to the most bottom-right
    * points in the list.
    */
-  function routeBounds(route: Route): Region {
+  function routeBounds(route: WaypointRoute): Region {
     let minLat = route.waypoints[0].latitude;
     let maxLat = route.waypoints[0].latitude;
     let minLon = route.waypoints[0].longitude;

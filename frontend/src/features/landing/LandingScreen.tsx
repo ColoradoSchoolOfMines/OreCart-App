@@ -32,7 +32,7 @@ export const LandingScreen = ({
     <List
       style={styles.container}
       header={() => (
-        <View>
+        <View style={styles.header}>
           <AlertBanner
             alerts={wrapReduxQuery<Alert[]>(alerts)}
             refresh={alerts.refetch}
@@ -62,5 +62,9 @@ export const LandingScreen = ({
 const styles = StyleSheet.create({
   container: {
     padding: 8,
+  },
+  header: {
+    marginBottom: 8,
+    gap: 8,
   },
 });

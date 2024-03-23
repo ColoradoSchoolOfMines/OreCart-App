@@ -1,13 +1,14 @@
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
-import { RefreshControl, type ViewProps } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
 
 import { type Query } from "../query";
 
+import { RefreshControl, type ViewProps } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 import Divider from "./Divider";
 import ErrorMessage from "./ErrorMessage";
 import SkeletonList from "./SkeletonList";
+import Spacer from "./Spacer";
 
 export interface ListProps<T> extends ViewProps {
   header?: () => React.JSX.Element;
@@ -40,7 +41,7 @@ function List<T>({
         data={query.data}
         renderItem={({ item: data }) => item(data)}
         ListHeaderComponent={header}
-        ItemSeparatorComponent={divider === "line" ? Divider : Divider}
+        ItemSeparatorComponent={divider === "line" ? Divider : Spacer}
         focusHook={useFocusEffect}
         keyExtractor={keyExtractor}
       />
@@ -50,7 +51,7 @@ function List<T>({
         data={query.data}
         renderItem={({ item: data }) => item(data)}
         ListHeaderComponent={header}
-        ItemSeparatorComponent={divider === "line" ? Divider : Divider}
+        ItemSeparatorComponent={divider === "line" ? Divider : Spacer}
         keyExtractor={keyExtractor}
         refreshControl={
           <RefreshControl

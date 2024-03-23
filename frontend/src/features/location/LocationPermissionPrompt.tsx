@@ -46,8 +46,6 @@ const styles = StyleSheet.create({
     backgroundColor: Color.csm.primary.pale_blue,
     padding: 16,
     borderRadius: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
   },
   message: {
     fontSize: 16,

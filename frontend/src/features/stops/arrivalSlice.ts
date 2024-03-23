@@ -75,6 +75,7 @@ export const { setSubscribers, removeSubscribers, setArrivalTimes } =
 const stopArrivalsApiUrl = `${Constants.expoConfig?.extra?.wsApiUrl}/vans/v2/arrivals/subscribe`;
 
 export const manageArrivalEstimates = (): void => {
+  // TODO: Handle errors here
   const [ws, setWs] = useState<WebSocket | undefined>(undefined);
   const [intervalHandle, setIntervalHandle] = useState<
     NodeJS.Timeout | undefined
