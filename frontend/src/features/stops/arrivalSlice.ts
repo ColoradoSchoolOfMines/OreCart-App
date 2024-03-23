@@ -11,7 +11,6 @@ import { loading, success, type Query } from "../../common/query";
 import { type Route } from "../routes/routesSlice";
 import { type Stop } from "../stops/stopsSlice";
 
-
 export const subscribeArrival =
   createAction<ArrivalSubscription>("arrivals/subscribe");
 export const unsubscribeArrival = createAction<ArrivalSubscription>(
@@ -97,7 +96,7 @@ export const manageArrivalEstimates = (): void => {
       query[stopId].push(routeId);
     }
     ws?.send(JSON.stringify(query));
-  }
+  };
 
   useEffect(() => {
     if (ws === undefined) {

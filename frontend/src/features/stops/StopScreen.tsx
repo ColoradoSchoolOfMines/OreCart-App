@@ -35,6 +35,7 @@ export const StopScreen = ({
 
   return (
     <ParentChildList
+      style={styles.listContainer}
       header={(stop: ParentStop) => <StopHeader stop={stop} />}
       headerSkeleton={() => <StopSkeleton />}
       item={(stop: ParentStop, route: Route) => (
@@ -52,6 +53,7 @@ export const StopScreen = ({
       refresh={stop.refetch}
       map={(stop: ParentStop) => stop.routes}
       keyExtractor={(route: Route) => route.id.toString()}
+      bottomSheet={true}
       errorMessage="Failed to load stop. Please try again."
     />
   );
@@ -61,7 +63,7 @@ const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
   const distance = useDistance(stop);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.headerContainer}>
       <Text style={styles.stopName}>{stop.name}</Text>
       <QueryText
         style={styles.stopDesc}
@@ -86,7 +88,7 @@ const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
 
 const StopSkeleton = (): React.JSX.Element => {
   return (
-    <View style={styles.container}>
+    <View style={styles.headerContainer}>
       <TextSkeleton style={styles.stopName} widthFraction={0.4} />
       <TextSkeleton style={styles.stopDesc} widthFraction={0.3} />
       <View style={[styles.button, styles.buttonSkeleton]}>
@@ -122,7 +124,10 @@ const openDirections = (coordinate: Coordinate): void => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  listContainer: {
+    paddingHorizontal: 8,
+  },
+  headerContainer: {
     padding: 16,
   },
   stopName: {

@@ -30,6 +30,7 @@ export const LandingScreen = ({
 
   return (
     <List
+      style={styles.container}
       header={() => (
         <View>
           <AlertBanner
@@ -52,13 +53,14 @@ export const LandingScreen = ({
       query={wrapReduxQuery<ParentRoute[]>(routes)}
       refresh={async () => await routes.refetch().then(alerts.refetch)}
       keyExtractor={(route: ParentRoute) => route.id.toString()}
+      bottomSheet={true}
       errorMessage="Failed to load routes. Please try again."
     />
   );
 };
 
 const styles = StyleSheet.create({
-  message: {
-    margin: 16,
+  container: {
+    padding: 8,
   },
 });

@@ -100,18 +100,18 @@ const AlertBanner = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
     backgroundColor: Color.generic.alert.primary,
     borderRadius: 16,
   },
   headerContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 8,
   },
   alertsContainer: {
-    marginTop: 8,
+    padding: 16,
   },
   header: {
     fontSize: 20,
@@ -125,6 +125,9 @@ const styles = StyleSheet.create({
   },
   alertText: {
     fontSize: 16,
+    paddingTop: 16,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
     color: Color.generic.white,
   },
 });

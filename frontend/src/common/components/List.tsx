@@ -1,5 +1,7 @@
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
+import { RefreshControl, type ViewProps } from "react-native";
+import { FlatList } from "react-native-gesture-handler";
 
 import { type Query } from "../query";
 
@@ -7,12 +9,13 @@ import Divider from "./Divider";
 import ErrorMessage from "./ErrorMessage";
 import SkeletonList from "./SkeletonList";
 
-export interface ListProps<T> {
+export interface ListProps<T> extends ViewProps {
   header?: () => React.JSX.Element;
   item: (item: T) => React.JSX.Element;
   itemSkeleton: () => React.JSX.Element;
   divider: "line" | "space";
   keyExtractor: (item: T) => string;
+  bottomSheet: boolean;
   query: Query<T[]>;
   refresh: () => Promise<object>;
   errorMessage: string;
@@ -22,25 +25,48 @@ function List<T>({
   header,
   item,
   itemSkeleton,
-  keyExtractor,
   divider,
+  keyExtractor,
+  bottomSheet,
   query,
   refresh,
   errorMessage,
+  ...props
 }: ListProps<T>): React.JSX.Element {
   return query.isSuccess ? (
-    <BottomSheetFlatList
-      data={query.data}
-      renderItem={({ item: data }) => item(data)}
-      ListHeaderComponent={header}
-      ItemSeparatorComponent={divider === "line" ? Divider : Divider}
-      focusHook={useFocusEffect}
-      keyExtractor={keyExtractor}
-    />
+    bottomSheet ? (
+      <BottomSheetFlatList
+        {...props}
+        data={query.data}
+        renderItem={({ item: data }) => item(data)}
+        ListHeaderComponent={header}
+        ItemSeparatorComponent={divider === "line" ? Divider : Divider}
+        focusHook={useFocusEffect}
+        keyExtractor={keyExtractor}
+      />
+    ) : (
+      <FlatList
+        {...props}
+        data={query.data}
+        renderItem={({ item: data }) => item(data)}
+        ListHeaderComponent={header}
+        ItemSeparatorComponent={divider === "line" ? Divider : Divider}
+        keyExtractor={keyExtractor}
+        refreshControl={
+          <RefreshControl
+            refreshing={query.isLoading}
+            enabled={query.data !== undefined}
+            onRefresh={() => {
+              refresh().catch(() => {});
+            }}
+          />
+        }
+      />
+    )
   ) : query.isLoading ? (
-    <SkeletonList itemSkeleton={itemSkeleton} divider={divider} />
+    <SkeletonList {...props} itemSkeleton={itemSkeleton} divider={divider} />
   ) : (
-    <ErrorMessage message={errorMessage} retry={refresh} />
+    <ErrorMessage {...props} message={errorMessage} retry={refresh} />
   );
 }
 
