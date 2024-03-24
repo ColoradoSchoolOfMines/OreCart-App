@@ -71,9 +71,14 @@ const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
       <QueryText
         style={styles.stopDesc}
         query={distance}
-        body={(distance: number) =>
-          `${formatMiles(geoDistanceToMiles(distance))} away`
-        }
+        body={(distance: number) => (
+          <Text>
+            <Text style={styles.emphasis}>
+              {formatMiles(geoDistanceToMiles(distance))}
+            </Text>{" "}
+            away
+          </Text>
+        )}
         skeletonWidth={0.3}
       />
       <TouchableHighlight
@@ -177,5 +182,8 @@ const styles = StyleSheet.create({
   },
   message: {
     marginVertical: 16,
+  },
+  emphasis: {
+    fontWeight: "bold",
   },
 });

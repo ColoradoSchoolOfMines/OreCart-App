@@ -54,11 +54,18 @@ export const StopRouteItem = ({
           <QueryText
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
-              arrivalEstimate !== undefined
-                ? `Next OreCart in ${formatSecondsAsMinutes(arrivalEstimate)}`
-                : route.isActive
-                  ? "Running"
-                  : "Not running"
+              arrivalEstimate !== undefined ? (
+                <Text>
+                  Next OreCart in{" "}
+                  <Text style={styles.emphasis}>
+                    {formatSecondsAsMinutes(arrivalEstimate)}
+                  </Text>
+                </Text>
+              ) : route.isActive ? (
+                <Text>Running</Text>
+              ) : (
+                <Text>Not running</Text>
+              )
             }
             skeletonWidth={0.6}
             error={"Failed to load time estimate"}
@@ -108,7 +115,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-  routeStatusEmphasis: {
+  emphasis: {
     fontWeight: "bold",
   },
 });

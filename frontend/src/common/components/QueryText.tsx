@@ -14,7 +14,7 @@ interface QueryTextProps<T> extends TextProps {
   /**
    * A function that returns the text to display when the query is successful.
    */
-  body: (data: T) => string;
+  body: (data: T) => React.JSX.Element;
   /**
    * The width of the skeleton text as a fraction of the screen width.
    * Should be similar to the real loaded text length for a good user experience.
@@ -39,11 +39,7 @@ function QueryText<T>({
   ...props
 }: QueryTextProps<T>): React.JSX.Element {
   if (query.isSuccess) {
-    return (
-      <Text style={style} {...props}>
-        {body(query.data)}
-      </Text>
-    );
+    return body(query.data);
   }
   if (query.isLoading) {
     return (

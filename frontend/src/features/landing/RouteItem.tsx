@@ -60,21 +60,30 @@ export const RouteItem = ({
           </Text>
           <QueryText
             query={closestStop}
-            body={(closestStop: Closest<Stop>) =>
-              `Closest stop at ${closestStop.value.name} (${formatMiles(
-                geoDistanceToMiles(closestStop.distance)
-              )} away)`
-            }
+            body={(closestStop: Closest<Stop>) => (
+              <Text>
+                Closest stop at{" "}
+                <Text style={styles.emphasis}>{closestStop.value.name}</Text> (
+                {formatMiles(geoDistanceToMiles(closestStop.distance))} away)
+              </Text>
+            )}
             skeletonWidth={0.5}
           />
           <QueryText
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
-              arrivalEstimate !== undefined
-                ? `Next OreCart in ${formatSecondsAsMinutes(arrivalEstimate)}`
-                : route.isActive
-                  ? "Running"
-                  : "Not running"
+              arrivalEstimate !== undefined ? (
+                <Text>
+                  Next OreCart in{" "}
+                  <Text style={styles.emphasis}>
+                    {formatSecondsAsMinutes(arrivalEstimate)}
+                  </Text>
+                </Text>
+              ) : route.isActive ? (
+                <Text>Running</Text>
+              ) : (
+                <Text>Not running</Text>
+              )
             }
             skeletonWidth={0.6}
             error={"Failed to load time estimate"}
@@ -123,7 +132,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
   },
-  routeStatusEmphasis: {
+  emphasis: {
     fontWeight: "bold",
   },
 });
