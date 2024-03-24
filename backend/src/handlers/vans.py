@@ -181,7 +181,14 @@ async def subscribe_vans(websocket: WebSocket) -> None:
             include_set = process_include(msg.include, INCLUDES_V2)
             now = datetime.now(timezone.utc)
             with websocket.app.state.db.session() as session:
-                resp: Dict[str, Union[str, Dict[str, Union[float, str, bool, int, dict[str, float]]], List[Dict[str, Union[float, str, bool, int, dict[str, float]]]]]] = {
+                resp: Dict[
+                    str,
+                    Union[
+                        str,
+                        Dict[str, Union[float, str, bool, int, dict[str, float]]],
+                        List[Dict[str, Union[float, str, bool, int, dict[str, float]]]],
+                    ],
+                ] = {
                     FIELD_TYPE: msg.query.type,
                 }
                 if msg.query.type == FIELD_VAN:
