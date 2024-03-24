@@ -15,7 +15,7 @@ class VanLocation(Base):
         primary_key=True, autoincrement=True, nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(
-        TZDateTime, nullable=False, server_default=func.now() # pylint: disable=all
+        TZDateTime, nullable=False, server_default=func.now()  # pylint: disable=all
     )
     session_id: Mapped[int] = mapped_column(
         ForeignKey("van_tracker_session.id"), nullable=False
