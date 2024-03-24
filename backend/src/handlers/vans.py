@@ -214,12 +214,8 @@ async def subscribe_vans(websocket: WebSocket) -> None:
             await websocket.send_json(resp)
             continue
         except Exception as e:
-            resp = {
-                FIELD_TYPE: TYPE_ERROR,
-                TYPE_ERROR: str(e),
-            }
-            await websocket.send_json(resp)
-            continue
+            await websocket.close()
+            raise e
     await websocket.close()
 
 
@@ -320,8 +316,8 @@ async def subscribe_arrivals(websocket: WebSocket) -> None:
             try:
                 arrivals = query_arrivals(session, now, stop_filter)
             except Exception as e:
-                await websocket.send_json({FIELD_TYPE: TYPE_ERROR, TYPE_ERROR: str(e)})
-                continue
+                await websocket.close()
+                raise e
             response = {FIELD_TYPE: FIELD_ARRIVALS, FIELD_ARRIVALS: arrivals}
             await websocket.send_json(response)
     await websocket.close()
