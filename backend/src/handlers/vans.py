@@ -372,7 +372,7 @@ def calculate_van_distance(
             session,
             now,
             VanTrackerSession.route_id == route_id,
-            VanTrackerSession.stop_index + 1 == stop_index,
+            VanTrackerSession.stop_index == (stop_index - 1) % len(stops),
         ).first()
         if arriving_session is not None:
             location = query_most_recent_location(session, arriving_session)
