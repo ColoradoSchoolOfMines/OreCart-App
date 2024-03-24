@@ -23,7 +23,7 @@ interface VanLocationMessage {
 }
 
 interface VanLocationQuery {
-  by: string;
+  type: string;
   alive?: boolean;
   routeIds?: number[];
 };
@@ -91,7 +91,7 @@ export const useVanLocations = (): Query<VanLocation[]> => {
     const message: VanLocationMessage = {
       include: ["color", "location"],
       query: {
-        by: "vans",
+        type: "vans",
         alive: true,
       },
     };
