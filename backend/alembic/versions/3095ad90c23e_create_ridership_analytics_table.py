@@ -7,13 +7,12 @@ Create Date: 2024-03-21 17:37:54.313073
 """
 from typing import Sequence, Union
 
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = '3095ad90c23e'
-down_revision: Union[str, None] = '3282eafd6bb4'
+revision: str = "3095ad90c23e"
+down_revision: Union[str, None] = "3282eafd6bb4"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
@@ -46,7 +45,6 @@ def upgrade() -> None:
         sa.Column("datetime", sa.DateTime(timezone=True), nullable=False),
         sa.UniqueConstraint("session_id", "datetime"),
     )
-    
 
 
 def downgrade() -> None:

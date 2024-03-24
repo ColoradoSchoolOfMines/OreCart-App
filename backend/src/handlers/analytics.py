@@ -86,6 +86,7 @@ def get_ridership(
 
     return analytics_json
 
+
 @router.post("/ridership/{van_guid}")
 async def post_ridership_stats(req: Request, van_guid: int):
     """
@@ -123,12 +124,10 @@ async def post_ridership_stats(req: Request, van_guid: int):
     with req.app.state.db.session() as session:
         # Find the route that the van is currently on, required by the ridership database.
         # If there is no route, then the van does not exist or is not running.
-        tracker_session = (
-            session.query(VanTrackerSession).filter(
-                VanTrackerSession.van_guid == van_guid,
-                VanTrackerSession.dead == False,
-                now - VanTrackerSession.created_at < timedelta(hours=12)
-            )
+        tracker_session = session.query(VanTrackerSession).filter(
+            VanTrackerSession.van_guid == van_guid,
+            VanTrackerSession.dead == False,
+            now - VanTrackerSession.created_at < timedelta(hours=12),
         )
         if not tracker_session:
             raise HardwareHTTPException(
