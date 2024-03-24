@@ -2,17 +2,31 @@ import apiSlice from "../../app/apiSlice";
 import { type Coordinate } from "../location/locationSlice";
 import { type Route } from "../routes/routesSlice";
 
+/**
+ * A stop containing all of the common information returned by the API.
+ */
 export interface Stop extends Coordinate {
+  /** The ID of the stop. */
   id: number;
+  /** The name of the stop. */
   name: string;
+  /** Whether the stop is currently active or has an outage. */
   isActive: boolean;
 }
 
+/**
+ * A stop with the colors of the routes it is on.
+ */
 export interface ColorStop extends Stop {
+  /** The colors of the Stop, derived from the route colors. */
   colors: string[];
 }
 
+/**
+ * A stop with the routes it is on.
+ */
 export interface ParentStop extends Stop {
+  /** The routes this stop is on. */
   routes: Route[];
 }
 

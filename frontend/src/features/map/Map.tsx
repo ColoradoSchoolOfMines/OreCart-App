@@ -99,6 +99,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
    * points in the list.
    */
   function routeBounds(route: WaypointRoute): Region {
+    // Find the min and max latitude and longitude values to create a bounding box for the route.
     let minLat = route.waypoints[0].latitude;
     let maxLat = route.waypoints[0].latitude;
     let minLon = route.waypoints[0].longitude;
@@ -110,6 +111,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
       if (waypoint.longitude < minLon) minLon = waypoint.longitude;
       if (waypoint.longitude > maxLon) maxLon = waypoint.longitude;
     }
+    // Add some additional padding to the bounds to ensure that the route is fully visible.
     minLat -= 0.0025;
     maxLat += 0.0025;
     minLon -= 0.0025;
@@ -133,9 +135,13 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
 
   useEffect(() => {
     if (focus.type === "None") {
+      // Return to the user location if enabled.
       if (followingLocation && location.isSuccess) {
         panToLocation(location.data);
       }
+      // Do nothing if we are following location and haven't gotten a location yet.
+      // We could maybe backtrack to the previous region before the navigation, but
+      // the callbacks/rerenders required kills performance.
     } else if (focus.type === "SingleRoute") {
       mapRef.current?.animateToRegion(routeBounds(focus.route));
     } else if (focus.type === "SingleStop") {
@@ -144,6 +150,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
   }, [focus]);
 
   function isStopVisible(stop: ColorStop): boolean {
+    // Either on the focused route or being focused on itself
     if (focus.type === "SingleRoute") {
       return focus.route.stops.some((other) => stop.id === other.id);
     }
@@ -154,6 +161,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
   }
 
   function isRouteVisible(route: Route): boolean {
+    // Either on the focused stop or being focused on itself
     if (focus.type === "SingleRoute") {
       return route.id === focus.route.id;
     }
@@ -175,13 +183,16 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
       <MapView
         style={LayoutStyle.fill}
         ref={mapRef}
-        provider={PROVIDER_GOOGLE}
-        showsUserLocation={true}
-        showsMyLocationButton={false}
-        mapPadding={padding}
-        toolbarEnabled={false}
-        region={GOLDEN}
+        provider={PROVIDER_GOOGLE} // Easier to work with one map provider
+        mapPadding={padding} // Makes sure google logo is visible
         scrollEnabled={true}
+        toolbarEnabled={false} // Interferes with UI
+        zoomControlEnabled={false} // Interferes with UI
+        showsMyLocationButton={false} // We have our own location button
+        pitchEnabled={false} // Interferes with map focus
+        rotateEnabled={false} // Interferes with map focus
+        showsUserLocation={true} // Indicator looks nicer than anything we could show
+        region={GOLDEN} // Makes sure we are showing relevant info if the user hasn't granted location permissions
         onPanDrag={() => {
           // Let's say the user accidentally pans a tad before they realize
           // that they haven't granted location permissions. We won't pan
@@ -242,7 +253,6 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
         {vans?.map((van) => (
           <Marker
             key={van.guid}
-            zIndex={4}
             tracksViewChanges={false}
             coordinate={van.location}
             anchor={{ x: 0.5, y: 0.5 }}

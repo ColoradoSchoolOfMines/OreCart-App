@@ -21,8 +21,9 @@ const ACCURACY = Location.Accuracy.BestForNavigation;
 let locationSubscription: Location.LocationSubscription | null = null;
 
 // The problem with location updates is that they are a callback-based API with sensitive lifecycle limitations
-// that we need to cram into the redux API. This middleware attempts to abstract this process with the following
-// lifecycle:
+// that we need to cram into the redux API. This could be done simpler with a manager hook like in other parts of
+// the app, but handling something like location permissions would then become impossible. This middleware attempts
+// to abstract this process with the following lifecycle:
 // 1. The top-level Main component calls manageLocationMiddleware(), which then sends a subscribe action to
 // the middleware. This creates the subscription and forwards them to the state in the location slice.
 // 2. The top-level Main component unmounts, which sends an unsubscribe action to the middleware. The middleware

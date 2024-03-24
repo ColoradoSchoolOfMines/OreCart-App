@@ -6,27 +6,28 @@ import { type Coordinate } from "../location/locationSlice";
 
 const vanLocationApiUrl = `${Constants.expoConfig?.extra?.wsApiUrl}/vans/v2/subscribe/`;
 
-export interface VanTrackerState {
-  subscribers: Record<number, number>;
-  locations: VanLocation[];
-}
-
 export interface VanLocation {
+  /** The identifier of the van that is currently at this location */
   guid: number;
+  /** The color of the route this van is currently on */
   color: string;
+  /** The current location of the van. */
   location: Coordinate;
 }
 
 interface VanLocationMessage {
   include: string[];
-  query: VanLocationQuery; 
+  query: VanLocationQuery
 }
 
 interface VanLocationQuery {
-  type: string;
-  alive?: boolean;
-  routeIds?: number[];
-};
+  type: "vans" | "van",
+  guid?: number,
+  alive?: boolean,
+  routeIds?: number[], 
+}
+
+type VanLocationResponse = VanLocationSuccess | VanLocationError;
 
 interface VanLocationSuccess {
   type: "vans",
@@ -38,6 +39,12 @@ interface VanLocationError {
   error: string,
 };
 
+/**
+ * Manage a van location websocket and get the resulting van locations from it.
+ * This is only designed this way since one component (map) uses it. If you need
+ * it in multiple places, you'll have to convert it to a subscriber system like in
+ * arrivalSlice.ts.
+ */
 export const useVanLocations = (): Query<VanLocation[]> => {
   const [ws, setWs] = useState<WebSocket | undefined>(undefined);
   const [intervalHandle, setIntervalHandle] = useState<
@@ -45,11 +52,12 @@ export const useVanLocations = (): Query<VanLocation[]> => {
   >(undefined);
   const [locations, setLocations] = useState<Query<VanLocation[]>>(loading());
   const [stupidCounter, setStupidCounter] = useState<number>(0);
+
   useEffect(() => {
     if (ws === undefined) {
       const ws = new WebSocket(vanLocationApiUrl);
       ws.addEventListener("message", (event) => {
-        const result: VanLocationSuccess | VanLocationError = JSON.parse(event.data);
+        const result: VanLocationResponse = JSON.parse(event.data);
         if (result.type === "vans") {
           setLocations(success(result.vans));
         } else {
@@ -89,14 +97,14 @@ export const useVanLocations = (): Query<VanLocation[]> => {
 
   useEffect(() => {
     const message: VanLocationMessage = {
-      include: ["color", "location"],
+      include: ["color", "location"], // Location is the whole point, and color is useful for the map.
       query: {
         type: "vans",
         alive: true,
       },
     };
     ws?.send(JSON.stringify(message));
-  }, [ws, stupidCounter]);
+  }, [ws, stupidCounter]); // Fire when opening the websocket or when the interval is fired.
 
   return locations;
 };

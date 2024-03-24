@@ -18,6 +18,9 @@ export interface LandingScreenProps {
   route: RouteProp<InnerParamList, "Landing">;
 }
 
+/**
+ * The landing screen shown within the bottom sheet component. Will unfocus the map.
+ */
 export const LandingScreen = ({
   route,
   navigation,

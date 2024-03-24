@@ -18,6 +18,9 @@ export interface RouteScreenProps {
   route: RouteProp<InnerParamList, "Route">;
 }
 
+/**
+ * Shows route information and stops. Will refocus the map onto the given route.
+ */
 export const RouteScreen = ({
   route: navRoute,
   navigation,
@@ -32,7 +35,7 @@ export const RouteScreen = ({
     <ParentChildList
       style={styles.listContainer}
       header={(route: ParentRoute) => <RouteHeader route={route} />}
-      headerSkeleton={() => <RouteSkeleton />}
+      headerSkeleton={() => <RouteHeaderSkeleton />}
       item={(route: ParentRoute, stop: Stop) => (
         <RouteStopItem
           route={route}
@@ -65,7 +68,7 @@ const RouteHeader = ({ route }: { route: ParentRoute }): React.JSX.Element => {
   );
 };
 
-const RouteSkeleton = (): React.JSX.Element => {
+const RouteHeaderSkeleton = (): React.JSX.Element => {
   return (
     <View style={styles.headerContainer}>
       <TextSkeleton style={styles.routeName} widthFraction={0.4} />

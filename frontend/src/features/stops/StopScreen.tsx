@@ -23,6 +23,9 @@ export interface StopScreenProps {
   route: RouteProp<InnerParamList, "Stop">;
 }
 
+/**
+ * Shows stop information and parent routes. Will refocus the map onto the stop/
+ */
 export const StopScreen = ({
   route,
   navigation,
@@ -37,7 +40,7 @@ export const StopScreen = ({
     <ParentChildList
       style={styles.listContainer}
       header={(stop: ParentStop) => <StopHeader stop={stop} />}
-      headerSkeleton={() => <StopSkeleton />}
+      headerSkeleton={() => <StopHeaderSkeleton />}
       item={(stop: ParentStop, route: Route) => (
         <StopRouteItem
           route={route}
@@ -86,7 +89,7 @@ const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
   );
 };
 
-const StopSkeleton = (): React.JSX.Element => {
+const StopHeaderSkeleton = (): React.JSX.Element => {
   return (
     <View style={styles.headerContainer}>
       <TextSkeleton style={styles.stopName} widthFraction={0.4} />
@@ -101,11 +104,14 @@ const StopSkeleton = (): React.JSX.Element => {
 const openDirections = (coordinate: Coordinate): void => {
   const location = `${coordinate.latitude},${coordinate.longitude}`;
   const url = Platform.select({
+    // Opens Apple Maps to immediately start navigation towards the stop
     ios: `http://maps.apple.com/?daddr=${location}`,
+    // Opens Google Maps to show navigation options towards the stop
     android: `google.navigation:q=${location}`,
   });
 
   if (url === undefined) {
+    // Should never happen, just make typescript happy
     console.error("Can't open directions on this platform");
     return;
   }

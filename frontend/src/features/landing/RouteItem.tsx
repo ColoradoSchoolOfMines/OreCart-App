@@ -23,7 +23,9 @@ import { type Stop } from "../stops/stopsSlice";
 import { useArrivalEstimateQuery } from "../vans/arrivalSlice";
 
 interface RouteItemProps {
+  /** The route to display. */
   route: ParentRoute;
+  /** Called when the route item is clicked on. */
   onPress: (route: ParentRoute) => void;
 }
 /**

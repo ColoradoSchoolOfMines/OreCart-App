@@ -7,12 +7,29 @@ import Color from "../style/color";
 import TextSkeleton from "./TextSkeleton";
 
 interface QueryTextProps<T> extends TextProps {
+  /**
+   * The query to display the text for.
+   */
   query: Query<T>;
+  /**
+   * A function that returns the text to display when the query is successful.
+   */
   body: (data: T) => string;
+  /**
+   * The width of the skeleton text as a fraction of the screen width.
+   * Should be similar to the real loaded text length for a good user experience.
+   */
   skeletonWidth: number;
+  /**
+   * The error message to display when the query fails.
+   */
   error?: string;
 }
 
+/**
+ * A text element that handles query state. Always use this component when you have
+ * a query, as it improves the UX.
+ */
 function QueryText<T>({
   query,
   body,

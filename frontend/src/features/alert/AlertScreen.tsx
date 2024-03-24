@@ -14,6 +14,9 @@ export interface AlertsScreenProps {
   route: RouteProp<OuterParamList, "Alerts">;
 }
 
+/**
+ * A screen that displays all future alerts.
+ */
 export const AlertScreen = ({
   route,
   navigation,

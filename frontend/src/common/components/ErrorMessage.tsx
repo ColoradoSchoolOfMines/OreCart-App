@@ -4,10 +4,15 @@ import { StyleSheet, Text, View, type ViewProps } from "react-native";
 import RetryButton from "./RetryButton";
 
 interface ErrorComponentProps extends ViewProps {
+  /** The error message to show. */
   message: string;
+  /** Hook to retry fetching the query that failed. */
   retry: () => Promise<object>;
 }
 
+/**
+ * A standard error message and retry button indicator.
+ */
 const ErrorMessage: React.FC<ErrorComponentProps> = ({
   message,
   retry,

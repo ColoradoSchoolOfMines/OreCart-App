@@ -13,17 +13,20 @@ import TextSkeleton from "../../common/components/TextSkeleton";
 import Color from "../../common/style/color";
 import { formatSecondsAsMinutes } from "../location/util";
 import { type Route } from "../routes/routesSlice";
-
 import { useArrivalEstimate } from "../vans/arrivalSlice";
+
 import { type ParentStop } from "./stopsSlice";
 
 interface StopRouteItemProps {
+  /** The route to show */
   route: Route;
+  /** The parent stop of the route. This stop should be on the given route. */
   stop: ParentStop;
+  /** Called when the item is pressed */
   onPress: (route: Route) => void;
 }
 /**
- * A component that renders a single route item.
+ * A component that renders a single route item in a stop context.
  */
 export const StopRouteItem = ({
   route,

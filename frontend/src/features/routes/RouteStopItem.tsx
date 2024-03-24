@@ -28,6 +28,7 @@ import { type ParentRoute } from "./routesSlice";
 interface RouteStopItemProps {
   /** The stop to display. */
   stop: Stop;
+  /** The parent route of the stop. The stop should be part of this. */
   route: ParentRoute;
   /** Called when the stop item is clicked on. */
   onPress: (stop: Stop) => void;
@@ -56,7 +57,6 @@ export const RouteStopItem = ({
         <View style={styles.stopInfoContainer}>
           <Text style={styles.stopName}>{stop.name}</Text>
           <QueryText
-            style={styles.stopStatus}
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
               arrivalEstimate !== undefined
@@ -69,7 +69,6 @@ export const RouteStopItem = ({
             error={"Failed to load time estimate"}
           />
           <QueryText
-            style={styles.stopStatus}
             query={distance}
             body={(distance: number) =>
               `${formatMiles(geoDistanceToMiles(distance))} away`

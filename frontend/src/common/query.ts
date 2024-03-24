@@ -1,5 +1,9 @@
 import { type FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
+/**
+ * A generic query object that represents the state of a data fetch. Generally follows
+ * the RTK query result type shape.
+ */
 export type Query<T, E = string> = SuccessQuery<T> | LoadingQuery | ErrorQuery<E>;
 
 export interface SuccessQuery<T> {
@@ -26,6 +30,9 @@ export interface ErrorQuery<E> {
   error: E;
 }
 
+/**
+ * Create a success query with a given data.
+ */
 export function success<T>(data: T): SuccessQuery<T> {
   return {
     data,
@@ -44,10 +51,16 @@ const LOADING: LoadingQuery = {
   error: undefined,
 };
 
+/**
+ * Create a loading query.
+ */
 export function loading(): LoadingQuery {
   return LOADING;
 }
 
+/**
+ * Create an error query with a given error.
+ */
 export function error<E>(
   error: E,
 ): ErrorQuery<E> {
@@ -60,6 +73,9 @@ export function error<E>(
   };
 }
 
+/**
+ * Wrap a RTK Query object in a Query object.
+ */
 export const wrapReduxQuery = <T>(
   // I didn't want to figure out RTK Query's insane type soup. Just use a big wildcard.
   query: Record<string, unknown>,
@@ -104,6 +120,9 @@ function isErrorWithMessage(
   )
 }
 
+/**
+ * Map a query's data to a new value.
+ */
 export const mapQuery = <T, U>(
   query: Query<T>,
   block: (data: T) => U,
@@ -117,6 +136,9 @@ export const mapQuery = <T, U>(
   return query;
 };
 
+/**
+ * Map a query's data to a new query.
+ */
 export const deepMapQuery = <T, U>(
   query: Query<T>,
   block: (data: T) => Query<U>,

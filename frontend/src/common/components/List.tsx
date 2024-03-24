@@ -1,27 +1,40 @@
 import { BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import { useFocusEffect } from "@react-navigation/native";
+import { FlatList, RefreshControl, type ViewProps } from "react-native";
 
 import { type Query } from "../query";
 
-import { RefreshControl, type ViewProps } from "react-native";
-import { FlatList } from "react-native-gesture-handler";
 import Divider from "./Divider";
 import ErrorMessage from "./ErrorMessage";
 import SkeletonList from "./SkeletonList";
 import Spacer from "./Spacer";
 
 export interface ListProps<T> extends ViewProps {
+  /** Returns the header to render (Optional) */
   header?: () => React.JSX.Element;
+  /** Returns the item to render. */
   item: (item: T) => React.JSX.Element;
+  /** Returns the skeleton item to render. */
   itemSkeleton: () => React.JSX.Element;
+  /** Whether to show a divider or a spacer */
   divider: "line" | "space";
+  /** Returns the key for the item. */
   keyExtractor: (item: T) => string;
+  /** Whether to use a bottom sheet or regular flat list */
   bottomSheet: boolean;
+  /** The query to use to fetch the data */
   query: Query<T[]>;
+  /** The function to call to refresh the query. */
   refresh: () => Promise<object>;
+  /** The error message to show if the query fails */
   errorMessage: string;
 }
 
+/**
+ * A list component that handles the needs to asynchrnous queries, headers, separators, and other
+ * common functionality. Always use this component when you have a query or other complex list need,
+ * as it improves the UX.
+ */
 function List<T>({
   header,
   item,
