@@ -4,7 +4,14 @@ from datetime import datetime, timedelta, timezone
 from math import cos, radians, sqrt
 from typing import Annotated, Any, Dict, List, Optional, Union
 
-from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    Query,
+    Request,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from pydantic import BaseModel
 from sqlalchemy import func
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
@@ -28,6 +35,11 @@ FIELD_ALIVE = "alive"
 FIELD_LOCATION = "location"
 FIELD_CREATED_AT = "started"
 FIELD_UPDATED_AT = "updated"
+FIELD_TYPE = "type"
+FIELD_ARRIVALS = "arrivals"
+FIELD_VAN = "van"
+FIELD_VANS = "vans"
+TYPE_ERROR = "error"
 INCLUDES_V1 = {FIELD_LOCATION}
 INCLUDES_V2 = {FIELD_COLOR, FIELD_LOCATION}
 
@@ -141,16 +153,16 @@ async def get_van_v2(
         return query_latest_van(session, now, van_guid, include_set)
 
 
-class VanSubscriptionFilterModel(BaseModel):
-    by: str
+class VanSubscriptionQueryModel(BaseModel):
+    type: str
     guid: Optional[str] = None
     alive: Optional[bool] = None
     routeIds: Optional[List[int]] = None
 
 
-class VanSubscriptionQueryModel(BaseModel):
+class VanSubscriptionMessageModel(BaseModel):
     include: List[str]
-    filter: VanSubscriptionFilterModel
+    query: VanSubscriptionQueryModel
 
 
 @router.websocket("/v2/subscribe/")
@@ -161,30 +173,53 @@ async def subscribe_vans(websocket: WebSocket) -> None:
             # Given the dynamic nature of subscribing, we actually overload the message
             # sent such that you can specify a vanguid or a route filter rather than
             # having 2 separate http routes.
-            query_json = await websocket.receive_json()
-        except:
+            msg_json = await websocket.receive_json()
+        except WebSocketDisconnect:
             break
         try:
-            query = VanSubscriptionQueryModel(**query_json)
-        except:
-            await websocket.send_json([])
+            msg = VanSubscriptionMessageModel(**msg_json)
+            include_set = process_include(msg.include, INCLUDES_V2)
+            now = datetime.now(timezone.utc)
+            with websocket.app.state.db.session() as session:
+                resp = {
+                    FIELD_TYPE: msg.query.type,
+                }
+                if msg.query.type == FIELD_VAN:
+                    if msg.query.guid is None:
+                        raise HTTPException(
+                            status_code=400, detail="GUID must be specified"
+                        )
+                    resp[FIELD_VAN] = query_latest_van(
+                        session, now, msg.query.guid, include_set
+                    )
+                elif msg.query.type == FIELD_VANS:
+                    resp[FIELD_VANS] = query_latest_vans(
+                        session,
+                        now,
+                        msg.query.alive,
+                        msg.query.routeIds,
+                        include_set,
+                    )
+                else:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid filter " + msg.query.type + " specified",
+                    )
+                await websocket.send_json(resp)
+        except HTTPException as e:
+            resp = {
+                FIELD_TYPE: TYPE_ERROR,
+                TYPE_ERROR: e.detail,
+            }
+            await websocket.send_json(resp)
             continue
-
-        include_set = process_include(query.include, INCLUDES_V2)
-        now = datetime.now(timezone.utc)
-        with websocket.app.state.db.session() as session:
-            message: List[Dict[str, Union[float, str, bool, int, Dict[str, float]]]] = (
-                []
-            )
-            if query.filter.by == "van" and query.filter.guid is not None:
-                message = [
-                    query_latest_van(session, now, query.filter.guid, include_set)
-                ]
-            elif query.filter.by == "vans":
-                message = query_latest_vans(
-                    session, now, query.filter.alive, query.filter.routeIds, include_set
-                )
-            await websocket.send_json(message)
+        except Exception as e:
+            resp = {
+                FIELD_TYPE: TYPE_ERROR,
+                TYPE_ERROR: str(e),
+            }
+            await websocket.send_json(resp)
+            continue
     await websocket.close()
 
 
@@ -220,7 +255,8 @@ def query_latest_vans(
         tracker_sessions = [
             tracker_session
             for tracker_session in tracker_sessions
-            if not tracker_session.dead == alive and not_stale(now, tracker_session.created_at) 
+            if not tracker_session.dead == alive
+            and not_stale(now, tracker_session.created_at)
         ]
 
     if route_ids is not None:
@@ -229,7 +265,6 @@ def query_latest_vans(
             for tracker_session in tracker_sessions
             if tracker_session.route_id in route_ids
         ]
-        
 
     locations_json: List[Dict[str, Union[float, str, bool, int, Dict[str, float]]]] = []
     for tracker_session in tracker_sessions:
@@ -270,11 +305,25 @@ async def subscribe_arrivals(websocket: WebSocket) -> None:
     while True:
         try:
             stop_filter: Dict[str, List[int]] = await websocket.receive_json()
-        except:
+        except WebSocketDisconnect:
             break
+        # Make sure stop filter confiorms to expected format
+        if not all(
+            isinstance(k, str) and isinstance(v, list) for k, v in stop_filter.items()
+        ):
+            await websocket.send_json(
+                {FIELD_TYPE: TYPE_ERROR, TYPE_ERROR: "Invalid stop filter"}
+            )
+            continue
         now = datetime.now(timezone.utc)
         with websocket.app.state.db.session() as session:
-            await websocket.send_json(query_arrivals(session, now, stop_filter))
+            try:
+                arrivals = query_arrivals(session, now, stop_filter)
+            except Exception as e:
+                await websocket.send_json({FIELD_TYPE: TYPE_ERROR, TYPE_ERROR: str(e)})
+                continue
+            response = {FIELD_TYPE: FIELD_ARRIVALS, FIELD_ARRIVALS: arrivals}
+            await websocket.send_json(response)
     await websocket.close()
 
 
