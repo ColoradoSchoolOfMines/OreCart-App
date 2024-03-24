@@ -55,16 +55,16 @@ export const StopRouteItem = ({
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
               arrivalEstimate !== undefined ? (
-                <Text>
+                <>
                   Next OreCart in{" "}
                   <Text style={styles.emphasis}>
                     {formatSecondsAsMinutes(arrivalEstimate)}
                   </Text>
-                </Text>
+                </>
               ) : route.isActive ? (
-                <Text>Running</Text>
+                <>Running</>
               ) : (
-                <Text>Not running</Text>
+                <>Not running</>
               )
             }
             skeletonWidth={0.6}

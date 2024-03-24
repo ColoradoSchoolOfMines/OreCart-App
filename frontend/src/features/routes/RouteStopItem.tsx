@@ -70,35 +70,35 @@ export const RouteStopItem = ({
             <Text style={invert ? styles.invert : undefined}>{stop.name}</Text>
           </Text>
           <QueryText
+            style={invert ? styles.invert : undefined}
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
               arrivalEstimate !== undefined ? (
-                <Text style={invert ? styles.invert : undefined}>
+                <>
                   Next OreCart in{" "}
                   <Text style={styles.emphasis}>
                     {formatSecondsAsMinutes(arrivalEstimate)}
                   </Text>
-                </Text>
+                </>
               ) : route.isActive ? (
-                <Text style={invert ? styles.invert : undefined}>Running</Text>
+                <>Running</>
               ) : (
-                <Text style={invert ? styles.invert : undefined}>
-                  Not running
-                </Text>
+                <>Not running</>
               )
             }
             skeletonWidth={0.5}
             error={"Failed to load time estimate"}
           />
           <QueryText
+            style={invert ? styles.invert : undefined}
             query={distance}
             body={(distance: number) => (
-              <Text style={invert ? styles.invert : undefined}>
+              <>
                 <Text style={styles.emphasis}>
                   {formatMiles(geoDistanceToMiles(distance))}
                 </Text>{" "}
                 away
-              </Text>
+              </>
             )}
             skeletonWidth={0.3}
           />

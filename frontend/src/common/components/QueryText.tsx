@@ -39,7 +39,7 @@ function QueryText<T>({
   ...props
 }: QueryTextProps<T>): React.JSX.Element {
   if (query.isSuccess) {
-    return body(query.data);
+    return <Text style={style}>{body(query.data)}</Text>;
   }
   if (query.isLoading) {
     return (

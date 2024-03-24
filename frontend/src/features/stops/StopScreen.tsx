@@ -72,12 +72,12 @@ const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
         style={styles.stopDesc}
         query={distance}
         body={(distance: number) => (
-          <Text>
+          <>
             <Text style={styles.emphasis}>
               {formatMiles(geoDistanceToMiles(distance))}
             </Text>{" "}
             away
-          </Text>
+          </>
         )}
         skeletonWidth={0.3}
       />
