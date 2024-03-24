@@ -51,7 +51,7 @@ export interface Closest<T> {
 
 /**
  * Use the closest coordinate from a list of objects that are coordinates. Will return
- * an error if the location is not available, or if there is no data given. 
+ * an error if the location is not available, or if there is no data given.
  */
 export const useClosest = <T extends Coordinate>(
   of: T[],
@@ -113,7 +113,7 @@ export const useClosestQuery = <T extends Coordinate>(
   }
 
   return success(closest);
-}
+};
 
 /**
  * Use the distance of the coordinate-line object from the current location. Will return

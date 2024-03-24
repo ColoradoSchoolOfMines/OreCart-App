@@ -12,8 +12,8 @@ import { useClosest } from "../location/locationSlice";
 import { changeMapFocus, type MapFocus } from "../map/mapSlice";
 import { type Stop } from "../stops/stopsSlice";
 
-import { RouteStopItem, RouteStopItemSkeleton } from "./RouteStopItem";
 import { useGetRouteQuery, type ParentRoute } from "./routesSlice";
+import { RouteStopItem, RouteStopItemSkeleton } from "./RouteStopItem";
 
 export interface RouteScreenProps {
   navigation: StackNavigationProp<InnerParamList, "Route">;

@@ -17,27 +17,27 @@ export interface VanLocation {
 
 interface VanLocationMessage {
   include: string[];
-  query: VanLocationQuery
+  query: VanLocationQuery;
 }
 
 interface VanLocationQuery {
-  type: "vans" | "van",
-  guid?: number,
-  alive?: boolean,
-  routeIds?: number[], 
+  type: "vans" | "van";
+  guid?: number;
+  alive?: boolean;
+  routeIds?: number[];
 }
 
 type VanLocationResponse = VanLocationSuccess | VanLocationError;
 
 interface VanLocationSuccess {
-  type: "vans",
-  vans: VanLocation[],
+  type: "vans";
+  vans: VanLocation[];
 }
 
 interface VanLocationError {
-  type: "error",
-  error: string,
-};
+  type: "error";
+  error: string;
+}
 
 /**
  * Manage a van location websocket and get the resulting van locations from it.

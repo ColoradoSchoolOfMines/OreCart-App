@@ -4,7 +4,10 @@ import { type FetchBaseQueryError } from "@reduxjs/toolkit/query";
  * A generic query object that represents the state of a data fetch. Generally follows
  * the RTK query result type shape.
  */
-export type Query<T, E = string> = SuccessQuery<T> | LoadingQuery | ErrorQuery<E>;
+export type Query<T, E = string> =
+  | SuccessQuery<T>
+  | LoadingQuery
+  | ErrorQuery<E>;
 
 export interface SuccessQuery<T> {
   data: T;
@@ -61,9 +64,7 @@ export function loading(): LoadingQuery {
 /**
  * Create an error query with a given error.
  */
-export function error<E>(
-  error: E,
-): ErrorQuery<E> {
+export function error<E>(error: E): ErrorQuery<E> {
   return {
     data: undefined,
     isSuccess: false,
@@ -85,7 +86,7 @@ export const wrapReduxQuery = <T>(
   } else if (query.isError as boolean) {
     const err = query.error;
     if (isFetchBaseQueryError(err)) {
-      const errMsg = 'error' in err ? err.error : JSON.stringify(err.data)
+      const errMsg = "error" in err ? err.error : JSON.stringify(err.data);
       return error(errMsg);
     } else if (isErrorWithMessage(err)) {
       return error(err.message);
@@ -100,24 +101,20 @@ export const wrapReduxQuery = <T>(
 /**
  * Type predicate to narrow an unknown error to `FetchBaseQueryError`
  */
-function isFetchBaseQueryError(
-  error: unknown,
-): error is FetchBaseQueryError {
-  return typeof error === 'object' && error != null && 'status' in error
+function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
+  return typeof error === "object" && error != null && "status" in error;
 }
 
 /**
  * Type predicate to narrow an unknown error to an object with a string 'message' property
  */
-function isErrorWithMessage(
-  error: unknown,
-): error is { message: string } {
+function isErrorWithMessage(error: unknown): error is { message: string } {
   return (
-    typeof error === 'object' &&
+    typeof error === "object" &&
     error != null &&
-    'message' in error &&
-    typeof (error as Record<string, unknown>).message === 'string'
-  )
+    "message" in error &&
+    typeof (error as Record<string, unknown>).message === "string"
+  );
 }
 
 /**

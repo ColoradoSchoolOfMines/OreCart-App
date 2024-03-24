@@ -54,7 +54,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
   const mapRef = useRef<MapView>(null);
   const [followingLocation, setFollowingLocation] = useState<boolean>(true);
   const [lastLocation, setLastLocation] = useState<Coordinate | undefined>(
-    undefined
+    undefined,
   );
 
   const focus = useMapFocus();
@@ -211,6 +211,9 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
             zIndex={0 + (isRouteVisible(route) ? 1 : 0)}
             key={route.id}
             coordinates={route.waypoints}
+            // strokeColor={
+            //   isRouteVisible(route) ? route.color : route.color + "40"
+            // }
             strokeColor={route.color}
             strokeWidth={4}
             lineCap="round"
@@ -226,6 +229,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
             }}
             zIndex={2 + (isStopVisible(stop) ? 1 : 0)}
             coordinate={stop}
+            // opacity={isStopVisible(stop) ? 1 : 0.25}
             tracksViewChanges={false}
             anchor={{ x: 0.5, y: 0.5 }}
           >

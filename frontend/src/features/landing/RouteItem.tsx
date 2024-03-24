@@ -42,7 +42,7 @@ export const RouteItem = ({
   const stop = mapQuery(closestStop, (closestStop) => closestStop.value);
   const arrivalEstimate: Query<number | undefined> = useArrivalEstimateQuery(
     stop,
-    route
+    route,
   );
 
   return (

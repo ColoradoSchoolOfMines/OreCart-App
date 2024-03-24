@@ -45,14 +45,14 @@ type ArrivalsResponse = Record<StopId, Record<RouteId, Seconds>>;
 type ArrivalResult = ArrivalSuccess | ArrivalsError;
 
 interface ArrivalSuccess {
-  type: "arrivals",
-  arrivals: ArrivalsResponse,
+  type: "arrivals";
+  arrivals: ArrivalsResponse;
 }
 
 interface ArrivalsError {
-  type: "error",
-  error: string,
-};
+  type: "error";
+  error: string;
+}
 
 const initialState: ArrivalsState = {
   subscribers: {},
@@ -91,7 +91,7 @@ export const arrivalsSlice = createSlice({
       for (const handle in state.subscribers) {
         state.times[handle] = error(action.payload);
       }
-    }
+    },
   },
 });
 

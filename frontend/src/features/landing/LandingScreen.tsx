@@ -64,7 +64,7 @@ export const LandingScreen = ({
 
 const styles = StyleSheet.create({
   container: {
-    padding: 8,
+    paddingHorizontal: 8,
   },
   header: {
     marginBottom: 8,
