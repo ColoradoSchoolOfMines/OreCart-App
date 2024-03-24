@@ -133,7 +133,7 @@ def query_stop_colors(stop_id: int, session) -> List[str]:
 
 
 def query_routes(
-    stop_id: int, alert: Alert, session
+    stop_id: int, alert: Optional[Alert], session
 ) -> list[dict[str, str | bool | int]]:
     """
     Queries and returns the routes that the given stop is assigned to.
