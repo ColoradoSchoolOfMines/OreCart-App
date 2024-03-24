@@ -14,10 +14,13 @@ class VanTrackerSession(Base):
         primary_key=True, autoincrement=True, nullable=False
     )
     created_at: Mapped[datetime] = mapped_column(
-        TZDateTime, nullable=False, server_default=func.now() # pylint: disable=all
+        TZDateTime, nullable=False, server_default=func.now()  # pylint: disable=all
     )
     updated_at: Mapped[datetime] = mapped_column(
-        TZDateTime, nullable=False, server_default=func.now(), onupdate=func.now() # pylint: disable=all
+        TZDateTime,
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),  # pylint: disable=all
     )
     van_guid: Mapped[str] = mapped_column(nullable=False)
     route_id: Mapped[int] = mapped_column(nullable=False)

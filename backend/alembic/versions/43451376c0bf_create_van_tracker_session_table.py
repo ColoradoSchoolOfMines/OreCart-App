@@ -23,7 +23,10 @@ def upgrade() -> None:
         "van_tracker_session",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column(
-            "created_at", sa.DateTime, nullable=False, server_default=sa.func.now() # pylint: disable=all
+            "created_at",
+            sa.DateTime,
+            nullable=False,
+            server_default=sa.func.now(),  # pylint: disable=all
         ),
         sa.Column(
             "updated_at",
