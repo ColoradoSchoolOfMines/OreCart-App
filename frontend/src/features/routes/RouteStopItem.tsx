@@ -71,6 +71,19 @@ export const RouteStopItem = ({
           </Text>
           <QueryText
             style={invert ? styles.invert : undefined}
+            query={distance}
+            body={(distance: number) => (
+              <>
+                <Text style={styles.emphasis}>
+                  {formatMiles(geoDistanceToMiles(distance))}
+                </Text>{" "}
+                away
+              </>
+            )}
+            skeletonWidth={0.3}
+          />
+          <QueryText
+            style={invert ? styles.invert : undefined}
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
               arrivalEstimate !== undefined ? (
@@ -88,19 +101,6 @@ export const RouteStopItem = ({
             }
             skeletonWidth={0.5}
             error={"Failed to load time estimate"}
-          />
-          <QueryText
-            style={invert ? styles.invert : undefined}
-            query={distance}
-            body={(distance: number) => (
-              <>
-                <Text style={styles.emphasis}>
-                  {formatMiles(geoDistanceToMiles(distance))}
-                </Text>{" "}
-                away
-              </>
-            )}
-            skeletonWidth={0.3}
           />
         </View>
         <MaterialIcons
