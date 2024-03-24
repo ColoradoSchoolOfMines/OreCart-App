@@ -34,6 +34,7 @@ FIELD_WAYPOINTS = "waypoints"
 FIELD_IS_ACTIVE = "isActive"
 FIELD_LATITUDE = "latitude"
 FIELD_LONGITUDE = "longitude"
+FIELD_DESCRIPTION = "description"
 INCLUDES = {
     FIELD_STOP_IDS,
     FIELD_WAYPOINTS,
@@ -64,7 +65,11 @@ def get_routes(
 
         routes_json = []
         for route in routes:
-            route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
+            route_json = {
+                FIELD_ID: route.id,
+                FIELD_NAME: route.name,
+                FIELD_DESCRIPTION: route.description,
+            }
 
             # Add related values to the route if included
             if FIELD_STOP_IDS in include_set:
@@ -204,7 +209,11 @@ def get_route(
         if not route:
             raise HTTPException(status_code=404, detail="Route not found")
 
-        route_json = {FIELD_ID: route.id, FIELD_NAME: route.name}
+        route_json = {
+            FIELD_ID: route.id,
+            FIELD_NAME: route.name,
+            FIELD_DESCRIPTION: route.description,
+        }
 
         # Add related values to the route if included
         if FIELD_STOP_IDS in include_set:
