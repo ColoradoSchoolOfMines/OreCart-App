@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 
 import { error, loading, success, type Query } from "../../common/query";
 import { type Coordinate } from "../location/locationSlice";
-import { type Route } from "../routes/routesSlice";
 
 const vanLocationApiUrl = `${Constants.expoConfig?.extra?.wsApiUrl}/vans/v2/subscribe/`;
 
@@ -18,41 +17,44 @@ export interface VanLocation {
   location: Coordinate;
 }
 
-interface VanLocationQuery {
+interface VanLocationMessage {
   include: string[];
-  filter: {
-    by: string;
-    alive?: boolean;
-    routeIds?: number[];
-  };
+  query: VanLocationQuery; 
 }
 
-export const useVanLocations = (routes?: Route[]): Query<VanLocation[]> => {
-  // TODO: Handle errors here
+interface VanLocationQuery {
+  by: string;
+  alive?: boolean;
+  routeIds?: number[];
+};
+
+interface VanLocationSuccess {
+  type: "vans",
+  vans: VanLocation[],
+}
+
+interface VanLocationError {
+  type: "error",
+  error: string,
+};
+
+export const useVanLocations = (): Query<VanLocation[]> => {
   const [ws, setWs] = useState<WebSocket | undefined>(undefined);
   const [intervalHandle, setIntervalHandle] = useState<
     NodeJS.Timeout | undefined
   >(undefined);
   const [locations, setLocations] = useState<Query<VanLocation[]>>(loading());
   const [stupidCounter, setStupidCounter] = useState<number>(0);
-
-  function send(routes?: Route[]): void {
-    const message: VanLocationQuery = {
-      include: ["color", "location"],
-      filter: {
-        by: "vans",
-        alive: true,
-        // routeIds: routes?.map((route) => route.id),
-      },
-    };
-    ws?.send(JSON.stringify(message));
-  }
-
   useEffect(() => {
     if (ws === undefined) {
       const ws = new WebSocket(vanLocationApiUrl);
       ws.addEventListener("message", (event) => {
-        setLocations(success(JSON.parse(event.data)));
+        const result: VanLocationSuccess | VanLocationError = JSON.parse(event.data);
+        if (result.type === "vans") {
+          setLocations(success(result.vans));
+        } else {
+          setLocations(error(result.error));
+        }
       });
 
       ws.addEventListener("open", () => {
@@ -65,7 +67,7 @@ export const useVanLocations = (routes?: Route[]): Query<VanLocation[]> => {
 
       ws.addEventListener("error", (e) => {
         setWs(undefined);
-        setLocations(error("Failed to connect to van location websocket"));
+        setLocations(error("Failed to connect to websocket"));
       });
 
       // For some reason ws.send within a useEffect setInterval call doesn't work,
@@ -86,8 +88,15 @@ export const useVanLocations = (routes?: Route[]): Query<VanLocation[]> => {
   }, []);
 
   useEffect(() => {
-    send(routes);
-  }, [routes, ws, stupidCounter]);
+    const message: VanLocationMessage = {
+      include: ["color", "location"],
+      query: {
+        by: "vans",
+        alive: true,
+      },
+    };
+    ws?.send(JSON.stringify(message));
+  }, [ws, stupidCounter]);
 
   return locations;
 };

@@ -7,7 +7,7 @@ import Constants from "expo-constants";
 import { useEffect, useState } from "react";
 
 import { useAppDispatch, useAppSelector } from "../../common/hooks";
-import { loading, success, type Query } from "../../common/query";
+import { error, loading, success, type Query } from "../../common/query";
 import { type Route } from "../routes/routesSlice";
 import { type Stop } from "../stops/stopsSlice";
 
@@ -19,37 +19,49 @@ export const unsubscribeArrival = createAction<ArrivalSubscription>(
 type StopId = number;
 type RouteId = number;
 type Handle = number;
-type ArrivalSubscribers = Record<Handle, ArrivalSubscription>;
-type ArrivalTimes = Record<Handle, Query<number | undefined>>;
-type ArrivalResponse = Record<StopId, Record<RouteId, number>>;
 
 interface ArrivalSubscription {
   stopId: number;
   routeId: number;
 }
 
+interface SubscribeArrival extends ArrivalSubscription {
+  handle: number;
+}
+
+type ArrivalSubscribers = Record<Handle, ArrivalSubscription>;
+type ArrivalTimes = Record<Handle, Query<number | undefined>>;
+
 interface ArrivalsState {
   subscribers: ArrivalSubscribers;
   times: ArrivalTimes;
 }
+
+type ArrivalsResponse = Record<StopId, Record<RouteId, number>>;
+type ArrivalResult = ArrivalSuccess | ArrivalsError;
+
+interface ArrivalSuccess {
+  type: "arrivals",
+  arrivals: ArrivalsResponse,
+}
+
+interface ArrivalsError {
+  type: "error",
+  error: string,
+};
 
 const initialState: ArrivalsState = {
   subscribers: {},
   times: {},
 };
 
-interface SubscribeArrivals {
-  handle: number;
-  stopId: number;
-  routeId: number;
-}
 
 export const arrivalsSlice = createSlice({
   name: "arrivals",
   // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
   initialState,
   reducers: {
-    setSubscribers: (state, action: PayloadAction<SubscribeArrivals>) => {
+    setSubscribers: (state, action: PayloadAction<SubscribeArrival>) => {
       state.subscribers[action.payload.handle] = action.payload;
       state.times[action.payload.handle] = loading();
     },
@@ -60,22 +72,26 @@ export const arrivalsSlice = createSlice({
       // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
       delete state.times[action.payload];
     },
-    setArrivalTimes: (state, action: PayloadAction<ArrivalResponse>) => {
+    setArrivalTimes: (state, action: PayloadAction<ArrivalsResponse>) => {
       for (const handle in state.subscribers) {
         const { stopId, routeId } = state.subscribers[handle];
         state.times[handle] = success(action.payload[stopId]?.[routeId]);
       }
     },
+    setArrivalError: (state, action: PayloadAction<string>) => {
+      for (const handle in state.subscribers) {
+        state.times[handle] = error(action.payload);
+      }
+    }
   },
 });
 
-export const { setSubscribers, removeSubscribers, setArrivalTimes } =
+const { setSubscribers, removeSubscribers, setArrivalTimes, setArrivalError } =
   arrivalsSlice.actions;
 
 const stopArrivalsApiUrl = `${Constants.expoConfig?.extra?.wsApiUrl}/vans/v2/arrivals/subscribe`;
 
 export const manageArrivalEstimates = (): void => {
-  // TODO: Handle errors here
   const [ws, setWs] = useState<WebSocket | undefined>(undefined);
   const [intervalHandle, setIntervalHandle] = useState<
     NodeJS.Timeout | undefined
@@ -84,36 +100,31 @@ export const manageArrivalEstimates = (): void => {
   const subscribers = useAppSelector((state) => state.arrivals.subscribers);
   const [stupidCounter, setStupidCounter] = useState<number>(0);
 
-  const send = (): void => {
-    const query: Record<number, number[]> = {};
-    for (const handle in subscribers) {
-      const { stopId, routeId } = subscribers[handle];
-      if (query[stopId] === undefined) {
-        query[stopId] = [];
-      }
-      if (query[stopId].includes(routeId)) {
-        continue;
-      }
-      query[stopId].push(routeId);
-    }
-    ws?.send(JSON.stringify(query));
-  };
-
   useEffect(() => {
     if (ws === undefined) {
       const ws = new WebSocket(stopArrivalsApiUrl);
       ws.addEventListener("message", (event) => {
-        dispatch(setArrivalTimes(JSON.parse(event.data)));
+        const result: ArrivalResult = JSON.parse(event.data);
+        if (result.type === "arrivals") {
+          dispatch(setArrivalTimes(result.arrivals));
+        } else {
+          dispatch(setArrivalError(result.error));
+        }
       });
+
       ws.addEventListener("open", () => {
         setWs(ws);
       });
+
       ws.addEventListener("close", () => {
         setWs(undefined);
       });
+
       ws.addEventListener("error", (e) => {
         setWs(undefined);
+        dispatch(setArrivalError("Failed to connect websocket"));
       });
+
       const handle = setInterval(() => {
         setStupidCounter((i) => i + 1);
       }, 2000);
@@ -128,7 +139,18 @@ export const manageArrivalEstimates = (): void => {
   }, []);
 
   useEffect(() => {
-    send();
+    const query: Record<number, number[]> = {};
+    for (const handle in subscribers) {
+      const { stopId, routeId } = subscribers[handle];
+      if (query[stopId] === undefined) {
+        query[stopId] = [];
+      }
+      if (query[stopId].includes(routeId)) {
+        continue;
+      }
+      query[stopId].push(routeId);
+    }
+    ws?.send(JSON.stringify(query));
   }, [ws, subscribers, stupidCounter]);
 };
 

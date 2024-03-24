@@ -3,7 +3,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import locationMiddleware from "../features/location/locationMiddleware";
 import locationReducer from "../features/location/locationSlice";
 import { mapSlice } from "../features/map/mapSlice";
-import { arrivalsSlice } from "../features/stops/arrivalSlice";
+import { arrivalsSlice } from "../features/vans/arrivalSlice";
 
 import apiSlice from "./apiSlice";
 

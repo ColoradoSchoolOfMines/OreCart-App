@@ -23,10 +23,10 @@ import {
   type ColorStop,
   type Stop,
 } from "../stops/stopsSlice";
+import { useVanLocations } from "../vans/locations";
 
 import { useMapFocus } from "./mapSlice";
 import Pie from "./Pie";
-import { useVanLocations } from "./vanLocations";
 
 const GOLDEN: Region = {
   latitude: 39.7422630160319,

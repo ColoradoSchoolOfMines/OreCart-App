@@ -29,8 +29,8 @@ import { LandingScreen } from "../features/landing/LandingScreen";
 import { manageLocationMiddleware } from "../features/location/locationMiddleware";
 import Map from "../features/map/Map";
 import { RouteScreen } from "../features/routes/RouteScreen";
-import { manageArrivalEstimates } from "../features/stops/arrivalSlice";
 import { StopScreen } from "../features/stops/StopScreen";
+import { manageArrivalEstimates } from "../features/vans/arrivalSlice";
 
 export interface HomeScreenProps {
   navigation: StackNavigationProp<OuterParamList, "Home">;

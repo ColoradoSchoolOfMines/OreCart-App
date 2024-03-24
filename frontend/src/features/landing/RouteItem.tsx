@@ -19,8 +19,8 @@ import {
   geoDistanceToMiles,
 } from "../location/util";
 import { type ParentRoute } from "../routes/routesSlice";
-import { useArrivalEstimateQuery } from "../stops/arrivalSlice";
 import { type Stop } from "../stops/stopsSlice";
+import { useArrivalEstimateQuery } from "../vans/arrivalSlice";
 
 interface RouteItemProps {
   route: ParentRoute;
@@ -40,7 +40,7 @@ export const RouteItem = ({
   const stop = mapQuery(closestStop, (closestStop) => closestStop.value);
   const arrivalEstimate: Query<number | undefined> = useArrivalEstimateQuery(
     stop,
-    route,
+    route
   );
 
   return (
@@ -57,17 +57,15 @@ export const RouteItem = ({
             {route.name}
           </Text>
           <QueryText
-            style={styles.routeStatus}
             query={closestStop}
             body={(closestStop: Closest<Stop>) =>
               `Closest stop at ${closestStop.value.name} (${formatMiles(
-                geoDistanceToMiles(closestStop.distance),
+                geoDistanceToMiles(closestStop.distance)
               )} away)`
             }
             skeletonWidth={0.5}
           />
           <QueryText
-            style={styles.routeStatus}
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
               arrivalEstimate !== undefined
@@ -77,7 +75,7 @@ export const RouteItem = ({
                   : "Not running"
             }
             skeletonWidth={0.6}
-            error={route.isActive ? "Running" : "Not running"}
+            error={"Failed to load time estimate"}
           />
         </View>
         <MaterialIcons
@@ -98,8 +96,8 @@ export const RouteItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
     <View style={[styles.innerContainer, style]}>
       <View style={styles.routeInfoContainer}>
         <TextSkeleton widthFraction={0.4} style={styles.routeName} />
-        <TextSkeleton widthFraction={0.6} style={styles.routeStatus} />
-        <TextSkeleton widthFraction={0.5} style={styles.routeStatus} />
+        <TextSkeleton widthFraction={0.6} />
+        <TextSkeleton widthFraction={0.5} />
       </View>
     </View>
   );
@@ -117,13 +115,11 @@ const styles = StyleSheet.create({
   },
   routeInfoContainer: {
     flex: 1,
+    gap: 4,
   },
   routeName: {
     fontSize: 24,
     fontWeight: "bold",
-  },
-  routeStatus: {
-    marginTop: 4,
   },
   routeStatusEmphasis: {
     fontWeight: "bold",

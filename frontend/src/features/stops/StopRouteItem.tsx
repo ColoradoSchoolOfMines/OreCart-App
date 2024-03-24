@@ -14,7 +14,7 @@ import Color from "../../common/style/color";
 import { formatSecondsAsMinutes } from "../location/util";
 import { type Route } from "../routes/routesSlice";
 
-import { useArrivalEstimate } from "./arrivalSlice";
+import { useArrivalEstimate } from "../vans/arrivalSlice";
 import { type ParentStop } from "./stopsSlice";
 
 interface StopRouteItemProps {
@@ -49,7 +49,6 @@ export const StopRouteItem = ({
             {route.name}
           </Text>
           <QueryText
-            style={styles.routeStatus}
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
               arrivalEstimate !== undefined
@@ -59,7 +58,7 @@ export const StopRouteItem = ({
                   : "Not running"
             }
             skeletonWidth={0.6}
-            error={route.isActive ? "Running" : "Not running"}
+            error={"Failed to load time estimate"}
           />
         </View>
         <MaterialIcons
@@ -82,7 +81,7 @@ export const StopRouteItemSkeleton = ({
     <View style={[styles.innerContainer, style]}>
       <View style={styles.routeInfoContainer}>
         <TextSkeleton widthFraction={0.4} style={[styles.routeName]} />
-        <TextSkeleton widthFraction={0.6} style={[styles.routeStatus]} />
+        <TextSkeleton widthFraction={0.6} />
       </View>
     </View>
   );
@@ -100,13 +99,11 @@ const styles = StyleSheet.create({
   },
   routeInfoContainer: {
     flex: 1,
+    gap: 4,
   },
   routeName: {
     fontSize: 24,
     fontWeight: "bold",
-  },
-  routeStatus: {
-    marginVertical: 4,
   },
   routeStatusEmphasis: {
     fontWeight: "bold",

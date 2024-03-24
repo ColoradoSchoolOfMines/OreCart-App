@@ -17,8 +17,8 @@ import {
   formatSecondsAsMinutes,
   geoDistanceToMiles,
 } from "../location/util";
-import { useArrivalEstimate } from "../stops/arrivalSlice";
 import { type Stop } from "../stops/stopsSlice";
+import { useArrivalEstimate } from "../vans/arrivalSlice";
 
 import { type ParentRoute } from "./routesSlice";
 
@@ -66,7 +66,7 @@ export const RouteStopItem = ({
                   : "Not running"
             }
             skeletonWidth={0.5}
-            error={stop.isActive ? "Running" : "Not running"}
+            error={"Failed to load time estimate"}
           />
           <QueryText
             style={styles.stopStatus}
@@ -95,8 +95,8 @@ export const StopItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
     <View style={[styles.innerContainer, style]}>
       <View style={styles.stopInfoContainer}>
         <TextSkeleton widthFraction={0.4} style={styles.stopName} />
-        <TextSkeleton widthFraction={0.5} style={styles.stopStatus} />
-        <TextSkeleton widthFraction={0.6} style={styles.stopStatus} />
+        <TextSkeleton widthFraction={0.5} />
+        <TextSkeleton widthFraction={0.6} />
       </View>
     </View>
   );
@@ -114,14 +114,11 @@ const styles = StyleSheet.create({
   },
   stopInfoContainer: {
     flex: 1,
+    gap: 4,
   },
   stopName: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 4,
-  },
-  stopStatus: {
-    marginBottom: 4,
   },
   stopStatusEmphasis: {
     fontWeight: "bold",

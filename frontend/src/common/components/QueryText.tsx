@@ -1,6 +1,8 @@
-import { Text, type TextProps } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import { StyleSheet, Text, View, type TextProps } from "react-native";
 
 import { type Query } from "../query";
+import Color from "../style/color";
 
 import TextSkeleton from "./TextSkeleton";
 
@@ -31,15 +33,35 @@ function QueryText<T>({
       <TextSkeleton style={style} widthFraction={skeletonWidth} {...props} />
     );
   }
-  if (query.isError) {
-    // TODO: Show an error icon here (should be configurable)
+  if (query.isError && error !== undefined) {
     return (
-      <Text style={style} {...props}>
-        {error ?? ""}
-      </Text>
+      <View style={styles.errorContainer}>
+        <MaterialIcons
+          name="error"
+          size={16}
+          style={styles.errorIcon}
+          color={Color.generic.alert.primary}
+        />
+        <Text style={[style, styles.error]} {...props}>
+          {error}
+        </Text>
+      </View>
     );
   }
   return <Text {...props} />;
 }
+
+const styles = StyleSheet.create({
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  error: {
+    color: Color.generic.alert.primary,
+    alignSelf: "center",
+  },
+  errorIcon: {},
+});
 
 export default QueryText;

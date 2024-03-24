@@ -59,13 +59,7 @@ export const StopScreen = ({
   );
 };
 
-const StopHeader = ({
-  stop,
-  route,
-}: {
-  stop: ParentStop;
-  route: Route;
-}): React.JSX.Element => {
+const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
   const distance = useDistance(stop);
 
   return (
