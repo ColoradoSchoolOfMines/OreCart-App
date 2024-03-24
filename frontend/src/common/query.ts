@@ -1,7 +1,6 @@
-import { type SerializedError } from "@reduxjs/toolkit";
 import { type FetchBaseQueryError } from "@reduxjs/toolkit/query";
 
-export type Query<T> = SuccessQuery<T> | LoadingQuery | ErrorQuery;
+export type Query<T, E = string> = SuccessQuery<T> | LoadingQuery | ErrorQuery<E>;
 
 export interface SuccessQuery<T> {
   data: T;
@@ -19,12 +18,12 @@ export interface LoadingQuery {
   error: undefined;
 }
 
-export interface ErrorQuery {
+export interface ErrorQuery<E> {
   data: undefined;
   isSuccess: false;
   isLoading: false;
   isError: true;
-  error: string | FetchBaseQueryError | SerializedError;
+  error: E;
 }
 
 export function success<T>(data: T): SuccessQuery<T> {
@@ -49,9 +48,9 @@ export function loading(): LoadingQuery {
   return LOADING;
 }
 
-export function error(
-  error: string | FetchBaseQueryError | SerializedError,
-): ErrorQuery {
+export function error<E>(
+  error: E,
+): ErrorQuery<E> {
   return {
     data: undefined,
     isSuccess: false,
@@ -63,26 +62,47 @@ export function error(
 
 export const wrapReduxQuery = <T>(
   // I didn't want to figure out RTK Query's insane type soup. Just use a big wildcard.
-  query: Record<
-    string,
-    | object
-    | boolean
-    | number
-    | string
-    | T
-    | undefined
-    | FetchBaseQueryError
-    | SerializedError
-  >,
+  query: Record<string, unknown>,
 ): Query<T> => {
   if (query.isSuccess as boolean) {
     return success(query.data as T);
   } else if (query.isError as boolean) {
-    return error(query.error as string | FetchBaseQueryError | SerializedError);
+    const err = query.error;
+    if (isFetchBaseQueryError(err)) {
+      const errMsg = 'error' in err ? err.error : JSON.stringify(err.data)
+      return error(errMsg);
+    } else if (isErrorWithMessage(err)) {
+      return error(err.message);
+    } else {
+      return error(JSON.stringify(err));
+    }
   } else {
     return loading();
   }
 };
+
+/**
+ * Type predicate to narrow an unknown error to `FetchBaseQueryError`
+ */
+function isFetchBaseQueryError(
+  error: unknown,
+): error is FetchBaseQueryError {
+  return typeof error === 'object' && error != null && 'status' in error
+}
+
+/**
+ * Type predicate to narrow an unknown error to an object with a string 'message' property
+ */
+function isErrorWithMessage(
+  error: unknown,
+): error is { message: string } {
+  return (
+    typeof error === 'object' &&
+    error != null &&
+    'message' in error &&
+    typeof (error as Record<string, unknown>).message === 'string'
+  )
+}
 
 export const mapQuery = <T, U>(
   query: Query<T>,
