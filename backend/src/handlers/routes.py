@@ -352,7 +352,20 @@ async def create_route(req: Request, kml_file: UploadFile):
                 if isinstance(style, PolyStyle):
                     color = style.color
                     break
-            route_model = Route(name=route_name, color=color)
+            # Want the text contents of all of the surface-level divs and then strip
+            # all of the tags of it's content
+
+            route_desc_html = BeautifulSoup(route.description, features="html.parser")
+            entries = [
+                div.text.strip()
+                for div in route_desc_html.find_all("div", recursive=False)
+            ]
+
+            if len(entries) < 3:
+                return HTTPException(status_code=400, detail="bad kml file")
+
+            description = entries[0]
+            route_model = Route(name=route_name, color=color, description=description)
             session.add(route_model)
             session.flush()
 
@@ -371,17 +384,7 @@ async def create_route(req: Request, kml_file: UploadFile):
                 session.add(waypoint)
                 session.flush()
 
-            route_desc_html = BeautifulSoup(route.description, features="html.parser")
-
-            # Want the text contents of all of the surface-level divs and then strip
-            # all of the tags of it's content
-
-            route_stops = [
-                div.text.strip()
-                for div in route_desc_html.find_all("div", recursive=False)
-            ]
-
-            for pos, stop in enumerate(route_stops):
+            for pos, stop in enumerate(entries[1:]):
                 if stop not in stop_id_map:
                     continue
                 stop_id = stop_id_map[stop]
