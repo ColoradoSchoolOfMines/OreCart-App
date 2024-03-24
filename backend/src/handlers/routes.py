@@ -23,8 +23,8 @@ from src.model.route import Route
 from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
-from src.model.waypoint import Waypoint
 from src.model.van_tracker_session import VanTrackerSession
+from src.model.waypoint import Waypoint
 from src.request import process_include
 
 # JSON field names/include values
