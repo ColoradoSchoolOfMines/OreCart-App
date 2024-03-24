@@ -25,51 +25,66 @@ import { type ParentRoute } from "./routesSlice";
 /**
  * The props for the {@interface StopItem} component.
  */
-interface RouteStopItemProps {
+interface RouteStopItemProps extends ViewProps {
   /** The stop to display. */
   stop: Stop;
   /** The parent route of the stop. The stop should be part of this. */
   route: ParentRoute;
   /** Called when the stop item is clicked on. */
   onPress: (stop: Stop) => void;
+  invert: boolean;
 }
 
 /**
  * A component that renders a single stop item.
  */
 export const RouteStopItem = ({
+  style,
   stop,
   route,
   onPress,
+  invert,
 }: RouteStopItemProps): React.JSX.Element => {
   const distance = useDistance(stop);
   const arrivalEstimate = useArrivalEstimate(stop, route);
 
   return (
     <TouchableHighlight
-      onPress={() => {
-        onPress(stop);
-      }}
-      underlayColor={Color.generic.selection}
-      style={styles.touchableContainer}
+      onPress={
+        onPress !== undefined
+          ? () => {
+              onPress(stop);
+            }
+          : undefined
+      }
+      underlayColor={
+        invert
+          ? Color.csm.primary.ext.blaster_blue_highlight
+          : Color.generic.selection
+      }
+      style={[styles.touchableContainer, style]}
     >
       <View style={styles.innerContainer}>
         <View style={styles.stopInfoContainer}>
-          <Text style={styles.stopName}>{stop.name}</Text>
+          <Text style={styles.stopName}>
+            <Text style={invert ? styles.invert : undefined}>{stop.name}</Text>
+          </Text>
           <QueryText
             query={arrivalEstimate}
             body={(arrivalEstimate: number | undefined) =>
               arrivalEstimate !== undefined ? (
-                <Text>
+                <Text style={invert ? styles.invert : undefined}>
                   Next OreCart in{" "}
                   <Text style={styles.emphasis}>
                     {formatSecondsAsMinutes(arrivalEstimate)}
                   </Text>
                 </Text>
               ) : route.isActive ? (
-                <Text>Running</Text>
+                <Text style={invert ? styles.invert : undefined}>Running</Text>
               ) : (
-                <Text>Not running</Text>
+                <Text style={invert ? styles.invert : undefined}>
+                  Not running
+                </Text>
               )
             }
             skeletonWidth={0.5}
@@ -78,7 +93,7 @@ export const RouteStopItem = ({
           <QueryText
             query={distance}
             body={(distance: number) => (
-              <Text>
+              <Text style={invert ? styles.invert : undefined}>
                 <Text style={styles.emphasis}>
                   {formatMiles(geoDistanceToMiles(distance))}
                 </Text>{" "}
@@ -91,7 +106,7 @@ export const RouteStopItem = ({
         <MaterialIcons
           name="arrow-forward"
           size={24}
-          color={Color.generic.black}
+          color={invert ? Color.generic.white : Color.generic.black}
         />
       </View>
     </TouchableHighlight>
@@ -101,7 +116,9 @@ export const RouteStopItem = ({
 /**
  * A skeleton component that mimics the {@interface StopItem} component.
  */
-export const StopItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
+export const RouteStopItemSkeleton = ({
+  style,
+}: ViewProps): React.JSX.Element => {
   return (
     <View style={[styles.innerContainer, style]}>
       <View style={styles.stopInfoContainer}>
@@ -116,6 +133,10 @@ export const StopItemSkeleton = ({ style }: ViewProps): React.JSX.Element => {
 const styles = StyleSheet.create({
   touchableContainer: {
     borderRadius: 16,
+  },
+  highlightedTouchableContainer: {
+    borderRadius: 16,
+    backgroundColor: Color.csm.primary.blaster_blue,
   },
   innerContainer: {
     flexDirection: "row",
@@ -133,5 +154,8 @@ const styles = StyleSheet.create({
   },
   emphasis: {
     fontWeight: "bold",
+  },
+  invert: {
+    color: Color.generic.white,
   },
 });

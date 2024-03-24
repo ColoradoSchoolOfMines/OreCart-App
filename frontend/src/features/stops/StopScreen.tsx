@@ -90,6 +90,7 @@ const StopHeader = ({ stop }: { stop: ParentStop }): React.JSX.Element => {
       >
         <Text style={styles.buttonText}>Get Directions</Text>
       </TouchableHighlight>
+      <Text style={styles.stopHeader}>Routes</Text>
     </View>
   );
 };
@@ -102,6 +103,7 @@ const StopHeaderSkeleton = (): React.JSX.Element => {
       <View style={[styles.button, styles.buttonSkeleton]}>
         <Text style={styles.buttonText}></Text>
       </View>
+      <TextSkeleton style={styles.stopHeader} widthFraction={0.4} />
     </View>
   );
 };
@@ -139,7 +141,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   headerContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingTop: 16,
   },
   stopName: {
     fontSize: 32,
@@ -166,7 +169,7 @@ const styles = StyleSheet.create({
   button: {
     borderRadius: 100,
     padding: 10,
-    marginTop: 16,
+    marginVertical: 16,
     alignItems: "center",
   },
   locationButton: {
@@ -185,5 +188,10 @@ const styles = StyleSheet.create({
   },
   emphasis: {
     fontWeight: "bold",
+  },
+  stopHeader: {
+    fontSize: 20,
+    fontWeight: "bold",
+    paddingBottom: 8,
   },
 });

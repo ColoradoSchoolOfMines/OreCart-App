@@ -82,6 +82,39 @@ export const useClosest = <T extends Coordinate>(
   return success(closest);
 };
 
+export const useClosestQuery = <T extends Coordinate>(
+  of: Query<T[]>,
+): Query<Closest<T>> => {
+  const location = useLocation();
+  if (!location.isSuccess) {
+    return location;
+  }
+
+  if (!of.isSuccess) {
+    return of;
+  }
+
+  const closest = of.data.reduce<Closest<T> | undefined>(
+    (acc: Closest<T> | undefined, cur: T) => {
+      const distance = Math.sqrt(
+        Math.pow(cur.latitude - location.data.latitude, 2) +
+          Math.pow(cur.longitude - location.data.longitude, 2),
+      );
+      if (acc === undefined || distance < acc.distance) {
+        return { value: cur, distance };
+      }
+      return acc;
+    },
+    undefined,
+  );
+
+  if (closest === undefined) {
+    return error("No closest found");
+  }
+
+  return success(closest);
+}
+
 /**
  * Use the distance of the coordinate-line object from the current location. Will return
  * an error if the location is not available.

@@ -150,7 +150,7 @@ def query_routes(
             session.query(Route)
             .join(RouteStop)
             .filter(RouteStop.stop_id == stop_id)
-            .order_by(RouteStop.position)
+            .order_by(Route.id)
             .all()
         )
     ]

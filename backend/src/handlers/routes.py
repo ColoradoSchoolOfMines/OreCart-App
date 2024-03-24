@@ -230,6 +230,54 @@ def get_route(
         return route_json
 
 
+def query_route_stops(route_id: int, alert: Optional[Alert], session):
+    """
+    Queries and returns the stops for the given route ID.
+    """
+
+    stops = (
+        session.query(Stop)
+        .order_by(RouteStop.position)
+        .filter(Stop.id == RouteStop.stop_id)
+        .filter(RouteStop.route_id == route_id)
+        .all()
+    )
+    return [
+        {
+            FIELD_ID: stop.id,
+            FIELD_NAME: stop.name,
+            FIELD_LATITUDE: stop.lat,
+            FIELD_LONGITUDE: stop.lon,
+            FIELD_IS_ACTIVE: is_stop_active(stop, alert, session),
+        }
+        for stop in stops
+    ]
+
+
+def is_stop_active(stop: Stop, alert: Optional[Alert], session) -> bool:
+    """
+    Queries and returns whether the given stop is currently active, i.e it's marked as
+    active in the database and there is no alert that is disabling it.
+    """
+
+    if not alert:
+        # No alert, fall back to if the current stop is marked as active.
+        return stop.active
+
+    # If the stop is disabled by the current alert, then it is not active.
+    enabled = (
+        session.query(StopDisable)
+        .filter(
+            StopDisable.alert_id == alert.id,
+            StopDisable.stop_id == stop.id,
+        )
+        .count()
+    ) == 0
+
+    # Might still be disabled even if the current alert does not disable the stop.
+    return stop.active and enabled
+
+
 def query_route_stop_ids(route_id: int, session):
     """
     Queries and returns the stop IDs for the given route ID.

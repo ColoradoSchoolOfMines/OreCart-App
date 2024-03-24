@@ -18,12 +18,13 @@ interface SkeletonListProps extends ViewProps {
  * A component that renders a list of skeleton items with decreasing opacity.
  */
 const SkeletonList = ({
+  style,
   itemSkeleton,
   headerSkeleton,
   divider,
 }: SkeletonListProps): React.JSX.Element => {
   return (
-    <View>
+    <View style={style}>
       {/* Render the header skeleton if it exists */}
       {headerSkeleton !== undefined ? headerSkeleton() : null}
       {/* for (i = 0; i < 3; ++i) */}
