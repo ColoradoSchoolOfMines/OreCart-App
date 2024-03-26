@@ -6,17 +6,17 @@ from src.db import Base
 from src.model.types import TZDateTime
 
 
-class Analytics(Base):
-    __tablename__ = "analytics"
+class RidershipAnalytics(Base):
+    __tablename__ = "ridership_analytics"
     __table_args__ = (
-        ForeignKeyConstraint(["van_id"], ["vans.id"]),
+        ForeignKeyConstraint(["session_id"], ["van_tracker_session.id"]),
         ForeignKeyConstraint(["route_id"], ["routes.id"]),
-        UniqueConstraint("van_id", "datetime"),
+        UniqueConstraint("session_id", "datetime"),
     )
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, nullable=False
     )
-    van_id: Mapped[int] = mapped_column(nullable=False)
+    session_id: Mapped[int] = mapped_column(nullable=False)
     route_id: Mapped[int] = mapped_column(nullable=False)
     entered: Mapped[int] = mapped_column(nullable=False)
     exited: Mapped[int] = mapped_column(nullable=False)
@@ -27,8 +27,8 @@ class Analytics(Base):
     def __eq__(self, __value: object) -> bool:
         # Exclude ID since it'll always differ, only compare on content
         return (
-            isinstance(__value, Analytics)
-            and self.van_id == __value.van_id
+            isinstance(__value, RidershipAnalytics)
+            and self.session_id == __value.session_id
             and self.route_id == __value.route_id
             and self.entered == __value.entered
             and self.exited == __value.exited
@@ -38,4 +38,4 @@ class Analytics(Base):
         )
 
     def __repr__(self) -> str:
-        return f"<Analytics id={self.id} van_id={self.van_id} route_id={self.route_id} entered={self.entered} exited={self.exited} lat={self.lat} lon={self.lon} datetime={self.datetime}>"
+        return f"<RidershipAnalytics id={self.id} van_id={self.session_id} route_id={self.route_id} entered={self.entered} exited={self.exited} lat={self.lat} lon={self.lon} datetime={self.datetime}>"

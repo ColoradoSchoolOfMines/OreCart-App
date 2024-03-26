@@ -11,17 +11,17 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.sql import ColumnElement
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
-from src.model.analytics import Analytics
-from src.model.van import Van
+from src.model.ridership_analytics import RidershipAnalytics
+from src.model.van_tracker_session import VanTrackerSession
 
-router = APIRouter(prefix="/analytics/ridership", tags=["analytics", "ridership"])
+router = APIRouter(prefix="/analytics", tags=["analytics", "ridership"])
 
 
 class RidershipFilterModel(BaseModel):
     start_timestamp: Optional[int] = None
     end_timestamp: Optional[int] = None
     route_id: Optional[int]
-    van_id: Optional[int]
+    session_id: Optional[int]
 
     @model_validator(mode="after")
     def check_dates(self):
@@ -46,20 +46,49 @@ class RidershipFilterModel(BaseModel):
     def filters(self) -> Optional[List[ColumnElement[bool]]]:
         t_filters = []
         if self.start_date is not None:
-            t_filters.append(Analytics.datetime >= self.start_date)
+            t_filters.append(RidershipAnalytics.datetime >= self.start_date)
         if self.end_date is not None:
-            t_filters.append(Analytics.datetime <= self.end_date)
+            t_filters.append(RidershipAnalytics.datetime <= self.end_date)
         if self.route_id is not None:
-            t_filters.append(Analytics.route_id == self.route_id)
-        if self.van_id is not None:
-            t_filters.append(Analytics.van_id == self.van_id)
+            t_filters.append(RidershipAnalytics.route_id == self.route_id)
+        if self.session_id is not None:
+            t_filters.append(RidershipAnalytics.session_id == self.session_id)
         if len(t_filters) == 0:
             return None
         return t_filters
 
 
-@router.post("/{van_id}")
-async def post_ridership_stats(req: Request, van_id: int):
+@router.get("/ridership/")
+def get_ridership(
+    req: Request, filters: Optional[RidershipFilterModel]
+) -> List[Dict[str, Union[str, int, float]]]:
+    with req.app.state.db.session() as session:
+        analytics: List[RidershipAnalytics] = []
+        if filters is None or filters.filters is None:
+            analytics = session.query(RidershipAnalytics).all()
+        else:
+            analytics = session.query(RidershipAnalytics).filter(*filters.filters).all()
+
+    # convert analytics to json
+    analytics_json: List[Dict[str, Union[str, int, float]]] = []
+    for analytic in analytics:
+        analytics_json.append(
+            {
+                "sessionId": analytic.session_id,
+                "routeId": analytic.route_id,
+                "entered": analytic.entered,
+                "exited": analytic.exited,
+                "lat": analytic.lat,
+                "lon": analytic.lon,
+                "datetime": int(analytic.datetime.timestamp()),
+            }
+        )
+
+    return analytics_json
+
+
+@router.post("/ridership/{van_guid}")
+async def post_ridership_stats(req: Request, van_guid: int):
     """
     This route is used by the hardware components to send ridership statistics to be
     logged in the database. The body of the request is a packed byte array containing
@@ -76,18 +105,18 @@ async def post_ridership_stats(req: Request, van_id: int):
     timestamp_ms, entered, exited, lat, lon = struct.unpack("<Qbbdd", body)
     timestamp = datetime.fromtimestamp(timestamp_ms / 1000.0, timezone.utc)
 
-    current_time = datetime.now(timezone.utc)
+    now = datetime.now(timezone.utc)
 
     # Check that the timestamp is not too far in the past. This implies a statistics
     # update that was delayed in transit and may be irrelevant now.
-    if current_time - timestamp > timedelta(minutes=1):
+    if now - timestamp > timedelta(minutes=1):
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_TOO_FAR_IN_PAST
         )
 
     # Check that the timestamp is not in the future. This implies a hardware clock
     # malfunction.
-    if timestamp > current_time:
+    if timestamp > now:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_IN_FUTURE
         )
@@ -95,8 +124,12 @@ async def post_ridership_stats(req: Request, van_id: int):
     with req.app.state.db.session() as session:
         # Find the route that the van is currently on, required by the ridership database.
         # If there is no route, then the van does not exist or is not running.
-        van = session.query(Van).filter_by(id=van_id).first()
-        if not van:
+        tracker_session = session.query(VanTrackerSession).filter(
+            VanTrackerSession.van_guid == van_guid,
+            VanTrackerSession.dead == False,
+            now - VanTrackerSession.created_at < timedelta(hours=12),
+        )
+        if not tracker_session:
             raise HardwareHTTPException(
                 status_code=404, error_code=HardwareErrorCode.VAN_NOT_ACTIVE
             )
@@ -104,9 +137,9 @@ async def post_ridership_stats(req: Request, van_id: int):
         # Check that the timestamp is the most recent one for the van. This prevents
         # updates from being sent out of order, which could mess up the statistics.
         most_recent = (
-            session.query(Analytics)
-            .filter_by(van_id=van_id)
-            .order_by(Analytics.datetime.desc())
+            session.query(RidershipAnalytics)
+            .filter_by(session_id=tracker_session.id)
+            .order_by(RidershipAnalytics.datetime.desc())
             .first()
         )
         if most_recent is not None and timestamp <= most_recent.datetime:
@@ -115,9 +148,9 @@ async def post_ridership_stats(req: Request, van_id: int):
             )
 
         # Finally commit the ridership statistics to the database.
-        new_ridership = Analytics(
-            van_id=van_id,
-            route_id=van.route_id,
+        new_ridership = RidershipAnalytics(
+            session_id=tracker_session.id,
+            route_id=tracker_session.route_id,
             entered=entered,
             exited=exited,
             lat=lat,
@@ -128,32 +161,3 @@ async def post_ridership_stats(req: Request, van_id: int):
         session.commit()
 
     return HardwareOKResponse()
-
-
-@router.get("/")
-def get_ridership(
-    req: Request, filters: Optional[RidershipFilterModel]
-) -> List[Dict[str, Union[str, int, float]]]:
-    with req.app.state.db.session() as session:
-        analytics: List[Analytics] = []
-        if filters is None or filters.filters is None:
-            analytics = session.query(Analytics).all()
-        else:
-            analytics = session.query(Analytics).filter(*filters.filters).all()
-
-    # convert analytics to json
-    analytics_json: List[Dict[str, Union[str, int, float]]] = []
-    for analytic in analytics:
-        analytics_json.append(
-            {
-                "vanId": analytic.van_id,
-                "routeId": analytic.route_id,
-                "entered": analytic.entered,
-                "exited": analytic.exited,
-                "lat": analytic.lat,
-                "lon": analytic.lon,
-                "datetime": int(analytic.datetime.timestamp()),
-            }
-        )
-
-    return analytics_json

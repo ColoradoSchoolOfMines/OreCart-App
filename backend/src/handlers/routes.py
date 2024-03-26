@@ -23,6 +23,7 @@ from src.model.route import Route
 from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
+from src.model.van_tracker_session import VanTrackerSession
 from src.model.waypoint import Waypoint
 from src.request import process_include
 
@@ -404,6 +405,11 @@ async def create_route(req: Request, kml_file: UploadFile):
             session.flush()
 
         await kml_file.close()
+
+        tracker_sessions = session.query(VanTrackerSession).all()
+        for tracker_session in tracker_sessions:
+            tracker_session.dead = True
+        session.commit()
 
         session.commit()
 
