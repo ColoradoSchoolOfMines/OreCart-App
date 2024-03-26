@@ -18,52 +18,6 @@
 #include <memory>
 #include <vector>
 
-// #define HTTP_HOST "google.com"
-// #define HTTP_PORT 80
-// #define RECV_BUF_SIZE 1024
-
-// char recv_buf[RECV_BUF_SIZE + 1];
-
-// int blocking_recv(int fd, uint8_t *buf, uint32_t size, uint32_t flags)
-// {
-// 	int err;
-
-// 	do {
-// 		err = recv(fd, buf, size, flags);
-// 	} while (err < 0 && errno == EAGAIN);
-
-// 	return err;
-// }
-
-// void app_socket_start(void)
-// {
-// 	int at_socket_fd = socket(AF_LTE, 0, NPROTO_AT);
-
-// 	printk("Starting simple AT socket application\n\r");
-
-// 	if (at_socket_fd < 0) {
-// 		printk("Socket err: %d, errno: %d\r\n", at_socket_fd, errno);
-// 	}
-// 	for (int i = 0; i < ARRAY_SIZE(at_commands); i++) {
-// 		int bytes_written = send(at_socket_fd, at_commands[i],
-// 					 strlen(at_commands[i]), 0);
-// 		if (bytes_written > 0) {
-// 			int r_bytes =
-// 				blocking_recv(at_socket_fd, recv_buf,
-// 					      sizeof(recv_buf), MSG_DONTWAIT);
-// 			if (r_bytes > 0) {
-// 				printk("%s", recv_buf);
-// 			}
-// 		}
-// 	}
-// 	printk("Closing socket\n\r");
-// 	(void)close(at_socket_fd);
-// }
-
-#define RESPONSE_SIZE 64
-
-static char RESPONSE[RESPONSE_SIZE];
-
 class Modem {
 public:
 	Modem() {
@@ -124,8 +78,6 @@ private:
     if (err < 0) {
 				throw std::runtime_error("Failed to send UDP packet with RAI_LAST, error: " + std::to_string(err));
     }
-
-    return 0;
 	}
 
 	void stop_modem() {
