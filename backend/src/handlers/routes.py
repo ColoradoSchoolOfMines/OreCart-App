@@ -38,6 +38,7 @@ FIELD_LATITUDE = "latitude"
 FIELD_LONGITUDE = "longitude"
 FIELD_DESCRIPTION = "description"
 FIELD_STOPS = "stops"
+FIELD_COLOR = "color"
 INCLUDES = {FIELD_STOP_IDS, FIELD_WAYPOINTS, FIELD_IS_ACTIVE, FIELD_STOPS}
 
 router = APIRouter(prefix="/routes", tags=["routes"])
@@ -80,6 +81,9 @@ def get_routes(
 
             if FIELD_IS_ACTIVE in include_set:
                 route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
+
+            if FIELD_STOPS in include_set:
+                route_json[FIELD_STOPS] = query_route_stops(route.id, alert, session)
 
             routes_json.append(route_json)
 
@@ -226,6 +230,9 @@ def get_route(
         if FIELD_IS_ACTIVE in include_set:
             alert = get_current_alert(datetime.now(timezone.utc), session)
             route_json[FIELD_IS_ACTIVE] = is_route_active(route.id, alert, session)
+
+        if FIELD_STOPS in include_set:
+            route_json[FIELD_STOPS] = query_route_stops(route.id, alert, session)
 
         return route_json
 
@@ -401,6 +408,14 @@ async def create_route(req: Request, kml_file: UploadFile):
                 if isinstance(style, PolyStyle):
                     color = style.color
                     break
+
+            if route_name == "Tungsten":
+                color = "#cc4628"
+            elif route_name == "Silver":
+                color = "#879ec3"
+            elif route_name == "Gold":
+                color = "#f1b91a"
+
             # Want the text contents of all of the surface-level divs and then strip
             # all of the tags of it's content
 

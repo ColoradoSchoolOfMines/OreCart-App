@@ -8,6 +8,8 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel
 from src.model.alert import Alert
+from src.model.route import Route
+from src.model.route_disable import RouteDisable
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
 from src.model.stop_disable import StopDisable
@@ -23,10 +25,7 @@ FIELD_IS_ACTIVE = "isActive"
 FIELD_COLORS = "colors"
 FIELD_COLOR = "color"
 FIELD_ROUTES = "routes"
-INCLUDES = {
-    FIELD_ROUTE_IDS,
-    FIELD_IS_ACTIVE,
-}
+INCLUDES = {FIELD_ROUTE_IDS, FIELD_IS_ACTIVE, FIELD_COLORS, FIELD_ROUTES}
 
 router = APIRouter(prefix="/stops", tags=["stops"])
 
@@ -117,7 +116,7 @@ def get_stop(
         return stop_json
 
 
-def query_stop_colors(stop_id: int, session) -> List[str]:
+def query_stop_colors(stop_id: int, session) -> list[str]:
     """
     Queries and returns the color of the stop.
     """
