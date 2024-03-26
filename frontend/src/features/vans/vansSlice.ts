@@ -62,7 +62,6 @@ const vansApiSlice = apiSlice.injectEndpoints({
                 van.location = locations[id];
               }
             }
-            console.log(vans);
           });
         };
 
