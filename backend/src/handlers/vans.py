@@ -429,13 +429,6 @@ async def begin_session(req: Request, van_guid: str) -> HardwareOKResponse:
 
 @router.post("/location/{van_guid}")
 async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
-    with req.app.state.db.session() as session:
-        van = session.query(Van).filter_by(guid=van_guid).first()
-        if van is None:
-            new_van = Van(guid=van_guid)
-            session.add(new_van)
-            session.commit()
-
     # byte body: long long for timestamp, double for lat, double for lon
     body = await req.body()
     timestamp_ms, lat, lon = struct.unpack("<Qdd", body)
