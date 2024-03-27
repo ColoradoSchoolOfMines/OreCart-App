@@ -12,7 +12,7 @@ services:
       retries: 10
       start_period: 10s
     volumes:
-      - orecart-db-volume:/var/lib/postgresql/data
+      - orecart-db-volume-staging:/var/lib/postgresql/data
     env_file:
       - database.env
     networks:
@@ -66,4 +66,4 @@ networks:
   staging:
 
 volumes:
-  orecart-db-volume: {}
+  orecart-db-volume-staging: {}
