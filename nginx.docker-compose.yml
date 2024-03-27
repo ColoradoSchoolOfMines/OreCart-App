@@ -8,11 +8,11 @@ services :
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     networks:
-      - prod
-      - staging
+      - orecart-app_default
+      - staging_staging
 
 networks:
-  prod:
+  orecart-app_default:
     external: true
-  staging:
+  staging_staging:
     external: true
