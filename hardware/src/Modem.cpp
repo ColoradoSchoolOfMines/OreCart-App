@@ -18,13 +18,16 @@ struct Modem::ModemImpl {
     int socketFd;
     Speed speed;
 
+    ModemImpl(std::unique_ptr<nrf_addrinfo, decltype(&nrf_freeaddrinfo)> addr, int socketFd, Speed speed) : 
+        addr(std::move(addr)), socketFd(socketFd), speed(speed) {}
+
     ~ModemImpl() {
         nrf_close(socketFd);
         nrf_modem_shutdown();
     }
 };
 
-Modem::Modem(std::string_view domain) : data(std::make_unique<ModemImpl>())
+Modem::Modem(std::string_view domain)
 {
     if (nrf_modem_is_initialized())
     {
@@ -44,9 +47,10 @@ Modem::Modem(std::string_view domain) : data(std::make_unique<ModemImpl>())
     {
         throw std::runtime_error("Failed to resolve domain address, error: " + std::to_string(err));
     }
-    data->addr = std::unique_ptr<nrf_addrinfo, decltype(&nrf_freeaddrinfo)>(res, nrf_freeaddrinfo);
-    data->socketFd = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, NRF_IPPROTO_TCP);
-    data->speed = Speed::NORMAL;
+    std::unique_ptr<nrf_addrinfo, decltype(&nrf_freeaddrinfo)> addr { res, nrf_freeaddrinfo };
+    int socketFd = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, NRF_IPPROTO_TCP);
+    Speed speed = Speed::NORMAL;
+    this->data = std::make_unique<ModemImpl>(std::move(addr), socketFd, speed);
 }
 
 Modem::~Modem() = default;
