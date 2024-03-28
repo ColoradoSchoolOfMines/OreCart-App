@@ -6,6 +6,7 @@
 #include <nrf_modem.h>
 #include <nrf_socket.h>
 #include <modem/lte_lc.h>
+#include <modem/nrf_modem_lib.h>
 
 #include "Modem.hpp"
 
@@ -33,7 +34,7 @@ Modem::Modem(std::string_view domain)
     {
         throw std::runtime_error("Only one Modem can exist at a time");
     }
-    nrf_modem_init(nullptr);
+    nrf_modem_lib_init();
     lte_lc_connect();
     lte_lc_func_mode_set(LTE_LC_FUNC_MODE_ACTIVATE_LTE);
     lte_lc_func_mode_set(LTE_LC_FUNC_MODE_ACTIVATE_GNSS);
