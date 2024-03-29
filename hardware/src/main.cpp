@@ -5,8 +5,8 @@
 
 int main()
 {
-    std::unique_ptr<Modem> modem = std::make_unique<Modem>("example.com");
-    modem->setSpeed(Speed::NORMAL);
-    std::vector<char> data{0, 1, 2, 3};
+    std::shared_ptr<Modem> modem = std::make_shared<Modem>("example.com");
+    modem->set_speed(Modem::Speed::NORMAL);
+    std::vector<char> data = { 1, 2, 3, 4 };
     modem->send(data);
 }

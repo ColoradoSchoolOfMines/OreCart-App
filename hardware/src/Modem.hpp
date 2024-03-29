@@ -4,18 +4,18 @@
 #include <string_view>
 #include <memory>
 
-enum Speed {
-    NORMAL,
-    YEET
-};
-
 class Modem
 {
 public:
+    enum Speed {
+        NORMAL,
+        YEET
+    };
+
     Modem(std::string_view domain);
     ~Modem();
 
-    void setSpeed(Speed speed);
+    void set_speed(Speed speed);
     void send(std::vector<char> &packet);
 
 private:
