@@ -4,6 +4,8 @@
 #include <string_view>
 #include <memory>
 
+#include "Model.hpp"
+
 class Modem
 {
 public:
@@ -17,6 +19,7 @@ public:
 
     void set_speed(Speed speed);
     void send(std::vector<char> &packet);
+    Coordinate locate();
 
 private:
     struct ModemImpl;
