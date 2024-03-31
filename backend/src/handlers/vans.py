@@ -43,13 +43,17 @@ TYPE_ERROR = "error"
 INCLUDES_V1 = {FIELD_LOCATION}
 INCLUDES_V2 = {FIELD_COLOR, FIELD_LOCATION}
 
-THRESHOLD_RADIUS_M = 30.48  # 100 ft
 THRESHOLD_TIME = timedelta(seconds=10)
 AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
 
-KM_LAT_RATIO = 111.32  # km/degree latitude
-EARTH_CIRCUFERENCE_KM = 40075  # km
+EARTH_CIRCUFERENCE_M = 40075 * 1000  # km
 DEGREES_IN_CIRCLE = 360  # degrees
+DEGREES_PER_M = DEGREES_IN_CIRCLE / EARTH_CIRCUFERENCE_M # degree/m
+M_PER_DEGREES = EARTH_CIRCUFERENCE_M / DEGREES_IN_CIRCLE # m/degree
+M_PER_FT = 0.3048
+THRESHOLD_RADIUS_FT = 100
+THRESHOLD_RADIUS_DEGREES = THRESHOLD_RADIUS_FT * M_PER_FT * DEGREES_PER_M
+TRHESHOLD_LEAPFROG_PERCENT = 0.5
 
 
 @router.get("/")
@@ -111,10 +115,10 @@ async def subscribe_location_v1(websocket: WebSocket):
                 )
                 next_stop_index = (tracker_session.stop_index + 1) % len(stops)
                 stop = stops[next_stop_index]
-                distance_m = distance_meters(
+                van_distance_degrees = van_distance_degrees(
                     stop.lat, stop.lon, location.lat, location.lon
                 )
-                seconds_to_next_stop = distance_m / AVERAGE_VAN_SPEED_MPS
+                seconds_to_next_stop = van_distance_degrees * M_PER_DEGREES / AVERAGE_VAN_SPEED_MPS
                 location_json: Dict[str, Union[str, int, float]] = {
                     "timestamp": int(location.created_at.timestamp()),
                     "latitude": location.lat,
@@ -367,7 +371,7 @@ def query_arrivals(
 def calculate_van_distance(
     session, now: datetime, stops: List[Stop], stop_index: int, route_id: int
 ):
-    current_distance = 0.0
+    current_distance_degrees = 0.0
     current_stop = stops[stop_index]
     start = stop_index
     while True:
@@ -380,20 +384,20 @@ def calculate_van_distance(
         if arriving_session is not None:
             location = query_most_recent_location(session, arriving_session)
             if location is not None:
-                current_distance += distance_meters(
+                current_distance_degrees += distance_degrees(
                     location.lat,
                     location.lon,
                     current_stop.lat,
                     current_stop.lon,
                 )
-                return current_distance
+                return current_distance_degrees * M_PER_DEGREES
         # backtrack by decrementing stop_index, wrapping around if necessary
         stop_index = (stop_index - 1) % len(stops)
         if stop_index == start:
             break
         last_stop = current_stop
         current_stop = stops[stop_index]
-        current_distance += distance_meters(
+        current_distance_degrees += distance_degrees(
             last_stop.lat,
             last_stop.lon,
             current_stop.lat,
@@ -477,9 +481,9 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             stop_pairs = []
             for i in range(len(stops) - 1):
                 left, right = stops[i], stops[i + 1]
-                l_distance = distance_meters(lat, lon, left.lat, left.lon)
-                r_distance = distance_meters(lat, lon, right.lat, right.lon)
-                stop_pairs.append((i, i + 1, l_distance, r_distance))
+                l_distance_degrees = distance_degrees(lat, lon, left.lat, left.lon)
+                r_distance_degrees = distance_degrees(lat, lon, right.lat, right.lon)
+                stop_pairs.append((i, i + 1, l_distance_degrees, r_distance_degrees))
             closest_stop_pair = min(stop_pairs, key=lambda x: min(x[2], x[3]))
             if closest_stop_pair[2] >= closest_stop_pair[3]:
                 tracker_session.stop_index = closest_stop_pair[1]
@@ -516,13 +520,13 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
             # van locations is consistently within this stop's radius.
             for location in locations:
-                stop_distance_meters = distance_meters(
+                stop_distance_degrees = distance_degrees(
                     location.lat,
                     location.lon,
                     stop.lat,
                     stop.lon,
                 )
-                if stop_distance_meters < THRESHOLD_RADIUS_M:
+                if stop_distance_degrees < THRESHOLD_RADIUS_DEGREES:
                     current_subset.append(location.created_at)
                 else:
                     if len(current_subset) > len(longest_subset):
@@ -533,7 +537,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
 
             if longest_subset:
                 # A streak exists, find the overall duration that this van was within the stop's radius. Since locations
-                # are ordered from oldest to newest, we can just subtract the first and last timestamps.
+                # are ordered from oldest to newest, we can just subtract the last and first timestamps.
                 duration = longest_subset[-1] - longest_subset[0]
             else:
                 # No streak, so we weren't at the stop for any amount of time.
@@ -551,8 +555,57 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                 session.commit()
                 break
 
+        # That did not work. A van might have leapfrogged a stop due to a delayed location ping instead.
+        # Fix this by seeing if there was a point in which a van might have logically went through a stop radius
+        # in between two pings across the threshold time.
+        break_outer = False
+        for i in range(len(locations) - 1):
+            if break_outer:
+                break
+            left = locations[i]
+            right = locations[i + 1]
+            for i, stop in enumerate(subsequent_stops):
+                percent = line_circle_intersection_percentage(
+                    left.lat, left.lon, right.lat, right.lon,
+                    stop.lat, stop.lon, THRESHOLD_RADIUS_DEGREES)
+                duration = right.timestamp - left.timestamp
+                if percent > TRHESHOLD_LEAPFROG_PERCENT and right.timestamp - left.timestamp >= THRESHOLD_TIME:
+                    tracker_session.stop_index = (tracker_session.stop_index + i + 1) % len(
+                        stops
+                    )
+                    session.commit()
+                    break_outer = True
+                    break
+
+
     return HardwareOKResponse()
 
+def line_circle_intersection_percentage(alat, alon, blat, blon, clat, clon, r):
+    # Calculate the distance between points a and b
+    line_length_degrees = distance_degrees(alat, alon, blat, blon)
+
+    # Calculate the distance from point c to the line formed by points a and b
+    line_distance_degrees = abs((blon - alon)*clat - (blat - alat)*clon + blat*alon - blon*alat) / line_length_degrees
+
+    # If the distance from point c to the line is greater than the radius r, then the line does not intersect the circle
+    if line_distance_degrees > r:
+        return 0
+
+    # Calculate the two intersection points
+    dx, dy = blat - alat, blon - alon
+    A = dx**2 + dy**2
+    B = 2 * (dx * (alat - clat) + dy * (alon - clon))
+    C = (alat - clat)**2 + (alon - clon)**2 - r**2
+    det = B**2 - 4*A*C
+    t1 = (-B + sqrt(det)) / (2*A)
+    t2 = (-B - sqrt(det)) / (2*A)
+
+    # Calculate the distances from point a to each of the intersection points
+    d1 = sqrt((alat + t1*dx - alat)**2 + (alon + t1*dy - alon)**2)
+    d2 = sqrt((alat + t2*dx - alat)**2 + (alon + t2*dy - alon)**2)
+
+    # The percentage of the line that intersects the circle is the smaller of these two distances divided by the total length of the line
+    return min(d1, d2) / line_length_degrees * 100
 
 def active_session_query(session, now: datetime, *filters):
     query = session.query(VanTrackerSession).filter(
@@ -578,13 +631,7 @@ def query_most_recent_location(
     )
 
 
-def distance_meters(alat: float, alon: float, blat: float, blon: float) -> float:
-    dlat = blat - alat
-    dlon = blon - alon
-
-    # Simplified distance calculation that assumes the earth is a sphere. This is good enough for our purposes.
-    # https://stackoverflow.com/a/39540339
-    dlatkm = dlat * KM_LAT_RATIO
-    dlonkm = dlon * EARTH_CIRCUFERENCE_KM * cos(radians(alat)) / DEGREES_IN_CIRCLE
-
-    return sqrt(dlatkm**2 + dlonkm**2) * 1000
+def distance_degrees(alat: float, alon: float, blat: float, blon: float) -> float:
+    dlat = alat - blat
+    dlon = alon - blon
+    return sqrt(dlat**2 + dlon**2) 
