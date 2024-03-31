@@ -1,25 +1,70 @@
 #pragma once
 
-#include <vector>
-#include <string_view>
 #include <memory>
+#include <string_view>
+#include <vector>
 
-#include "Model.hpp"
+#include "Location.hpp"
 
+/**
+ * An abstraction around the NRF9160 modem that provides optimized and guaranteed
+ * LTE and GNSS communication. Only one instance can exist at a time, so share it
+ * with a smart pointer.
+ * @author Alexander Capehart, Dorian Cauwe
+ */
 class Modem
 {
 public:
-    enum Speed {
+    /**
+     * Controls the pace in which packets will be sent over lte.
+     */
+    enum Speed
+    {
+        /**
+         * Ensure the packet is sent and a response recieved. May delay connecting to GNSS.
+         */
         NORMAL,
+
+        /**
+         * Just yeet the packet into the void, don't even expect a response. Will ensure that
+         * connecting to GNSS will be as fast as possible.
+         */
         YEET
     };
 
-    Modem(std::string_view domain);
+    /**
+     * Create a new and internally activate the Modem.
+     * @param domain The domain for the Modem to resolve and connect to,
+     * @throws std::logic_error if there is already a Modem instance.
+     * @throws std::runtime_error if the domain cannot be resolved.
+     */
+    Modem(const std::string_view domain);
     ~Modem();
 
-    void set_speed(Speed speed);
-    void send(std::vector<char> &packet);
-    Coordinate locate();
+    /**
+     * Set the Speed of the Modem. Does nothing if already at that speed.
+     *
+     * @param speed The new speed to set.
+     * @throws std::runtime_error if the modem cannot be configured to the new speed.
+     */
+    void set_speed(const Speed speed);
+
+    /**
+     * Send a packet over LTE to the server at the specified domain. Will block for at most 5 seconds
+     * until the Modem is connected to the LTE network.
+     *
+     * @param packet the packet to send
+     * @throws std::runtime_error if the packet was not sent
+     */
+    void send(const std::vector<char> &packet) const;
+
+    /**
+     * Poll and then return the current location from GNSS. Will block for at most 5 seconds to ensure
+     * the Modem connects to GNSS and polls as many location updates as possible.
+     *
+     * @return The last polled Coordinate from GNSS.
+     */
+    Coordinate locate() const;
 
 private:
     struct ModemImpl;
