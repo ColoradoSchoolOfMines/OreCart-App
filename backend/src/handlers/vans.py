@@ -13,6 +13,7 @@ from fastapi import (
     WebSocketDisconnect,
 )
 from pydantic import BaseModel
+from pyproj import Proj
 from sqlalchemy import func
 from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.route import Route
@@ -45,15 +46,7 @@ INCLUDES_V2 = {FIELD_COLOR, FIELD_LOCATION}
 
 THRESHOLD_TIME = timedelta(seconds=10)
 AVERAGE_VAN_SPEED_MPS = 8.9408  # 20 mph
-
-EARTH_CIRCUFERENCE_M = 40075 * 1000  # km
-DEGREES_IN_CIRCLE = 360  # degrees
-DEGREES_PER_M = DEGREES_IN_CIRCLE / EARTH_CIRCUFERENCE_M # degree/m
-M_PER_DEGREES = EARTH_CIRCUFERENCE_M / DEGREES_IN_CIRCLE # m/degree
-M_PER_FT = 0.3048
-THRESHOLD_RADIUS_FT = 100
-THRESHOLD_RADIUS_DEGREES = THRESHOLD_RADIUS_FT * M_PER_FT * DEGREES_PER_M
-TRHESHOLD_LEAPFROG_PERCENT = 0.5
+THRESHOLD_RADIUS_M = 50 # meters
 
 
 @router.get("/")
@@ -115,10 +108,10 @@ async def subscribe_location_v1(websocket: WebSocket):
                 )
                 next_stop_index = (tracker_session.stop_index + 1) % len(stops)
                 stop = stops[next_stop_index]
-                van_distance_degrees = van_distance_degrees(
-                    stop.lat, stop.lon, location.lat, location.lon
-                )
-                seconds_to_next_stop = van_distance_degrees * M_PER_DEGREES / AVERAGE_VAN_SPEED_MPS
+                stop_location = latlon_to_meter_coordinate(stop.lat, stop.lon)
+                van_location = latlon_to_meter_coordinate(location.lat, location.lon)
+                distance = stop_location.distance(van_location)
+                seconds_to_next_stop = distance / AVERAGE_VAN_SPEED_MPS
                 location_json: Dict[str, Union[str, int, float]] = {
                     "timestamp": int(location.created_at.timestamp()),
                     "latitude": location.lat,
@@ -371,8 +364,9 @@ def query_arrivals(
 def calculate_van_distance(
     session, now: datetime, stops: List[Stop], stop_index: int, route_id: int
 ):
-    current_distance_degrees = 0.0
+    current_distance_m = 0.0
     current_stop = stops[stop_index]
+    stop_location = latlon_to_meter_coordinate(current_stop.lat, current_stop.lon)
     start = stop_index
     while True:
         arriving_session = active_session_query(
@@ -384,25 +378,17 @@ def calculate_van_distance(
         if arriving_session is not None:
             location = query_most_recent_location(session, arriving_session)
             if location is not None:
-                current_distance_degrees += distance_degrees(
-                    location.lat,
-                    location.lon,
-                    current_stop.lat,
-                    current_stop.lon,
-                )
-                return current_distance_degrees * M_PER_DEGREES
+                van_location = latlon_to_meter_coordinate(location.lat, location.lon)
+                current_distance_m += van_location.distance(stop_location)
+                return current_distance_m
         # backtrack by decrementing stop_index, wrapping around if necessary
         stop_index = (stop_index - 1) % len(stops)
         if stop_index == start:
             break
-        last_stop = current_stop
+        last_stop_location = stop_location
         current_stop = stops[stop_index]
-        current_distance_degrees += distance_degrees(
-            last_stop.lat,
-            last_stop.lon,
-            current_stop.lat,
-            current_stop.lon,
-        )
+        stop_location = latlon_to_meter_coordinate(current_stop.lat, current_stop.lon)
+        current_distance_m += last_stop_location.distance(stop_location)
 
 
 @router.post("/routeselect/{van_guid}")  # Called routeselect for backwards compat
@@ -453,6 +439,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
         raise HardwareHTTPException(
             status_code=400, error_code=HardwareErrorCode.TIMESTAMP_IN_FUTURE
         )
+    
 
     with req.app.state.db.session() as session:
         tracker_session = active_session_query(
@@ -479,11 +466,14 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
 
         if tracker_session.created_at == tracker_session.updated_at:
             stop_pairs = []
+            location_meters = latlon_to_meter_coordinate(lat, lon)
             for i in range(len(stops) - 1):
                 left, right = stops[i], stops[i + 1]
-                l_distance_degrees = distance_degrees(lat, lon, left.lat, left.lon)
-                r_distance_degrees = distance_degrees(lat, lon, right.lat, right.lon)
-                stop_pairs.append((i, i + 1, l_distance_degrees, r_distance_degrees))
+                left_location = latlon_to_meter_coordinate(left.lat, left.lon)
+                right_location = latlon_to_meter_coordinate(right.lat, right.lon)
+                l_distance = left_location.distance(location_meters)
+                r_distance = right_location.distance(location_meters)
+                stop_pairs.append((i, i + 1, l_distance, r_distance))
             closest_stop_pair = min(stop_pairs, key=lambda x: min(x[2], x[3]))
             if closest_stop_pair[2] >= closest_stop_pair[3]:
                 tracker_session.stop_index = closest_stop_pair[1]
@@ -516,17 +506,14 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
         for i, stop in enumerate(subsequent_stops):
             longest_subset: List[datetime] = []
             current_subset: List[datetime] = []
+            stop_location = latlon_to_meter_coordinate(stop.lat, stop.lon)
 
             # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
             # van locations is consistently within this stop's radius.
             for location in locations:
-                stop_distance_degrees = distance_degrees(
-                    location.lat,
-                    location.lon,
-                    stop.lat,
-                    stop.lon,
-                )
-                if stop_distance_degrees < THRESHOLD_RADIUS_DEGREES:
+                location_meters = latlon_to_meter_coordinate(lat, lon)
+                stop_distance_m = stop_location.distance(location_meters)
+                if stop_distance_m < THRESHOLD_RADIUS_M:
                     current_subset.append(location.created_at)
                 else:
                     if len(current_subset) > len(longest_subset):
@@ -564,12 +551,13 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                 break
             left = locations[i]
             right = locations[i + 1]
+            left_location = latlon_to_meter_coordinate(left.lat, left.lon)
+            right_location = latlon_to_meter_coordinate(right.lat, right.lon)
             for i, stop in enumerate(subsequent_stops):
-                percent = line_circle_intersection_percentage(
-                    left.lat, left.lon, right.lat, right.lon,
-                    stop.lat, stop.lon, THRESHOLD_RADIUS_DEGREES)
+                stop_location = latlon_to_meter_coordinate(stop.lat, stop.lon)
+                percent = line_circle_intersection(left_location, right_location, stop_location, THRESHOLD_RADIUS_M)
                 duration = right.timestamp - left.timestamp
-                if percent > TRHESHOLD_LEAPFROG_PERCENT and right.timestamp - left.timestamp >= THRESHOLD_TIME:
+                if percent > 0.5 and right.timestamp - left.timestamp >= THRESHOLD_TIME:
                     tracker_session.stop_index = (tracker_session.stop_index + i + 1) % len(
                         stops
                     )
@@ -580,32 +568,63 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
 
     return HardwareOKResponse()
 
-def line_circle_intersection_percentage(alat, alon, blat, blon, clat, clon, r):
-    # Calculate the distance between points a and b
-    line_length_degrees = distance_degrees(alat, alon, blat, blon)
+class MeterCoordinate(BaseModel):
+    x: int
+    y: int
+    
+    def distance(self, other) -> float:
+        return sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
 
-    # Calculate the distance from point c to the line formed by points a and b
-    line_distance_degrees = abs((blon - alon)*clat - (blat - alat)*clon + blat*alon - blon*alat) / line_length_degrees
+def latlon_to_meter_coordinate(latitude, longitude) -> MeterCoordinate:
+    # Define the UTM zone for Colorado (zones 12, 13, or 14)
+    utm_zone = int((longitude + 180) / 6) + 1
+    if latitude >= 56.0 and latitude < 64.0 and longitude >= 3.0 and longitude < 12.0:
+        utm_zone = 32
 
-    # If the distance from point c to the line is greater than the radius r, then the line does not intersect the circle
-    if line_distance_degrees > r:
-        return 0
+    # Define the UTM projection
+    utm_proj = Proj(proj='utm', zone=utm_zone, ellps='WGS84')
 
-    # Calculate the two intersection points
-    dx, dy = blat - alat, blon - alon
+    # Convert latitude/longitude to UTM coordinates
+    utm_x, utm_y = utm_proj(longitude, latitude)
+
+    return MeterCoordinate(x=utm_x, y=utm_y)
+
+
+def line_circle_intersection(a: MeterCoordinate, b: MeterCoordinate, c: MeterCoordinate, r: float):
+    # Calculate the coefficients of the quadratic equation
+    dx = b.x - a.x
+    dy = b.y - a.y
     A = dx**2 + dy**2
-    B = 2 * (dx * (alat - clat) + dy * (alon - clon))
-    C = (alat - clat)**2 + (alon - clon)**2 - r**2
-    det = B**2 - 4*A*C
-    t1 = (-B + sqrt(det)) / (2*A)
-    t2 = (-B - sqrt(det)) / (2*A)
+    B = 2 * ((a.x - c.x) * dx + (a.y - c.y) * dy)
+    C = (a.x - c.x)**2 + (a.y - c.y)**2 - r**2
 
-    # Calculate the distances from point a to each of the intersection points
-    d1 = sqrt((alat + t1*dx - alat)**2 + (alon + t1*dy - alon)**2)
-    d2 = sqrt((alat + t2*dx - alat)**2 + (alon + t2*dy - alon)**2)
+    # Calculate the discriminant
+    discriminant = B**2 - 4*A*C
+    print(discriminant)
 
-    # The percentage of the line that intersects the circle is the smaller of these two distances divided by the total length of the line
-    return min(d1, d2) / line_length_degrees * 100
+    # Check if the line does not intersect the circle
+    if discriminant < 0:
+        return None
+
+    # Check if one or both endpoints are inside the circle
+    if (a.x - c.x)**2 + (a.y - c.y)**2 <= r**2 or (b.x - c.x)**2 + (b.y - c.y)**2 <= r**2:
+        return None
+
+    # Calculate the parameter t for the intersection points
+    t1 = (-B + sqrt(discriminant)) / (2*A)
+    t2 = (-B - sqrt(discriminant)) / (2*A)
+
+    # Calculate the coordinates of the intersection points
+    x1 = a.x + t1 * dx
+    y1 = a.y + t1 * dy
+    x2 = a.x + t2 * dx
+    y2 = a.y + t2 * dy
+
+    # Calculate the distance between the intersection points
+    distance = sqrt((x2 - x1)**2 + (y2 - y1)**2)
+    line_length = sqrt(A)
+
+    return distance / line_length
 
 def active_session_query(session, now: datetime, *filters):
     query = session.query(VanTrackerSession).filter(
@@ -629,9 +648,3 @@ def query_most_recent_location(
         .order_by(VanLocation.created_at.desc())
         .first()
     )
-
-
-def distance_degrees(alat: float, alon: float, blat: float, blon: float) -> float:
-    dlat = alat - blat
-    dlon = alon - blon
-    return sqrt(dlat**2 + dlon**2) 
