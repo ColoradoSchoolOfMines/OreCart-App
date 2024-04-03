@@ -1,5 +1,16 @@
 {
   "dependencies": {
-    "react-native-side-drawer": "^2.1.0"
+    "expo": "^50.0.8",
+    "react-native-side-drawer": "^2.1.0",
+    "react": "18.2.0",
+    "react-native": "0.73.4",
+    "typescript": "^5.3.0",
+    "@types/react": "~18.2.45"
+  },
+  "name": "OreCart-App",
+  "version": "1.0.0",
+  "scripts": {
+    "android": "expo run:android",
+    "ios": "expo run:ios"
   }
 }

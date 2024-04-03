@@ -1,6 +1,8 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import Constants from "expo-constants";
 
+console.log(Constants.expoConfig?.extra?.httpApiUrl);
+
 /**
  * The slice managing API fetching/result caching. Should not be used
  * outside of the data store. If you want to work with the API, look

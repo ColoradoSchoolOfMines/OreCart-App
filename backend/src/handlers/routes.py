@@ -10,13 +10,15 @@ from typing import Annotated, Optional
 
 import pygeoif
 from bs4 import BeautifulSoup  # type: ignore
-from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
+from fastapi import (APIRouter, File, Form, HTTPException, Query, Request,
+                     UploadFile)
 from fastapi.responses import JSONResponse
 from fastkml import kml
 from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
 from pygeoif.geometry import Point, Polygon
-from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
+from src.hardware import (HardwareErrorCode, HardwareHTTPException,
+                          HardwareOKResponse)
 from src.model.alert import Alert
 from src.model.pickup_spot import PickupSpot
 from src.model.route import Route
@@ -49,7 +51,18 @@ def get_routes(
     include: Annotated[list[str] | None, Query()] = None,
 ):
     """
-    Gets all routes.
+    ## Gets all routes.
+
+    **:param include:** List of string includes. Valid values are:
+
+        - "stopIds": includes stopIDs
+        - "waypoints": includes waypoints
+        - "isActive": includes if route is active
+
+    **:return:** Default returns route body including:
+
+        - route ID
+        - route name
     """
 
     include_set = process_include(include, INCLUDES)
@@ -84,7 +97,9 @@ def get_routes(
 @router.get("/hardware")
 def get_routes_hardware(req: Request):
     """
-    Gets all routes in a binary format.
+    ## Gets all routes in a binary format.
+
+    **:return:** returns routes in binary format, if *OK*
     """
 
     with req.app.state.db.session() as session:
@@ -113,7 +128,9 @@ def get_routes_hardware(req: Request):
 @router.get("/kmlfile")
 def get_kml(req: Request):
     """
-    Gets the KML file for all routes.
+    ## Gets the KML file for all routes.
+
+    **:return:** kml string contianing map data
     """
 
     with req.app.state.db.session() as session:
@@ -195,7 +212,20 @@ def get_route(
     include: Annotated[list[str] | None, Query()] = None,
 ):
     """
-    Gets the route with the specified ID.
+    ## Gets the route with the specified ID.
+
+    **:param route_id:** unique integer identifier of the route
+
+    **:param include:** list of string includes Valid values are:
+
+        - "stopIds": includes stopIDs
+        - "waypoints": includes waypoints
+        - "isActive": includes if route is active 
+
+    **:return:** Default returns route body including:
+
+        - route ID
+        - route name
     """
 
     include_set = process_include(include, INCLUDES)
@@ -237,7 +267,7 @@ def query_route_stop_ids(route_id: int, session):
 
 def query_route_waypoints(route_id: int, session):
     """
-    Queries and returns the JSON representation of the waypoints for the given route ID.
+    ## Queries and returns the JSON representation of the waypoints for the given route ID.
     """
 
     waypoints = session.query(Waypoint).filter(route_id == Waypoint.route_id).all()
@@ -287,7 +317,11 @@ def is_route_active(route_id: int, alert: Optional[Alert], session) -> bool:
 @router.post("/")
 async def create_route(req: Request, kml_file: UploadFile):
     """
-    Creates a new route.
+    ## Creates a new route.
+
+    **:param kml_file:** KML file containing the route data
+
+    **:return:** *"OK"* message
     """
 
     with req.app.state.db.session() as session:
@@ -419,7 +453,9 @@ def kml_to_waypoints(contents: bytes):
 @router.delete("/")
 def delete_route(req: Request):
     """
-    Deletes everything in Routes, Waypoint, Stops, and Route-Stop.
+    ## Deletes everything in Routes, Waypoint, Stops, and Route-Stop.
+
+    **:return:** *"OK"* message
     """
 
     with req.app.state.db.session() as session:
@@ -443,7 +479,15 @@ class RouteStopModel(BaseModel):
 @router.get("/{route_id}/stops")
 def get_route_stops(req: Request, route_id: int):
     """
-    Gets all stops for the specified route.
+    ## Gets all stops for the specified route.
+
+    **:param route_id:** unique integer identifier of the route
+
+    **:return:** JSON of stops, including:
+
+        - stop ID
+        - stop name
+        
     """
 
     with req.app.state.db.session() as session:

@@ -10,7 +10,8 @@ from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, model_validator
 from sqlalchemy.sql import ColumnElement
-from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
+from src.hardware import (HardwareErrorCode, HardwareHTTPException,
+                          HardwareOKResponse)
 from src.model.analytics import Analytics
 from src.model.van import Van
 
@@ -61,14 +62,16 @@ class RidershipFilterModel(BaseModel):
 @router.post("/{van_id}")
 async def post_ridership_stats(req: Request, van_id: int):
     """
+    ## Upload ridership stats <br>
     This route is used by the hardware components to send ridership statistics to be
     logged in the database. The body of the request is a packed byte array containing
     the following values in order:
-    - timestamp of time when response was sent (64-bit milliseconds since epoch)
-    - entered (8-bit, number of people who entered the van at a given stop)
-    - exited (8-bit, number of people who exited the van at the stop)
-    - lat (double-precision float, current latitude of the van at the stop)
-    - lon (double-precision float, current longitude of the van at the stop)
+
+        - timestamp of time when response was sent (64-bit milliseconds since epoch)
+        - entered (8-bit, number of people who entered the van at a given stop)
+        - exited (8-bit, number of people who exited the van at the stop)
+        - lat (double-precision float, current latitude of the van at the stop)
+        - lon (double-precision float, current longitude of the van at the stop)
     """
 
     # Unpack the byte body sent by the hardware into their corresponding values
@@ -134,6 +137,26 @@ async def post_ridership_stats(req: Request, van_id: int):
 def get_ridership(
     req: Request, filters: Optional[RidershipFilterModel]
 ) -> List[Dict[str, Union[str, int, float]]]:
+    """
+    ## Get all ridership analytics.
+
+    **:param filters:** Optional filters for the analytics. Filters include:
+
+        - start_timestamp (int): start timestamp
+        - end_timestamp (int): end timestamp
+        - route_id (int): route ID
+        - van_id (int): van ID
+
+    **:return:** JSON of ridership statistics, including:
+
+        - vanId
+        - routeId
+        - entered (number of riders entered)
+        - existed (number of riders exited)
+        - lat (latitude)
+        - lon (longitude)
+        - datetime
+    """
     with req.app.state.db.session() as session:
         analytics: List[Analytics] = []
         if filters is None or filters.filters is None:
