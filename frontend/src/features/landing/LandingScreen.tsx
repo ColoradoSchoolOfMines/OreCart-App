@@ -55,6 +55,6 @@ export const LandingScreen = ({
 
 const styles = StyleSheet.create({
   message: {
-    margin: 16,
+    marginVertical: 16,
   },
 });
