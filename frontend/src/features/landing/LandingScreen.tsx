@@ -19,7 +19,7 @@ export const LandingScreen = ({
   navigation,
 }: LandingScreenProps): React.JSX.Element => {
   const { data: routes, isError, refetch } = useGetRoutesQuery();
-  
+
   function retry(): void {
     refetch().catch(console.error);
   }
