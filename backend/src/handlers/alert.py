@@ -32,7 +32,7 @@ def get_alerts(
         - "active": returns active alerts
         - "future": returns current and future alerts
 
-    **:return:** alerts in format 
+    **:return:** alerts in format
 
         - id
         - text
@@ -124,7 +124,7 @@ def update_alert(
     """
     ## Update existing alert of parameter ID.
 
-    **:param alert_id:** Unique integer ID 
+    **:param alert_id:** Unique integer ID
 
     **:return:** *"OK"* message
     """

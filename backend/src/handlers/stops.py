@@ -37,7 +37,7 @@ def get_stops(
     ## Gets all stops.
 
     **:param include:** Optional list of fields to include. Valid values are:
-    
+
             - "routeIds": includes the route ids that the stop is assigned to
             - "isActive": includes whether the stop is currently active
 
@@ -198,7 +198,7 @@ def create_stop(req: Request, stop_model: StopModel) -> dict[str, str]:
     ## Creates a new stop.
 
     **:param stop_model:** StopModel which includes:
-    
+
             - name (str)
             - latitude (float)
             - longitude (float)

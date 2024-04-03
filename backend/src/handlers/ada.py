@@ -29,7 +29,7 @@ def get_pickup_spots(req: Request) -> List[Dict[str, Union[str, int, float]]]:
         - "id": spot.id
         - "name": spot.name
         - "latitude": spot.lat
-        - "longitude": spot.lon    
+        - "longitude": spot.lon
 
     **:return:** A list of dictionaries representing the pickup spots.
     """
@@ -71,10 +71,10 @@ def update_pickup_spot(id: int, spot: PickupSpotModel, req: Request):
     """
     ## Update existing pickup spot.
 
-    
+
     **:param id:** Unique integer ID of the PickupSpot<br>
     **:param spot:** PickupSpotModel containing updated spot information (name, lat, lon)
-    
+
     **:return:** *"OK"* message
     """
     with req.app.state.db.session() as session:
@@ -96,10 +96,10 @@ def delete_pickup_spot(id: int, req: Request):
     """
     ## Delete existing pickup spot.
 
-    
+
     **:param id:** Unique integer ID of the PickupSpot
 
-    
+
     **:return:** *"OK"* message
     """
     with req.app.state.db.session() as session:
@@ -129,7 +129,7 @@ def get_ada_requests(
     """
     ## Get all ADA requests. Default returns all requests (past, present, and future)
 
-    
+
     **:param filter:** optional string filter. Valid values are:
 
         - "today" returns requests from now to end of day
@@ -137,9 +137,9 @@ def get_ada_requests(
     <br>
     **:param include:** include Annotations of type list of string. Valid values are:
 
-        - "pickup_spot" - adds pickup spot details (id, name, latitude, longitude) 
+        - "pickup_spot" - adds pickup spot details (id, name, latitude, longitude)
 
-    
+
     **:return:** list of requested pickup spots. By default, returns:
 
         - request id
@@ -190,8 +190,7 @@ def get_ada_requests(
 
 @router.post("/requests")
 def create_ada_request(
-    req: Request, 
-    ada_request_model: ADARequestModel
+    req: Request, ada_request_model: ADARequestModel
 ) -> dict[str, str]:
     """
     ## Create new ADA request
@@ -200,7 +199,7 @@ def create_ada_request(
 
         - pickup_spot_id (int)
         - pickup_spot_time (int)
-        - wheelchair (bool) 
+        - wheelchair (bool)
 
     **:return:** *"OK"* message
     """

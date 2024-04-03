@@ -8,8 +8,7 @@ from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
-from src.hardware import (HardwareErrorCode, HardwareHTTPException,
-                          HardwareOKResponse)
+from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.route import Route
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
@@ -49,7 +48,6 @@ INCLUDES: Set[str] = {
 
 @router.get("/")
 def get_vans(
-    
     req: Request, include: Union[List[str], None] = Query(default=None)
 ) -> JSONResponse:
     """
@@ -123,7 +121,7 @@ def get_locations(req: Request):
     ## Get all van locations.
 
     **:return:** JSON of all van locations, including:
-    
+
             - timestamp
             - latitude
             - longitude
@@ -157,7 +155,7 @@ def get_location(req: Request, van_id: int) -> JSONResponse:
     **:param van_id:** The unique integer ID of the van to retrieve
 
     **:return:** JSON of the van location, including:
-        
+
                 - timestamp
                 - latitude
                 - longitude
@@ -322,7 +320,6 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                     )
 
                 req.app.state.van_tracker.init_van(van.id, stops)
-
 
     with req.app.state.db.session() as session:
         van = session.query(Van).filter_by(guid=van_guid).first()

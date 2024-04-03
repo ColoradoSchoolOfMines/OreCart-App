@@ -10,15 +10,13 @@ from typing import Annotated, Optional
 
 import pygeoif
 from bs4 import BeautifulSoup  # type: ignore
-from fastapi import (APIRouter, File, Form, HTTPException, Query, Request,
-                     UploadFile)
+from fastapi import APIRouter, File, Form, HTTPException, Query, Request, UploadFile
 from fastapi.responses import JSONResponse
 from fastkml import kml
 from fastkml.styles import LineStyle, PolyStyle
 from pydantic import BaseModel
 from pygeoif.geometry import Point, Polygon
-from src.hardware import (HardwareErrorCode, HardwareHTTPException,
-                          HardwareOKResponse)
+from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.alert import Alert
 from src.model.pickup_spot import PickupSpot
 from src.model.route import Route
@@ -220,7 +218,7 @@ def get_route(
 
         - "stopIds": includes stopIDs
         - "waypoints": includes waypoints
-        - "isActive": includes if route is active 
+        - "isActive": includes if route is active
 
     **:return:** Default returns route body including:
 
@@ -487,7 +485,7 @@ def get_route_stops(req: Request, route_id: int):
 
         - stop ID
         - stop name
-        
+
     """
 
     with req.app.state.db.session() as session:
