@@ -62,6 +62,7 @@ module.exports = {
           "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you.",
       },
     ],
+    "expo-font",
   ],
   extra: {
     httpApiUrl,

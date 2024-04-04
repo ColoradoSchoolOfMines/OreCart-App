@@ -1,5 +1,9 @@
 {
   "dependencies": {
-    "react-native-side-drawer": "^2.1.0"
+    "@expo-google-fonts/dev": "^0.2.3",
+    "expo-font": "^11.10.3",
+    "react-native-side-drawer": "^2.1.0",
+    "react-native-splash-screen": "^3.3.0",
+    "undefined": "expo/google-fonts/dev"
   }
 }
