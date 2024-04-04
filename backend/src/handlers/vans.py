@@ -50,6 +50,19 @@ INCLUDES: Set[str] = {
 def get_vans(
     req: Request, include: Union[List[str], None] = Query(default=None)
 ) -> JSONResponse:
+    """
+    ## Get all vans.
+
+    **:param include:** Optional list of fields to include. Valid values are:
+
+        - "location": includes the current location of the van
+
+    **:return:** A list of vans in the format
+
+        - id
+        - routeId
+        - guid
+    """
     include_set = process_include(include=include, allowed=INCLUDES)
     with req.app.state.db.session() as session:
         vans: List[Van] = session.query(Van).order_by(Van.id).all()
@@ -79,6 +92,20 @@ def get_vans(
 def get_van(
     req: Request, van_id: int, include: Union[List[str], None] = Query(default=None)
 ) -> JSONResponse:
+    """
+    ## Get a van by ID.
+
+    **:param van_id:** The unique integer ID of the van to retrieve
+
+    **:param include:** Optional list of fields to include. Valid values are:
+
+        - "location": includes the current location of the van
+
+    **:return:** A van in the format
+
+        - id
+        - routeId
+    """
     include_set = process_include(include=include, allowed=INCLUDES)
     with req.app.state.db.session() as session:
         van: Van = session.query(Van).filter_by(id=van_id).first()
@@ -95,12 +122,27 @@ def get_van(
 
 @router.get("/location/", response_class=Response)
 def get_locations(req: Request):
+    """
+    ## Get all van locations.
+
+    **:return:** JSON of all van locations, including:
+
+            - timestamp
+            - latitude
+            - longitude
+            - nextStopId
+            - secondsToNextStop
+    """
+
     vans = get_all_van_ids(req)
     return JSONResponse(content=get_location_for_vans(req, vans))
 
 
 @router.websocket("/location/subscribe/")
 async def subscribe_locations(websocket: WebSocket) -> None:
+    """
+    ## Subscribe to all van locations.
+    """
     await websocket.accept()
 
     vans = get_all_van_ids(websocket)
@@ -112,6 +154,19 @@ async def subscribe_locations(websocket: WebSocket) -> None:
 
 @router.get("/location/{van_id}")
 def get_location(req: Request, van_id: int) -> JSONResponse:
+    """
+    ## Get the location of a van by ID.
+
+    **:param van_id:** The unique integer ID of the van to retrieve
+
+    **:return:** JSON of the van location, including:
+
+                - timestamp
+                - latitude
+                - longitude
+                - nextStopId
+                - secondsToNextStop
+    """
     if van_id not in req.app.state.van_locations:
         raise HTTPException(detail="Van not found", status_code=404)
 
@@ -173,6 +228,13 @@ def get_location_for_van(
 
 @router.post("/routeselect/{van_guid}")
 async def post_routeselect(req: Request, van_guid: str) -> HardwareOKResponse:
+    """
+    ## Select a route for a van.
+
+    **:param van_guid:** The unique str identifier of the van
+
+    **:return:** *Hardware OK* message
+    """
     body = await req.body()
     route_id = struct.unpack("<i", body)
 
@@ -191,6 +253,13 @@ async def post_routeselect(req: Request, van_guid: str) -> HardwareOKResponse:
 
 @router.post("/location/{van_guid}")
 async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
+    """
+    ## Update the location of a van.
+
+    **:param van_guid:** The unique str identifier of the van
+
+    **:return:** *Hardware OK* message
+    """
     with req.app.state.db.session() as session:
         van = session.query(Van).filter_by(guid=van_guid).first()
         if van is None:

@@ -34,7 +34,20 @@ def get_stops(
     include: Annotated[list[str] | None, Query()] = None,
 ):
     """
-    Gets all stops.
+    ## Gets all stops.
+
+    **:param include:** Optional list of fields to include. Valid values are:
+
+            - "routeIds": includes the route ids that the stop is assigned to
+            - "isActive": includes whether the stop is currently active
+
+    **:return:** A list of stops in the (default) format
+
+        - id
+        - name
+        - latitude
+        - longitude
+
     """
 
     include_set = process_include(include, INCLUDES)
@@ -75,7 +88,21 @@ def get_stop(
     include: Annotated[list[str] | None, Query()] = None,
 ):
     """
-    Gets the stop with the specified id.
+    ## Gets the stop with the specified id.
+
+    **:param stop_id:** Unique integer ID of the stop
+
+    **:param include:** Optional list of fields to include. Valid values are:
+
+        - "routeIds": includes the route ids that the stop is assigned to
+        - "isActive": includes whether the stop is currently active
+
+    **:return:** The stop in the (default) format
+
+        - id
+        - name
+        - latitude
+        - longitude
     """
 
     include_set = process_include(include, INCLUDES)
@@ -168,7 +195,16 @@ class StopModel(BaseModel):
 @router.post("/")
 def create_stop(req: Request, stop_model: StopModel) -> dict[str, str]:
     """
-    Creates a new stop.
+    ## Creates a new stop.
+
+    **:param stop_model:** StopModel which includes:
+
+            - name (str)
+            - latitude (float)
+            - longitude (float)
+            - active (bool)
+
+    **:return:** *"OK"* message
     """
 
     with req.app.state.db.session() as session:
@@ -191,7 +227,18 @@ def update_stop(
     stop_model: StopModel,
 ) -> dict[str, str]:
     """
-    Updates the stop with the specified id.
+    ## Updates the stop with the specified id.
+
+    **:param stop_id:** Unique integer ID of the stop
+
+    **:param stop_model:** StopModel which includes:
+
+            - name (str)
+            - latitude (float)
+            - longitude (float)
+            - active (bool)
+
+    **:return:** *"OK"* message
     """
 
     with req.app.state.db.session() as session:
@@ -211,7 +258,11 @@ def update_stop(
 @router.delete("/{stop_id}")
 def delete_stop(req: Request, stop_id: int) -> dict[str, str]:
     """
-    Deletes the stop with the specified id.
+    ## Deletes the stop with the specified id.
+
+    **:param stop_id:** Unique integer ID of the stop
+
+    **:return:** *"OK"* message
     """
 
     with req.app.state.db.session() as session:

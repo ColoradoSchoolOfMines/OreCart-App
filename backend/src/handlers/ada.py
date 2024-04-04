@@ -21,6 +21,18 @@ class PickupSpotModel(BaseModel):
 
 @router.get("/pickup_spots")
 def get_pickup_spots(req: Request) -> List[Dict[str, Union[str, int, float]]]:
+    """
+    ## Retrieve a list of pickup spots from the database.
+
+    Pickup Spots are in the form
+
+        - "id": spot.id
+        - "name": spot.name
+        - "latitude": spot.lat
+        - "longitude": spot.lon
+
+    **:return:** A list of dictionaries representing the pickup spots.
+    """
     with req.app.state.db.session() as session:
         pickup_spots = session.query(PickupSpot).all()
         pickup_spots_json: List[Dict[str, Union[str, int, float]]] = []
@@ -38,6 +50,13 @@ def get_pickup_spots(req: Request) -> List[Dict[str, Union[str, int, float]]]:
 
 @router.post("/pickup_spots")
 def post_pickup_spot(spot: PickupSpotModel, req: Request):
+    """
+    ## Create a new pickup spot.
+
+    **:param spot:** PickupSpotModel containing new spot information (name, lat, lon)
+
+    **:return:** *"OK"* message
+    """
     new_spot = PickupSpot(name=spot.name, lat=spot.latitude, lon=spot.longitude)
 
     with req.app.state.db.session() as session:
@@ -49,6 +68,15 @@ def post_pickup_spot(spot: PickupSpotModel, req: Request):
 
 @router.put("/pickup_spots/{id}")
 def update_pickup_spot(id: int, spot: PickupSpotModel, req: Request):
+    """
+    ## Update existing pickup spot.
+
+
+    **:param id:** Unique integer ID of the PickupSpot<br>
+    **:param spot:** PickupSpotModel containing updated spot information (name, lat, lon)
+
+    **:return:** *"OK"* message
+    """
     with req.app.state.db.session() as session:
         pickup_spot = session.query(PickupSpot).filter(PickupSpot.id == id).first()
 
@@ -65,6 +93,15 @@ def update_pickup_spot(id: int, spot: PickupSpotModel, req: Request):
 
 @router.delete("/pickup_spots/{id}")
 def delete_pickup_spot(id: int, req: Request):
+    """
+    ## Delete existing pickup spot.
+
+
+    **:param id:** Unique integer ID of the PickupSpot
+
+
+    **:return:** *"OK"* message
+    """
     with req.app.state.db.session() as session:
         pickup_spot = session.query(PickupSpot).filter(PickupSpot.id == id).first()
 
@@ -89,6 +126,26 @@ def get_ada_requests(
     filter: Optional[str] = None,
     include: Annotated[list[str] | None, Query()] = None,
 ):
+    """
+    ## Get all ADA requests. Default returns all requests (past, present, and future)
+
+
+    **:param filter:** optional string filter. Valid values are:
+
+        - "today" returns requests from now to end of day
+        - "future" returns all future requests (including today)
+    <br>
+    **:param include:** include Annotations of type list of string. Valid values are:
+
+        - "pickup_spot" - adds pickup spot details (id, name, latitude, longitude)
+
+
+    **:return:** list of requested pickup spots. By default, returns:
+
+        - request id
+        - pickup_time
+        - wheelchair
+    """
     now = datetime.now(timezone.utc)
     include_set = process_include(include, INCLUDES)
     with req.app.state.db.session() as session:
@@ -135,6 +192,17 @@ def get_ada_requests(
 def create_ada_request(
     req: Request, ada_request_model: ADARequestModel
 ) -> dict[str, str]:
+    """
+    ## Create new ADA request
+
+    **:param ada_request_model:** ADARequestModel which includes:
+
+        - pickup_spot_id (int)
+        - pickup_spot_time (int)
+        - wheelchair (bool)
+
+    **:return:** *"OK"* message
+    """
     pickup_time = datetime.fromtimestamp(ada_request_model.pickup_time, timezone.utc)
     # Make sure that the pickup time is in the future
     if pickup_time <= datetime.now(timezone.utc):
