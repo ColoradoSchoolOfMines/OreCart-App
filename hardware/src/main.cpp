@@ -2,11 +2,13 @@
 #include <vector>
 
 #include "Modem.hpp"
+#include "HTTP.hpp"
 
 int main()
 {
     std::shared_ptr<Modem> modem = std::make_shared<Modem>("example.com");
+    std::shared_ptr<HTTP> http = std::make_shared<HTTP>();
+    std::vector<char> data = http->get("/", {});
     modem->set_speed(Modem::Speed::NORMAL);
-    std::vector<char> data = {1, 2, 3, 4};
     modem->send(data);
 }
