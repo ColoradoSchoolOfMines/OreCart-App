@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "OreCart-App",
+    "slug": "orecart-app",
+    "version": "1.0.0",
+    "sdkVersion": "50.0.0",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "ios": {
+      "bundleIdentifier": "com.anonymous.orecart-app"
+    }
+  }
+}

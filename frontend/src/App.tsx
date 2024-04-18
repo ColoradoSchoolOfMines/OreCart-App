@@ -14,7 +14,6 @@ import Color from "./common/style/color";
 import LayoutStyle from "./common/style/layout";
 import { ADARequestScreen } from "./features/ada/ADARequestScreen";
 import { AlertScreen } from "./features/alert/AlertScreen";
-import { BugReportScreen } from "./features/report/BugReportScreen";
 import { SettingsScreen } from "./features/settings/SettingsScreen";
 
 // -----
@@ -69,11 +68,6 @@ const App = (): React.JSX.Element => (
               name="ADARequest"
               component={ADARequestScreen}
               options={{ title: "ADA Ride Request" }}
-            />
-            <Stack.Screen
-              name="BugReport"
-              component={BugReportScreen}
-              options={{ title: "Bug Report" }}
             />
             <Stack.Screen
               name="Settings"

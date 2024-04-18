@@ -12,6 +12,7 @@ import {
   Platform,
   StyleSheet,
   Text,
+  Linking,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -66,6 +67,16 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
   const expoVersion = Constants.expoConfig?.version;
   const [atLanding, setAtLanding] = useState<boolean>(true);
 
+  /**
+   * Bug Report Email Information
+   */
+  const BugReportEmail = "orecartmines@gmail.com";
+  const subject = "OreCart Bug";
+  const body = "Bug Description: \n\nSteps to Reproduce: \n";
+  const url = `mailto:${BugReportEmail}?subject=${subject}&body=${body}`
+
+
+
   manageLocationMiddleware();
 
   return (
@@ -80,7 +91,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
       renderDrawerContent={() => {
         return (
           <View style={SpacingStyle.pad(drawerInsets, 16)}>
-            {/* <TouchableOpacity
+            {/*<TouchableOpacity
               onPress={() => {
                 navigation.push("ADARequest");
               }}
@@ -89,7 +100,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 <MaterialIcons name="accessible" size={24} color="black" />
                 <Text style={styles.drawerItemText}>ADA Ride Request</Text>
               </View>
-            </TouchableOpacity> */}
+            </TouchableOpacity>*/}
 
             <TouchableOpacity
               onPress={() => {
@@ -101,7 +112,7 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 <Text style={styles.drawerItemText}>Upcoming Alerts</Text>
               </View>
             </TouchableOpacity>
-            {/* 
+            {/*
             <TouchableOpacity
               onPress={() => {
                 navigation.push("Settings");
@@ -112,17 +123,14 @@ const Home = ({ route, navigation }: HomeScreenProps): React.JSX.Element => {
                 <Text style={styles.drawerItemText}>Settings</Text>
               </View>
             </TouchableOpacity> */}
-
-            {/* <TouchableOpacity
-              onPress={() => {
-                navigation.push("BugReport");
-              }}
-            >
+            { <TouchableOpacity
+                onPress={() => Linking.openURL(url) }
+              >
               <View style={styles.drawerItem}>
                 <MaterialIcons name="bug-report" size={24} color="black" />
-                <Text style={styles.drawerItemText}>Bug Report</Text>
+                <Text style={styles.drawerItemText}>Report Bug</Text>
               </View>
-            </TouchableOpacity> */}
+            </TouchableOpacity> }
 
             <Text>Version {expoVersion}</Text>
           </View>
