@@ -9,5 +9,6 @@
     },
     "[scss]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
-    }
+    },
+    "inlineChat.mode": "preview"
 }

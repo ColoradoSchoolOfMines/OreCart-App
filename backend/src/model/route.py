@@ -17,6 +17,11 @@ class Route(Base):
         String(7),
         nullable=True,
     )
+    description: Mapped[str] = mapped_column(
+        String(255),
+        nullable=False,
+        server_default="",
+    )
 
     waypoints = relationship("Waypoint", backref="route", cascade="all, delete-orphan")
 
