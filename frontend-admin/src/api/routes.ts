@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { Stop } from "../pages/routes/route-types";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
+console.log(baseUrl);
 
 export const getKML = async () => {
   const response = await fetch(`${baseUrl}/routes/kmlfile`);
