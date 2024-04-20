@@ -3,23 +3,15 @@ import "./ridership-page.scss";
 import { RidershipCard } from "../../components/ridership-card/ridership-card";
 import {
   Button,
-  Container,
   Flex,
   Group,
   MantineProvider,
   VariantColorsResolver,
   defaultVariantColorsResolver,
 } from "@mantine/core";
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+import { LineChart } from "@mantine/charts";
+// @ts-ignore
+import dateFormat from "dateformat";
 // import useWebSocket, { ReadyState } from "react-use-websocket";
 
 const RidershipPage: React.FC = () => {
@@ -81,25 +73,25 @@ const RidershipPage: React.FC = () => {
         "Loop de Loop": 14,
       },
       {
-        timestamp: "April 19, 2024 5:15AM",
+        timestamp: "April 20, 2024 5:15AM",
         "Golden Route": 30,
-        "Mines Park":22,
+        "Mines Park": 22,
         "Loop de Loop": 8,
       },
       {
-        timestamp: "April 19, 2024 8:15AM",
+        timestamp: "April 20, 2024 8:15AM",
         "Golden Route": 10,
         "Mines Park": 14,
         "Loop de Loop": 1,
       },
       {
-        timestamp: "April 19, 2024 10:15AM",
+        timestamp: "April 20, 2024 10:15AM",
         "Golden Route": 23,
         "Mines Park": 5,
         "Loop de Loop": 2,
       },
       {
-        timestamp: "April 19, 2024 3:30PM",
+        timestamp: "April 20, 2024 3:30PM",
         "Golden Route": 6,
         "Mines Park": 6,
         "Loop de Loop": 9,
@@ -127,12 +119,12 @@ const RidershipPage: React.FC = () => {
     switch (trendRange) {
       case 0:
         setTrends(
-          ridership.historic.filter((current: any) => {
-            return (
+          ridership.historic.filter(
+            (current: any) =>
               new Date(current.timestamp).setHours(0, 0, 0, 0) ==
-              new Date().setHours(0, 0, 0, 0)
-            );
-          }, [])
+              new Date().setHours(0, 0, 0, 0),
+            []
+          )
         );
         break;
       default:
@@ -188,45 +180,18 @@ const RidershipPage: React.FC = () => {
           </Button>
         </Group>
       </MantineProvider>
-      <Container size="responsive" m="10">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart
-            width={500}
-            height={300}
-            data={trends}
-            margin={{
-              top: 5,
-              right: 30,
-              left: 20,
-              bottom: 5,
-            }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="timestamp" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Line
-              type="monotone"
-              dataKey="Golden Route"
-              stroke="green"
-              activeDot={{ r: 8 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="Mines Park"
-              stroke="blue"
-              activeDot={{ r: 8 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="Loop de Loop"
-              stroke="red"
-              activeDot={{ r: 8 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </Container>
+      <LineChart
+        m="md"
+        h={300}
+        data={trends}
+        dataKey="timestamp"
+        curveType="linear"
+        series={[
+          { name: "Golden Route", color: "blue" },
+          { name: "Mines Park", color: "red" },
+          { name: "Loop de Loop", color: "green" },
+        ]}
+      />
     </main>
   );
 };

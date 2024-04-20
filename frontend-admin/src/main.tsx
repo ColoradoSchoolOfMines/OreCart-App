@@ -16,6 +16,7 @@ import {
   createTheme,
 } from "@mantine/core";
 import "@mantine/core/styles.layer.css";
+import '@mantine/charts/styles.css';
 const myColor: MantineColorsTuple = [
   "#ecf3fd",
   "#d7e4f6",
