@@ -135,7 +135,7 @@ const RidershipPage: React.FC = () => {
   return (
     <main className="p-ridership-page">
       <h1>Ridership</h1>
-      <Flex wrap="wrap" direction="row" gap="md" justify="center">
+      <Flex wrap="wrap" direction="row" gap="md">
         {ridership.routes.map((route) => (
           <RidershipCard
             key={route.id}
