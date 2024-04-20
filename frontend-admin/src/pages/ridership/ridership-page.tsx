@@ -2,19 +2,14 @@ import React from "react";
 import "./ridership-page.scss";
 import { RidershipCard } from "../../components/ridership-card/ridership-card";
 import {
-  Button,
   Flex,
-  Group,
-  MantineProvider,
   VariantColorsResolver,
   defaultVariantColorsResolver,
 } from "@mantine/core";
-import { LineChart } from "@mantine/charts";
-// @ts-ignore
-import dateFormat from "dateformat";
+import { RidershipGraph } from "../../components/ridership-graph/ridership-graph";
 // import useWebSocket, { ReadyState } from "react-use-websocket";
 
-const RidershipPage: React.FC = () => {
+const RidershipPage = () => {
   // const baseSocketUrl = import.meta.env.VITE_WEBSOCKET_URL + "/ridership";
   // const [socketUrl, setSocketUrl] = React.useState(baseSocketUrl + "/subscribe");
   // const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket(
@@ -61,40 +56,50 @@ const RidershipPage: React.FC = () => {
     ],
     historic: [
       {
-        timestamp: "August 19, 1975 23:15:30",
-        "Golden Route": 10,
-        "Mines Park": 5,
-        "Loop de Loop": 14,
+        name: "Mines Park",
+        data: [
+          [1713587537000, 38],
+          [1713591137000, 32],
+          [1713594737000, 38],
+          [1713598337000, 5],
+          [1713601937000, 9],
+          [1713605537000, 25],
+          [1713609137000, 18],
+          [1713612737000, 2],
+          [1713616337000, 34],
+          [1713619937000, 36],
+          [1713623537000, 16],
+          [1713627137000, 33],
+          [1713630737000, 38],
+          [1713634337000, 14],
+          [1713637520000, 1],
+          [1713637937000, 13],
+          [1713640884000, 32],
+          [1713641140000, 28],
+        ],
       },
       {
-        timestamp: "April 19, 1975 23:15:30",
-        "Golden Route": 20,
-        "Mines Park": 1,
-        "Loop de Loop": 14,
-      },
-      {
-        timestamp: "April 20, 2024 5:15AM",
-        "Golden Route": 30,
-        "Mines Park": 22,
-        "Loop de Loop": 8,
-      },
-      {
-        timestamp: "April 20, 2024 8:15AM",
-        "Golden Route": 10,
-        "Mines Park": 14,
-        "Loop de Loop": 1,
-      },
-      {
-        timestamp: "April 20, 2024 10:15AM",
-        "Golden Route": 23,
-        "Mines Park": 5,
-        "Loop de Loop": 2,
-      },
-      {
-        timestamp: "April 20, 2024 3:30PM",
-        "Golden Route": 6,
-        "Mines Park": 6,
-        "Loop de Loop": 9,
+        name: "Loop de Loop",
+        data: [
+          [1713587537000, 16],
+          [1713591137000, 33],
+          [1713594737000, 15],
+          [1713598337000, 11],
+          [1713601937000, 37],
+          [1713605537000, 0],
+          [1713609137000, 4],
+          [1713612733000, 27],
+          [1713616352000, 2],
+          [1713619937000, 31],
+          [1713623537000, 28],
+          [1713627137000, 30],
+          [1713630737000, 39],
+          [1713634337000, 38],
+          [1713637520000, 40],
+          [1713637937000, 39],
+          [1713640884000, 24],
+          [1713641140000, 7],
+        ],
       },
     ],
   });
@@ -112,26 +117,6 @@ const RidershipPage: React.FC = () => {
     return defaultResolvedColors;
   };
 
-  const [trendRange, setTrendRange] = React.useState(-1);
-  const [trends, setTrends] = React.useState(new Array());
-
-  React.useEffect(() => {
-    switch (trendRange) {
-      case 0:
-        setTrends(
-          ridership.historic.filter(
-            (current: any) =>
-              new Date(current.timestamp).setHours(0, 0, 0, 0) ==
-              new Date().setHours(0, 0, 0, 0),
-            []
-          )
-        );
-        break;
-      default:
-        setTrends(ridership.historic);
-    }
-  }, [trendRange]);
-
   return (
     <main className="p-ridership-page">
       <h1>Ridership</h1>
@@ -146,51 +131,9 @@ const RidershipPage: React.FC = () => {
         ))}
       </Flex>
       <h1>Trends</h1>
-      <MantineProvider theme={{ variantColorResolver }}>
-        <Group gap="xs">
-          <Button
-            variant={trendRange === 0 ? "light" : "default"}
-            onClick={() => setTrendRange(0)}
-          >
-            Today
-          </Button>
-          <Button
-            variant={trendRange === 1 ? "light" : "default"}
-            onClick={() => setTrendRange(1)}
-          >
-            This Week
-          </Button>
-          <Button
-            variant={trendRange === 2 ? "light" : "default"}
-            onClick={() => setTrendRange(2)}
-          >
-            This Month
-          </Button>
-          <Button
-            variant={trendRange === 3 ? "light" : "default"}
-            onClick={() => setTrendRange(3)}
-          >
-            This Year
-          </Button>
-          <Button
-            variant={trendRange === 4 ? "light" : "default"}
-            onClick={() => setTrendRange(4)}
-          >
-            Custom
-          </Button>
-        </Group>
-      </MantineProvider>
-      <LineChart
-        m="md"
-        h={300}
-        data={trends}
-        dataKey="timestamp"
-        curveType="linear"
-        series={[
-          { name: "Golden Route", color: "blue" },
-          { name: "Mines Park", color: "red" },
-          { name: "Loop de Loop", color: "green" },
-        ]}
+      <RidershipGraph
+        theme={{ variantColorResolver }}
+        data={ridership.historic}
       />
     </main>
   );
