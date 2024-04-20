@@ -9,7 +9,6 @@ export function RidershipCard({
   numVans: number;
   numPassengers: number | undefined;
 }) {
-  console.log(name, numVans);
   return (
     <Card
       shadow="sm"
