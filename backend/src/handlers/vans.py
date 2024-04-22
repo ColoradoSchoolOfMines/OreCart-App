@@ -501,70 +501,49 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                 VanLocation.session_id == tracker_session.id,
                 VanLocation.created_at > now - timedelta(seconds=300),
             )
-            .order_by(VanLocation.created_at)
+            # Prioritize newer locations in our stop calculations
+            .order_by(VanLocation.created_at.desc())
         )
+
+        target_stop_index = None
         for i, stop in enumerate(subsequent_stops):
-            longest_subset: List[datetime] = []
-            current_subset: List[datetime] = []
+            if target_stop_index is not None:
+                break
             stop_location = latlon_to_meter_coordinate(stop.lat, stop.lon)
+            current_duration = timedelta()
+            for i in range(len(locations) - 1):
+                older = locations[i+1]
+                older_location = latlon_to_meter_coordinate(older.lat, older.lon)
+                newer = locations[i]
+                newer_location = latlon_to_meter_coordinate(newer.lat, newer.lon)
+                distance = older_location.distance(newer_location)
+                duration = newer.created_at - older.created_at
+                intersection, length = line_circle_intersection(
+                    older_location, newer_location, stop_location, THRESHOLD_RADIUS_M)
 
-            # Find the longest consequtive subset (i.e streak) where the distance of the past couple of
-            # van locations is consistently within this stop's radius.
-            for location in locations:
-                location_meters = latlon_to_meter_coordinate(lat, lon)
-                stop_distance_m = stop_location.distance(location_meters)
-                if stop_distance_m < THRESHOLD_RADIUS_M:
-                    current_subset.append(location.created_at)
-                else:
-                    if len(current_subset) > len(longest_subset):
-                        longest_subset = current_subset
-                    current_subset = []
-            if len(current_subset) > len(longest_subset):
-                longest_subset = current_subset
-
-            if longest_subset:
-                # A streak exists, find the overall duration that this van was within the stop's radius. Since locations
-                # are ordered from oldest to newest, we can just subtract the last and first timestamps.
-                duration = longest_subset[-1] - longest_subset[0]
-            else:
-                # No streak, so we weren't at the stop for any amount of time.
-                duration = timedelta(seconds=0)
-
-            if duration >= THRESHOLD_TIME:
-                # We were at this stop for long enough, move to it. Since the stops iterated through are relative to the
-                # current stop, we have to add the current stop index to the current index in the loop to get the actual
-                # stop index.
-                # Note: It's possible that the van was at another stop's radius for even longer, but this is not considered
-                # until real-world testing shows this edge case to be important.
-                tracker_session.stop_index = (tracker_session.stop_index + i + 1) % len(
-                    stops
-                )
-                session.commit()
-                break
-
-        # That did not work. A van might have leapfrogged a stop due to a delayed location ping instead.
-        # Fix this by seeing if there was a point in which a van might have logically went through a stop radius
-        # in between two pings across the threshold time.
-        break_outer = False
-        for i in range(len(locations) - 1):
-            if break_outer:
-                break
-            left = locations[i]
-            right = locations[i + 1]
-            left_location = latlon_to_meter_coordinate(left.lat, left.lon)
-            right_location = latlon_to_meter_coordinate(right.lat, right.lon)
-            for i, stop in enumerate(subsequent_stops):
-                stop_location = latlon_to_meter_coordinate(stop.lat, stop.lon)
-                percent = line_circle_intersection(left_location, right_location, stop_location, THRESHOLD_RADIUS_M)
-                duration = right.timestamp - left.timestamp
-                if percent > 0.5 and right.timestamp - left.timestamp >= THRESHOLD_TIME:
-                    tracker_session.stop_index = (tracker_session.stop_index + i + 1) % len(
-                        stops
-                    )
-                    session.commit()
-                    break_outer = True
+                # 0 -> older is inside -> exited threshold, should see if it's enough
+                #  duration to meet threshold, otherwise reset the threshold time
+                # 1 -> newer is inside -> entered threshold, add duration and see if its
+                # already enough
+                # 2 -> both are inside -> still in threshold,  add duration and see if its
+                # enough
+                # 3 -> leapfrogged threshold, see if the "time" we spent in the radius is
+                # enough 
+                inside_ratio = length / distance
+                relative_duration = inside_ratio * duration
+                current_duration += relative_duration
+                if current_duration >= THRESHOLD_TIME:
+                    # In the stop radius for long enough, we are done.
+                    target_stop_index = i
                     break
-
+                elif intersection not in {1, 2}:
+                    # Exited threshold without enough time, we did not arrive at the stop
+                    current_duration = timedelta()
+        if target_stop_index is not None:
+            tracker_session.stop_index = (tracker_session.stop_index + i + 1) % len(
+                stops
+            )
+            session.commit()
 
     return HardwareOKResponse()
 
@@ -589,43 +568,83 @@ def latlon_to_meter_coordinate(latitude, longitude) -> MeterCoordinate:
 
     return MeterCoordinate(x=utm_x, y=utm_y)
 
+def line_circle_intersection(a, b, c, r):
+    # Calculate the distance of endpoints A and B from the center of the circle
+    dist_a = sqrt((a.x - c.x)**2 + (a.y - c.y)**2)
+    dist_b = sqrt((b.x - c.x)**2 + (b.y - c.y)**2)
 
-def line_circle_intersection(a: MeterCoordinate, b: MeterCoordinate, c: MeterCoordinate, r: float):
-    # Calculate the coefficients of the quadratic equation
-    dx = b.x - a.x
-    dy = b.y - a.y
-    A = dx**2 + dy**2
-    B = 2 * ((a.x - c.x) * dx + (a.y - c.y) * dy)
-    C = (a.x - c.x)**2 + (a.y - c.y)**2 - r**2
+    # Calculate the slope and y-intercept of the line
+    if b.x - a.x == 0:  # Handle vertical line case
+        m = float('inf')
+        line_b = a.x
+    else:
+        m = (b.y - a.y) / (b.x - a.x)
+        line_b = a.y - m * a.x
+
+    # Calculate the quadratic equation coefficients
+    a = 1 + m**2
+    b = 2 * (m * (line_b - c.y) - c.x)
+    c = c.x**2 + (line_b - c.y)**2 - r**2
 
     # Calculate the discriminant
-    discriminant = B**2 - 4*A*C
-    print(discriminant)
+    discriminant = b**2 - 4 * a * c
 
-    # Check if the line does not intersect the circle
     if discriminant < 0:
-        return None
+        # No intersection
+        if dist_a < r and dist_b < r:
+            return (2, sqrt((b.x - a.x)**2 + (b.y - a.y)**2))
+        elif dist_a < r:
+            return (0, sqrt((a.x - c.x)**2 + (a.y - c.y)**2))
+        elif dist_b < r:
+            return (1, sqrt((b.x - c.x)**2 + (b.y - c.y)**2))
+        else:
+            return (3, 0)
+    else:
+        # Calculate intersection points
+        x1 = (-b + sqrt(discriminant)) / (2 * a)
+        y1 = m * x1 + line_b
+        x2 = (-b - sqrt(discriminant)) / (2 * a)
+        y2 = m * x2 + line_b
 
-    # Check if one or both endpoints are inside the circle
-    if (a.x - c.x)**2 + (a.y - c.y)**2 <= r**2 or (b.x - c.x)**2 + (b.y - c.y)**2 <= r**2:
-        return None
-
-    # Calculate the parameter t for the intersection points
-    t1 = (-B + sqrt(discriminant)) / (2*A)
-    t2 = (-B - sqrt(discriminant)) / (2*A)
-
-    # Calculate the coordinates of the intersection points
-    x1 = a.x + t1 * dx
-    y1 = a.y + t1 * dy
-    x2 = a.x + t2 * dx
-    y2 = a.y + t2 * dy
-
-    # Calculate the distance between the intersection points
-    distance = sqrt((x2 - x1)**2 + (y2 - y1)**2)
-    line_length = sqrt(A)
-
-    return distance / line_length
-
+        # Check if the intersection points lie within the line segment
+        if min(a.x, b.x) <= x1 <= max(a.x, b.x) and min(a.y, b.y) <= y1 <= max(a.y, b.y):
+            if min(a.x, b.x) <= x2 <= max(a.x, b.x) and min(a.y, b.y) <= y2 <= max(a.y, b.y):
+                # Both intersection points lie within the line segment
+                if dist_a < r and dist_b < r:
+                    return (2, sqrt((b.x - a.x)**2 + (b.y - a.y)**2))
+                elif dist_a < r:
+                    return (0, sqrt((x2 - a.x)**2 + (y2 - a.y)**2))
+                elif dist_b < r:
+                    return (1, sqrt((b.x - x1)**2 + (b.y - y1)**2))
+                else:
+                    return (3, sqrt((x2 - x1)**2 + (y2 - y1)**2))
+            else:
+                # Only one intersection point lies within the line segment
+                if dist_a < r:
+                    return (0, sqrt((x1 - a.x)**2 + (y1 - a.y)**2))
+                elif dist_b < r:
+                    return (1, sqrt((b.x - x1)**2 + (b.y - y1)**2))
+                else:
+                    return (3, sqrt((x1 - a.x)**2 + (y1 - a.y)**2))
+        elif min(a.x, b.x) <= x2 <= max(a.x, b.x) and min(a.y, b.y) <= y2 <= max(a.y, b.y):
+            # Only one intersection point lies within the line segment
+            if dist_a < r:
+                return (0, sqrt((x2 - a.x)**2 + (y2 - a.y)**2))
+            elif dist_b < r:
+                return (1, sqrt((b.x - x2)**2 + (b.y - y2)**2))
+            else:
+                return (3, sqrt((x2 - b.x)**2 + (y2 - b.y)**2))
+        else:
+            # No intersection points lie within the line segment
+            if dist_a < r and dist_b < r:
+                return (2, sqrt((b.x - a.x)**2 + (b.y - a.y)**2))
+            elif dist_a < r:
+                return (0, sqrt((a.x - c.x)**2 + (a.y - c.y)**2))
+            elif dist_b < r:
+                return (1, sqrt((b.x - c.x)**2 + (b.y - c.y)**2))
+            else:
+                return (3, 0)
+            
 def active_session_query(session, now: datetime, *filters):
     query = session.query(VanTrackerSession).filter(
         VanTrackerSession.dead == False,
