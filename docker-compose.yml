@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   database:
-    container_name: orecart-database
+    container_name: orecart-database-staging
     image: postgres
     restart: always
     healthcheck:
@@ -11,14 +11,14 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
-    ports:
-      - 5432:5432
     volumes:
-      - orecart-db-volume:/var/lib/postgresql/data
+      - orecart-db-volume-staging:/var/lib/postgresql/data
     env_file:
       - database.env
+    networks:
+      - staging
   migration:
-    container_name: orecart-migration
+    container_name: orecart-migration-staging
     build: ./backend
     command: alembic upgrade head
     env_file:
@@ -26,12 +26,12 @@ services:
     depends_on:
       database:
         condition: service_healthy
+    networks:
+      - staging
   backend:
-    container_name: orecart-backend
+    container_name: orecart-backend-staging
     build: ./backend
     restart: always
-    ports:
-      - 8000:8000
     env_file:
       - backend.env
     healthcheck:
@@ -43,22 +43,27 @@ services:
     depends_on:
       migration:
         condition: service_completed_successfully
-  frontend-admin:
-    container_name: orecart-frontend-admin
-    build: ./frontend-admin
-    restart: always
-    ports:
-      - 5173:5173
-    env_file:
-      - frontend-admin.env
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:5173/"]
-      interval: 30s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
-    depends_on:
-      backend:
-        condition: service_healthy
+    networks:
+      - staging
+  # frontend-admin:
+  #   container_name: orecart-frontend-admin-staging
+  #   build: ./frontend-admin
+  #   restart: always
+  #   ports:
+  #     - 5173:5173
+  #   env_file:
+  #     - frontend-admin.env
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:5173/"]
+  #     interval: 30s
+  #     timeout: 5s
+  #     retries: 10
+  #     start_period: 10s
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy
+networks:
+  staging:
+
 volumes:
-  orecart-db-volume: {}
+  orecart-db-volume-staging: {}
