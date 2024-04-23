@@ -2,6 +2,7 @@
 #include <stdexcept>
 #include <string_view>
 #include <vector>
+#include <optional>
 
 #include <modem/lte_lc.h>
 #include <modem/nrf_modem_lib.h>
@@ -160,26 +161,43 @@ void Modem::set_speed(const Speed speed)
     data->speed = speed;
 }
 
-void Modem::send(const std::vector<char> &packet) const
+std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet) const
 {
-    int err;
+    int res;
     // Block until our LTE window is available. We shouldn't need to wait longer
     // than the entire window size.
-    err = k_sem_take(&modem_lock.lte, MODEM_WINDOW_SIZE);
-    if (err != 0)
+    res = k_sem_take(&modem_lock.lte, MODEM_WINDOW_SIZE);
+    if (res != 0)
     {
         throw std::runtime_error("Failed to obtain LTE window, error: " +
-                                 std::to_string(err));
+                                 std::to_string(res));
     }
     // We are on LTE now, send the packet.
-    err = nrf_sendto(data->socket, packet.data(), packet.size(), 0,
-                     data->addr->ai_addr, sizeof(data->addr));
-    if (err < 0)
+    res = nrf_sendto(data->socket, packet.data(), packet.size(), 0,
+                     data->addr->ai_addr, data->addr->ai_addrlen);
+    if (res < 0)
     {
         throw std::runtime_error(
-            "Failed to send TCP packet with RAI_LAST, error: " +
-            std::to_string(err));
+            "Failed to send TCP packet, error: " +
+            std::to_string(res));
     }
+
+    if (data->speed == Speed::NORMAL)
+    {
+        // TODO: One day 1024 bytes my not actually be enough
+        std::vector<char> resp = std::vector<char>(1 << 10);
+        const int size = sizeof(data->addr);
+        res = nrf_recvfrom(data->socket, resp.data(), resp.size(), 0, data->addr->ai_addr, &data->addr->ai_addrlen);
+        if (res < 0)
+        {
+            throw std::runtime_error(
+                "Failed to recieve TCP response, error: " +
+                std::to_string(res));
+        }
+        return std::move(resp);
+    }
+
+    return {};
 }
 
 Coordinate Modem::locate() const
