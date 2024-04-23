@@ -503,6 +503,7 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
             )
             # Prioritize newer locations in our stop calculations
             .order_by(VanLocation.created_at.desc())
+            .all()
         )
 
         target_stop_index = None
@@ -521,6 +522,12 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                 intersection, length = line_circle_intersection(
                     older_location, newer_location, stop_location, THRESHOLD_RADIUS_M)
 
+                if distance > 0:
+                    inside_ratio = length / distance
+                else:
+                    inside_ratio = 1
+                relative_duration = inside_ratio * duration
+                current_duration += relative_duration
                 # 0 -> older is inside -> exited threshold, should see if it's enough
                 #  duration to meet threshold, otherwise reset the threshold time
                 # 1 -> newer is inside -> entered threshold, add duration and see if its
@@ -529,9 +536,6 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
                 # enough
                 # 3 -> leapfrogged threshold, see if the "time" we spent in the radius is
                 # enough 
-                inside_ratio = length / distance
-                relative_duration = inside_ratio * duration
-                current_duration += relative_duration
                 if current_duration >= THRESHOLD_TIME:
                     # In the stop radius for long enough, we are done.
                     target_stop_index = i
@@ -548,8 +552,8 @@ async def post_location(req: Request, van_guid: str) -> HardwareOKResponse:
     return HardwareOKResponse()
 
 class MeterCoordinate(BaseModel):
-    x: int
-    y: int
+    x: float
+    y: float
     
     def distance(self, other) -> float:
         return sqrt((self.x - other.x)**2 + (self.y - other.y)**2)
@@ -582,12 +586,12 @@ def line_circle_intersection(a, b, c, r):
         line_b = a.y - m * a.x
 
     # Calculate the quadratic equation coefficients
-    a = 1 + m**2
-    b = 2 * (m * (line_b - c.y) - c.x)
-    c = c.x**2 + (line_b - c.y)**2 - r**2
+    A = 1 + m**2
+    B = 2 * (m * (line_b - c.y) - c.x)
+    C = c.x**2 + (line_b - c.y)**2 - r**2
 
     # Calculate the discriminant
-    discriminant = b**2 - 4 * a * c
+    discriminant = B**2 - 4 * A * C
 
     if discriminant < 0:
         # No intersection
@@ -601,9 +605,9 @@ def line_circle_intersection(a, b, c, r):
             return (3, 0)
     else:
         # Calculate intersection points
-        x1 = (-b + sqrt(discriminant)) / (2 * a)
+        x1 = (-B + sqrt(discriminant)) / (2 * A)
         y1 = m * x1 + line_b
-        x2 = (-b - sqrt(discriminant)) / (2 * a)
+        x2 = (-B - sqrt(discriminant)) / (2 * A)
         y2 = m * x2 + line_b
 
         # Check if the intersection points lie within the line segment
