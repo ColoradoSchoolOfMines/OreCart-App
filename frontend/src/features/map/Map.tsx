@@ -254,10 +254,10 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
             </View>
           </Marker>
         ))}
-        {vans?.map((van) => (
+        {vans?.map((van) => (van.location !== undefined ?
           <Marker
             key={van.guid}
-            tracksViewChanges={false}
+            tracksViewChanges={true}
             coordinate={van.location}
             anchor={{ x: 0.5, y: 0.5 }}
           >
@@ -277,7 +277,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
               />
             </View>
           </Marker>
-        ))}
+        : null) )}
       </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View
