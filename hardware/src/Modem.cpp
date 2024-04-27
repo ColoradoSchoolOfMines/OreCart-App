@@ -130,39 +130,34 @@ Modem::~Modem()
 
 #define NRF_SO_RAI 61
 
-void Modem::set_speed(const Speed speed)
+std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet, const Speed speed)
 {
-    if (data->speed == speed)
-    {
-        return;
+    if (data->speed != speed) {
+        int option;
+        if (speed == Speed::YEET)
+        {
+            // This indicates that we will send just one packet of data and then
+            // disconnect, which prevents the LTE window from bleeding into the GNSS
+            // window and delaying location pinging. This allows for the fastest
+            // possible operation of the Modem.
+            option = NRF_SO_RAI_LAST;
+        }
+        else
+        {
+            // This indicates that we intend to send more data, and so the window may be
+            // extended into the GNSS window.
+            option = NRF_SO_RAI_ONGOING;
+        }
+        const int err = nrf_setsockopt(data->socket, NRF_SOL_SECURE, NRF_SO_RAI,
+                                    &option, sizeof(option));
+        if (err != 0)
+        {
+            throw std::runtime_error("Failed to set NRF_SO_RAI option, error: " +
+                                    std::to_string(err));
+        }
+        data->speed = speed;
     }
-    int option;
-    if (speed == Speed::YEET)
-    {
-        // This indicates that we will send just one packet of data and then
-        // disconnect, which prevents the LTE window from bleeding into the GNSS
-        // window and delaying location pinging. This allows for the fastest
-        // possible operation of the Modem.
-        option = NRF_SO_RAI_LAST;
-    }
-    else
-    {
-        // This indicates that we intend to send more data, and so the window may be
-        // extended into the GNSS window.
-        option = NRF_SO_RAI_ONGOING;
-    }
-    const int err = nrf_setsockopt(data->socket, NRF_SOL_SECURE, NRF_SO_RAI,
-                                   &option, sizeof(option));
-    if (err != 0)
-    {
-        throw std::runtime_error("Failed to set NRF_SO_RAI option, error: " +
-                                 std::to_string(err));
-    }
-    data->speed = speed;
-}
 
-std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet) const
-{
     int res;
     // Block until our LTE window is available. We shouldn't need to wait longer
     // than the entire window size.

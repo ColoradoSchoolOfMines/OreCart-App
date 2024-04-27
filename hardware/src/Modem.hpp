@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <string_view>
+#include <optional>
 #include <vector>
 
 #include "Location.hpp"
@@ -42,21 +43,14 @@ public:
     ~Modem();
 
     /**
-     * Set the Speed of the Modem. Does nothing if already at that speed.
-     *
-     * @param speed The new speed to set.
-     * @throws std::runtime_error if the modem cannot be configured to the new speed.
-     */
-    void set_speed(const Speed speed);
-
-    /**
      * Send a packet over LTE to the server at the specified domain. Will block for at most 5 seconds
      * until the Modem is connected to the LTE network.
      *
      * @param packet the packet to send
+     * @param speed the speed to send the packet
      * @throws std::runtime_error if the packet was not sent
      */
-    void send(const std::vector<char> &packet) const;
+    std::optional<std::vector<char>> send(const std::vector<char> &packet, const Speed speed);
 
     /**
      * Poll and then return the current location from GNSS. Will block for at most 5 seconds to ensure
