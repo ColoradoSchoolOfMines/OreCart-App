@@ -1,10 +1,12 @@
 #pragma once
 
-enum NetTaskType {
+enum NetTaskType
+{
     BEGIN_TRACKING
 };
 
-struct NetTask {
+struct NetTask
+{
     enum NetTaskType type;
     int route_id;
 };

@@ -4,7 +4,8 @@
 
 #include "NetTask.h"
 
-struct net_task_event {
+struct net_task_event
+{
     struct app_event_header header;
     struct NetTask net_task;
 };

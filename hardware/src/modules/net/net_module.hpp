@@ -1,6 +1,7 @@
 #pragma once
 
-namespace net {
+namespace net
+{
     static void start();
     static void begin_tracking(const int route_id);
 }

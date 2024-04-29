@@ -25,10 +25,12 @@ K_THREAD_DEFINE(net_module_thread, NET_STACK,
 
 static bool net_event_handler(const app_event_header *aeh)
 {
-    if (worker == nullptr) {
+    if (worker == nullptr)
+    {
         return false;
     }
-    if (!is_net_task_event(aeh)) {
+    if (!is_net_task_event(aeh))
+    {
         return false;
     }
     const net_task_event *event = cast_net_task_event(aeh);
@@ -40,7 +42,8 @@ static bool net_event_handler(const app_event_header *aeh)
 APP_EVENT_LISTENER(net_module, net_event_handler);
 APP_EVENT_SUBSCRIBE(net_module, net_task_event);
 
-namespace net {
+namespace net
+{
     void start()
     {
         k_thread_start(net_module_thread);

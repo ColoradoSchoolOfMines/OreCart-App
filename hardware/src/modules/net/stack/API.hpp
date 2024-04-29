@@ -16,7 +16,6 @@ public:
     void send_route_selection(const int route_id) const;
     void send_location(const Location &location) const;
 
-
 private:
     std::unique_ptr<HTTP> http;
     std::shared_ptr<Modem> modem;

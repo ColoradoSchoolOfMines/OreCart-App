@@ -9,7 +9,8 @@
 #include "stack/API.hpp"
 #include "events/NetTask.h"
 
-class NetWorker {
+class NetWorker
+{
 public:
     NetWorker(const std::shared_ptr<Modem> modem, std::unique_ptr<API> api);
 
