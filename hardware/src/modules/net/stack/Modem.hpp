@@ -5,7 +5,7 @@
 #include <optional>
 #include <vector>
 
-#include "Location.hpp"
+#include "../model/Location.hpp"
 
 /**
  * An abstraction around the NRF9160 modem that provides optimized and guaranteed
