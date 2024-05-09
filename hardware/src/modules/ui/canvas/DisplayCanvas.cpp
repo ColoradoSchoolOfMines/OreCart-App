@@ -19,7 +19,7 @@ struct DisplayCanvas::DisplayCanvasImpl {
 };
 
 DisplayCanvas::DisplayCanvas() {
-    const device *display = nullptr; // TODO: Get the display device
+    const device *display = DEVICE_DT_GET(DT_CHOSEN(zephyr_display));
 	if (!device_is_ready(display)) {
 		printk("Device %s not found. Aborting.", display->name);
         return;
