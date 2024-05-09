@@ -1,0 +1,83 @@
+/ {
+	chosen {
+		zephyr,display = &st7789v_st7789v_waveshare_170x320;
+	};
+
+    aliases {
+        leftbutton = &button0;
+        rightbutton = &button1;
+
+        selectbutton = &button2;
+    };
+
+    buttons {
+        compatible = "gpio-keys";
+        button0: button_0 {
+            gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+            label = "Left Button";
+        };
+        button1: button_1 {
+            gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
+            label = "Right Button";
+        };
+        button2: button_2 {
+            gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+            label = "Select Button";
+        };
+    };
+};
+
+&spi2 {
+    status = "okay";
+    cs-gpios = <&gpio0 18 GPIO_ACTIVE_LOW>;
+    pinctrl-0 = <&spi2_default>;
+    pinctrl-1 = <&spi2_sleep>;
+    pinctrl-names = "default", "sleep";
+    st7789v_st7789v_waveshare_170x320: st7789v@0 {
+        compatible = "sitronix,st7789v";
+		spi-max-frequency = <20000000>;
+		reg = <0>;
+		cmd-data-gpios = <&gpio0 17 GPIO_ACTIVE_LOW>;
+		reset-gpios = <&gpio0 16 GPIO_ACTIVE_LOW>;
+		width = <320>;
+		height = <170>;
+		x-offset = <0>;
+		y-offset = <35>;
+		vcom = <0x2b>;
+		gctrl = <0x35>;
+		vrhs = <0x0f>;
+		vdvs = <0x20>;
+		mdac = <0x60>;
+		gamma = <0x01>;
+		colmod = <0x55>;
+		lcm = <0x2c>;
+		porch-param = [0c 0c 00 33 33];
+		cmd2en-param = [5a 69 02 01];
+		pwctrl1-param = [52 a1];
+		pvgam-param = [D0 00 02 07 0B 1A 31 54 40 29 12 12 12 17];
+		nvgam-param = [D0 00 02 07 05 15 2D 44 44 1C 18 16 1C 1D];
+		ram-param = [00 F8];
+		rgb-param = [CD 08 14];
+    };
+};
+
+&pinctrl {
+    spi2_default: spi2_default {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 19)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 21)>;
+        };
+    };
+    spi2_sleep: spi2_sleep {
+        group1 {
+            psels = <NRF_PSEL(SPIM_SCK, 0, 19)>,
+                    <NRF_PSEL(SPIM_MOSI, 0, 21)>;
+            low-power-enable;
+        };
+    };
+};
+
+// Display pins:
+// DC on GPIO 17
+// RST on GPIO 16
+// BL on GPIO 15

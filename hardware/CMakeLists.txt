@@ -15,5 +15,7 @@ target_sources(
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/events/net_task_event.c
 
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/net_module.cpp
-    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/NetWorker.cpp 
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/NetWorker.cpp
+
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/canvas/DisplayCanvas.cpp    
 )
