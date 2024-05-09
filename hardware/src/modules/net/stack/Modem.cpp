@@ -136,7 +136,8 @@ Modem::~Modem()
 std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet, const Speed speed)
 {
     k_sem_take(&data->lock, K_FOREVER);
-    if (data->speed != speed) {
+    if (data->speed != speed)
+    {
         int option;
         if (speed == Speed::YEET)
         {

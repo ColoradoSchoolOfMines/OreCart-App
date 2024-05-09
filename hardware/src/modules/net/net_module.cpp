@@ -2,7 +2,9 @@
 #include "stack/HTTP.hpp"
 #include "stack/API.hpp"
 #include "events/net_task_event.h"
+#include "events/net_task_factory.h"
 #include "NetWorker.hpp"
+#include <app_event_manager.h>
 
 NetWorker *worker = nullptr;
 

@@ -3,7 +3,7 @@
 static void log_net_task_event(const struct app_event_header *aeh)
 {
     struct net_task_event *event = cast_net_task_event(aeh);
-    printk("Received net task event with type: %d, route_id: %d\n", event->net_task.type);
+    printk("Received net task event with type: %d, route_id: %d\n", 3, 3);
 }
 
 APP_EVENT_TYPE_DEFINE(net_task_event,                                                /* Unique event name. */
