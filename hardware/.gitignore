@@ -1,1 +1,9 @@
-build*/
+.vscode/
+.west/
+bootloader/
+modules/
+nrf/
+nrfxlib/
+test/
+tools/
+zephyr/
