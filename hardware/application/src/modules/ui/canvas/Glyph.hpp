@@ -29,5 +29,5 @@ void Glyph<W, H>::draw(ICanvas &canvas, unsigned int x, unsigned int y)
         throw std::runtime_error("Invalid blit parameters");
     }
     Rect bounds = {x, y, W, H};
-    canvas.blit((char *) arr.data(), bounds, sizeof(uint16_t));
+    canvas.blit(arr.data(), bounds, sizeof(uint16_t));
 }
