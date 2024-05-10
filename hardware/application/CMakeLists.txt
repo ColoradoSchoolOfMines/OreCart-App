@@ -15,4 +15,5 @@ target_sources(
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/NetWorker.cpp
 
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/canvas/DisplayCanvas.cpp    
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/canvas/SubCanvas.cpp   
 )

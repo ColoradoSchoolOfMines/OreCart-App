@@ -14,8 +14,7 @@
 
 struct DisplayCanvas::DisplayCanvasImpl {
     const device *display;
-    int w;
-    int h;
+    const unsigned int w, h, d;
 };
 
 DisplayCanvas::DisplayCanvas() {
@@ -25,11 +24,9 @@ DisplayCanvas::DisplayCanvas() {
         return;
     }
 
-	if (display_set_pixel_format(display, PIXEL_FORMAT_MONO10) != 0) {
-		if (display_set_pixel_format(display, PIXEL_FORMAT_MONO01) != 0) {
-            throw std::runtime_error("Failed to set pixel format");
-		}
-	}
+	if (display_set_pixel_format(display, PIXEL_FORMAT_RGB_565) != 0) {
+        throw std::runtime_error("Failed to set pixel format");
+    }
 
 	if (display_blanking_off(display) != 0) {
         throw std::runtime_error("Failed to turn off display blanking");
@@ -38,20 +35,12 @@ DisplayCanvas::DisplayCanvas() {
     display_capabilities capabilities;
     display_get_capabilities(display, &capabilities);
 
-    int width = capabilities.x_resolution;
-    int height = capabilities.y_resolution;
+    const unsigned int width = capabilities.x_resolution;
+    const unsigned int height = capabilities.y_resolution;
+    const unsigned int depth = 2;
 
-    std::vector<char> clear_buf ( depth * width, '\0' );
-
-    display_buffer_descriptor buf_desc;
-    buf_desc.buf_size = clear_buf.size();
-    buf_desc.pitch = width;
-    buf_desc.width = width;
-    buf_desc.height = 1;
-
-    for (int i=0; i < height; i++) {
-        display_write(display, 0, i, &buf_desc, clear_buf.data());
-    }
+    std::vector<char> clear_buf ( width * height * depth, '\0' );
+    blit(clear_buf.data(), {0, 0, width, height}, depth);
 
     data = std::make_unique<DisplayCanvasImpl>(display, width, height);
 }
@@ -68,11 +57,15 @@ unsigned int DisplayCanvas::height() const {
     return data->h;
 }
 
-void DisplayCanvas::blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, char *glyph)  {
+unsigned int DisplayCanvas::depth() const {
+    return data->d;
+}
+
+void DisplayCanvas::blit(char *pixels, Rect bounds, unsigned int depth) const {
     display_buffer_descriptor buf_desc;
-    buf_desc.buf_size = w * h * depth;
-    buf_desc.pitch = w;
-    buf_desc.width = w;
-    buf_desc.height = h;
-    display_write(data->display, x, y, &buf_desc, glyph);
+    buf_desc.buf_size = bounds.w * bounds.h * depth;
+    buf_desc.pitch = bounds.w;
+    buf_desc.width = bounds.w;
+    buf_desc.height = bounds.h;
+    display_write(data->display, bounds.x, bounds.y, &buf_desc, pixels);
 }

@@ -3,15 +3,16 @@
 #include <memory>
 #include "ICanvas.hpp"
 
-class DisplayCanvas : public ICanvas<2> {
+class DisplayCanvas : public ICanvas {
 public:
     DisplayCanvas();
     ~DisplayCanvas();
     
-    unsigned int width() const;
-    unsigned int height() const;
+    unsigned int width() const final override;
+    unsigned int height() const final override;
+    unsigned int depth() const final override;
 
-    void blit(unsigned int x, unsigned int y, unsigned int w, unsigned int h, char *glyph);
+    void blit(char *pixels, Rect bounds, unsigned int depth) const final override;
 
 private:
     struct DisplayCanvasImpl;
