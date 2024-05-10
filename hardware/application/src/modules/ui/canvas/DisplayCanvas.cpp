@@ -45,7 +45,7 @@ DisplayCanvas::DisplayCanvas()
     const unsigned int depth = 2;
 
     std::vector<uint16_t> clear_buf(width * height * depth, 0);
-    blit(clear_buf.data(), {0, 0, width, height}, depth);
+    blit(clear_buf.data(), {0, 0, width, height});
 
     data = std::make_unique<DisplayCanvasImpl>(display, width, height);
 }
@@ -64,15 +64,10 @@ unsigned int DisplayCanvas::height() const
     return data->h;
 }
 
-unsigned int DisplayCanvas::depth() const
-{
-    return data->d;
-}
-
-void DisplayCanvas::blit(uint16_t *pixels, Rect bounds, unsigned int depth) const
+void DisplayCanvas::blit(uint16_t *pixels, Rect bounds) const
 {
     display_buffer_descriptor buf_desc;
-    buf_desc.buf_size = bounds.w * bounds.h * depth;
+    buf_desc.buf_size = bounds.w * bounds.h;
     buf_desc.pitch = bounds.w;
     buf_desc.width = bounds.w;
     buf_desc.height = bounds.h;
