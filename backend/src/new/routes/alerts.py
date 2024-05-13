@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from backend.src.new.controllers.AlertController import AlertController
+from backend.src.new.ModelException import ModelException
 from backend.src.new.models.alert import Alert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
@@ -32,8 +33,11 @@ def get_alerts(
     """
 
     alerts_json: List[str] = []
-    for alert in controller.get_alerts(filter):
-        alerts_json.append(alert.json())
+    try:
+        for alert in controller.get_alerts(filter):
+            alerts_json.append(alert.json())
+    except ModelException as error:
+        return JSONResponse(content={"message": error}, status_code=error.error_code)
 
     return alerts_json
 
@@ -52,7 +56,10 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
         - startDateTime
         - endDateTime
     """
-    return controller.get_alert(alert_id).json()
+    try:
+        return controller.get_alert(alert_id).json()
+    except ModelException as error:
+        return JSONResponse(content={"message": error}, status_code=error.error_code)
 
 
 @router.post("/")
@@ -78,7 +85,10 @@ def update_alert(req: Request, alert_id: int, alert_model: Alert) -> Dict[str, s
 
     **:return:** *"OK"* message
     """
-    controller.update_alert(alert_id, alert_model)
+    try:
+        controller.update_alert(alert_id, alert_model)
+    except ModelException as error:
+        return JSONResponse(content={"message": error}, status_code=error.error_code)
 
     return {"message": "OK"}
 
@@ -92,6 +102,9 @@ def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
 
     **:return:** *"OK"* message
     """
-    controller.delete_alert(alert_id)
+    try:
+        controller.delete_alert(alert_id)
+    except ModelException as error:
+        return JSONResponse(content={"message": error}, status_code=error.error_code)
 
     return {"message": "OK"}
