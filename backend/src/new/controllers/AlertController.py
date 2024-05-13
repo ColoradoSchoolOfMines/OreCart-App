@@ -19,7 +19,9 @@ class NotFoundException(Exception):
 
 
 class AlertController:
-    def get_alerts(session: AsyncSession, filter: Optional[str] = None) -> List[Alert]:
+    async def get_alerts(
+        session: AsyncSession, filter: Optional[str] = None
+    ) -> List[Alert]:
         now = datetime.now(timezone.utc)
 
         query = select(AlertModel)
@@ -32,7 +34,7 @@ class AlertController:
         elif filter is not None:
             raise InvalidFilterException(name=filter)
 
-        alerts: List[AlertModel] = session.execute(query).scalars()
+        alerts: List[AlertModel] = await session.execute(query).scalars()
 
         returned_alerts: List[Alert] = []
         for alert in alerts:
@@ -49,14 +51,14 @@ class AlertController:
 
         return returned_alerts
 
-    def get_alert(session: AsyncSession, alert_id: int) -> Alert:
+    async def get_alert(session: AsyncSession, alert_id: int) -> Alert:
         query = select(AlertModel).filter_by(id=alert_id)
-        alert: Alert = session.execute(query).first()
+        alert: Alert = await session.execute(query).first()
         if alert is None:
             raise NotFoundException(id=alert_id)
         return alert
 
-    def create_alert(session: AsyncSession, alert: Alert):
+    async def create_alert(session: AsyncSession, alert: Alert):
         dt_start_time = datetime.fromtimestamp(alert.start_time, timezone.utc)
         dt_end_time = datetime.fromtimestamp(alert.end_time, timezone.utc)
 
@@ -65,17 +67,17 @@ class AlertController:
             start_datetime=dt_start_time,
             end_datetime=dt_end_time,
         )
-        session.execute(insert(AlertModel).values(new_alert))
+        await session.execute(insert(AlertModel).values(new_alert))
 
-    def update_alert(session: AsyncSession, alert_id: int, alert: Alert):
+    async def update_alert(session: AsyncSession, alert_id: int, alert: Alert):
         query = select(AlertModel).filter_by(id=alert_id)
-        alert: Alert = session.execute(query).first()
+        alert: Alert = await session.execute(query).first()
         if alert is None:
             raise NotFoundException(id=alert_id)
         dt_start_time = datetime.fromtimestamp(alert.start_time, timezone.utc)
         dt_end_time = datetime.fromtimestamp(alert.end_time, timezone.utc)
 
-        session.execute(
+        await session.execute(
             update(AlertModel)
             .where(id=alert_id)
             .values(
@@ -83,9 +85,9 @@ class AlertController:
             )
         )
 
-    def delete_alert(session: AsyncSession, alert_id: int):
+    async def delete_alert(session: AsyncSession, alert_id: int):
         query = select(AlertModel).filter_by(id=alert_id)
-        alert: Alert = session.execute(query).first()
+        alert: Alert = await session.execute(query).first()
         if alert is None:
             raise NotFoundException(id=alert_id)
-        session.execute(delete(AlertModel).where(id=alert_id))
+        await session.execute(delete(AlertModel).where(id=alert_id))
