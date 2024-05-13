@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 from typing import List, Optional
 
+from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.src.new.db.alert import AlertModel
@@ -19,18 +20,19 @@ class NotFoundException(Exception):
 
 class AlertController:
     def get_alerts(session: AsyncSession, filter: Optional[str] = None) -> List[Alert]:
-        query = session.query(AlertModel)
+        now = datetime.now(timezone.utc)
+
+        query = select(AlertModel)
         if filter == "active":
-            now = datetime.now(timezone.utc)
-            query = query.filter(
+            query = query.where(
                 AlertModel.start_datetime <= now, AlertModel.end_datetime >= now
             )
         elif filter == "future":
-            now = datetime.now(timezone.utc)
-            query = query.filter(AlertModel.start_datetime > now)
+            query = query.where(AlertModel.start_datetime > now)
         elif filter is not None:
             raise InvalidFilterException(name=filter)
-        alerts: List[AlertModel] = query.all()
+
+        alerts: List[AlertModel] = session.execute(query).scalars()
 
         returned_alerts: List[Alert] = []
         for alert in alerts:
@@ -48,7 +50,8 @@ class AlertController:
         return returned_alerts
 
     def get_alert(session: AsyncSession, alert_id: int) -> Alert:
-        alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
+        query = select(AlertModel).filter_by(id=alert_id)
+        alert: Alert = session.execute(query).first()
         if alert is None:
             raise NotFoundException(id=alert_id)
         return alert
@@ -62,24 +65,26 @@ class AlertController:
             start_datetime=dt_start_time,
             end_datetime=dt_end_time,
         )
-        session.add(new_alert)
-        session.commit()
+        session.execute(insert(AlertModel).values(new_alert))
 
     def update_alert(session: AsyncSession, alert_id: int, alert: Alert):
-        updated_alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
-        if updated_alert is None:
-            raise NotFoundException(id=alert_id)
+        # updated_alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
+        # if updated_alert is None:
+        #     raise NotFoundException(id=alert_id)
         dt_start_time = datetime.fromtimestamp(alert.start_time, timezone.utc)
         dt_end_time = datetime.fromtimestamp(alert.end_time, timezone.utc)
 
-        updated_alert.text = alert.text
-        updated_alert.start_datetime = dt_start_time
-        updated_alert.end_datetime = dt_end_time
-        session.commit()
+        session.execute(
+            update(AlertModel)
+            .where(id=alert_id)
+            .values(
+                text=alert.text, start_datetime=dt_start_time, end_datetime=dt_end_time
+            )
+        )
 
     def delete_alert(session: AsyncSession, alert_id: int):
-        alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
-        if alert is None:
-            raise NotFoundException(id=alert_id)
-        session.query(AlertModel).filter_by(id=alert_id).delete()
-        session.commit()
+        # alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
+        # if alert is None:
+        #     raise NotFoundException(id=alert_id)
+
+        session.execute(delete(AlertModel).where(id=alert_id))

@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Request
-from fastapi.responses import JSONResponse
 
 from backend.src.new.controllers.AlertController import AlertController
 from backend.src.new.models.alert import Alert
