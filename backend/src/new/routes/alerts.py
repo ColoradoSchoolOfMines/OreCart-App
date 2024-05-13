@@ -29,11 +29,8 @@ def get_alerts(
         - startDateTime
         - endDateTime
     """
-
-    alerts_json: List[str] = []
-    for alert in controller.get_alerts(filter):
-        alerts_json.append(alert.json())
-    return alerts_json
+    with req.app.state.db.session() as session:
+        return controller.get_alerts(session, filter)
 
 
 @router.get("/{alert_id}")
@@ -50,7 +47,8 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
         - startDateTime
         - endDateTime
     """
-    return controller.get_alert(alert_id).json()
+    with req.app.state.db.session() as session:
+        return controller.get_alert(session, alert_id)
 
 
 @router.post("/")
@@ -62,7 +60,8 @@ def post_alert(req: Request, alert_model: Alert) -> Dict[str, str]:
 
     **:return:** *"OK"* message
     """
-    controller.create_alert(alert_model)
+    with req.app.state.db.session() as session:
+        controller.create_alert(session, alert_model)
 
     return {"message": "OK"}
 
@@ -76,7 +75,8 @@ def update_alert(req: Request, alert_id: int, alert_model: Alert) -> Dict[str, s
 
     **:return:** *"OK"* message
     """
-    controller.update_alert(alert_id, alert_model)
+    with req.app.state.db.session() as session:
+        controller.update_alert(session, alert_id, alert_model)
 
     return {"message": "OK"}
 
@@ -90,6 +90,7 @@ def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
 
     **:return:** *"OK"* message
     """
-    controller.delete_alert(alert_id)
+    with req.app.state.db.session() as session:
+        controller.delete_alert(session, alert_id)
 
     return {"message": "OK"}
