@@ -2,8 +2,8 @@ from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Request
 
-from backend.src.new.controllers.AlertController import AlertController
-from backend.src.new.models.alert import Alert
+from backend.src.controller.AlertController import AlertController
+from backend.src.models.alert import Alert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 controller = AlertController()

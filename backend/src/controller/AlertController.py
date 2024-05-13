@@ -4,8 +4,8 @@ from typing import List, Optional
 from sqlalchemy import delete, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from backend.src.new.db.alert import AlertModel
-from backend.src.new.models.alert import Alert
+from backend.src.db.alert import AlertModel
+from backend.src.models.alert import Alert
 
 
 class InvalidFilterException(Exception):

@@ -1,10 +1,9 @@
 from abc import ABC, abstractmethod
 from typing import List
-from typing_extensions import Self, Optional, Dict, Any
-
-from src.model.route import Route, Stop
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.model.route import Route, Stop
+from typing_extensions import Any, Dict, Optional, Self
 
 
 class RoutesController(ABC):

@@ -2,7 +2,7 @@ from fastapi import Request
 from fastapi.responses import JSONResponse
 from flask import app
 
-from backend.src.new.controllers.AlertController import (
+from backend.src.controller.AlertController import (
     InvalidFilterException,
     NotFoundException,
 )
