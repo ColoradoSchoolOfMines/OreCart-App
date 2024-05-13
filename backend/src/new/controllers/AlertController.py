@@ -68,9 +68,10 @@ class AlertController:
         session.execute(insert(AlertModel).values(new_alert))
 
     def update_alert(session: AsyncSession, alert_id: int, alert: Alert):
-        # updated_alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
-        # if updated_alert is None:
-        #     raise NotFoundException(id=alert_id)
+        query = select(AlertModel).filter_by(id=alert_id)
+        alert: Alert = session.execute(query).first()
+        if alert is None:
+            raise NotFoundException(id=alert_id)
         dt_start_time = datetime.fromtimestamp(alert.start_time, timezone.utc)
         dt_end_time = datetime.fromtimestamp(alert.end_time, timezone.utc)
 
@@ -83,8 +84,8 @@ class AlertController:
         )
 
     def delete_alert(session: AsyncSession, alert_id: int):
-        # alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
-        # if alert is None:
-        #     raise NotFoundException(id=alert_id)
-
+        query = select(AlertModel).filter_by(id=alert_id)
+        alert: Alert = session.execute(query).first()
+        if alert is None:
+            raise NotFoundException(id=alert_id)
         session.execute(delete(AlertModel).where(id=alert_id))
