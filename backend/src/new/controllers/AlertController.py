@@ -55,30 +55,32 @@ class AlertController:
                 raise NotFoundException(id=alert_id)
         return alert
 
-    def create_alert(alert_json: Alert):
+    def create_alert(alert: Alert):
         with app.state.db.session() as session:
-            dt_start_time = datetime.fromtimestamp(alert_json.start_time, timezone.utc)
-            dt_end_time = datetime.fromtimestamp(alert_json.end_time, timezone.utc)
+            dt_start_time = datetime.fromtimestamp(alert.start_time, timezone.utc)
+            dt_end_time = datetime.fromtimestamp(alert.end_time, timezone.utc)
 
-            alert = Alert(
-                text=alert_json.text,
+            new_alert = Alert(
+                text=alert.text,
                 start_datetime=dt_start_time,
                 end_datetime=dt_end_time,
             )
-            session.add(alert)
+            session.add(new_alert)
             session.commit()
 
-    def update_alert(alert_id: int, alert_json: Alert):
+    def update_alert(alert_id: int, alert: Alert):
         with app.state.db.session() as session:
-            alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
-            if alert is None:
+            updated_alert: Alert = (
+                session.query(AlertModel).filter_by(id=alert_id).first()
+            )
+            if updated_alert is None:
                 raise NotFoundException(id=alert_id)
-            dt_start_time = datetime.fromtimestamp(alert_json.start_time, timezone.utc)
-            dt_end_time = datetime.fromtimestamp(alert_json.end_time, timezone.utc)
+            dt_start_time = datetime.fromtimestamp(alert.start_time, timezone.utc)
+            dt_end_time = datetime.fromtimestamp(alert.end_time, timezone.utc)
 
-            alert.text = alert_json.text
-            alert.start_datetime = dt_start_time
-            alert.end_datetime = dt_end_time
+            updated_alert.text = alert.text
+            updated_alert.start_datetime = dt_start_time
+            updated_alert.end_datetime = dt_end_time
             session.commit()
 
     def delete_alert(alert_id: int):
