@@ -31,12 +31,8 @@ def get_alerts(
     """
 
     alerts_json: List[str] = []
-    try:
-        for alert in controller.get_alerts(filter):
-            alerts_json.append(alert.json())
-    except ModelException as error:
-        return JSONResponse(content={"message": error}, status_code=error.error_code)
-
+    for alert in controller.get_alerts(filter):
+        alerts_json.append(alert.json())
     return alerts_json
 
 
@@ -54,10 +50,7 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
         - startDateTime
         - endDateTime
     """
-    try:
-        return controller.get_alert(alert_id).json()
-    except ModelException as error:
-        return JSONResponse(content={"message": error}, status_code=error.error_code)
+    return controller.get_alert(alert_id).json()
 
 
 @router.post("/")
@@ -83,10 +76,7 @@ def update_alert(req: Request, alert_id: int, alert_model: Alert) -> Dict[str, s
 
     **:return:** *"OK"* message
     """
-    try:
-        controller.update_alert(alert_id, alert_model)
-    except ModelException as error:
-        return JSONResponse(content={"message": error}, status_code=error.error_code)
+    controller.update_alert(alert_id, alert_model)
 
     return {"message": "OK"}
 
@@ -100,9 +90,6 @@ def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
 
     **:return:** *"OK"* message
     """
-    try:
-        controller.delete_alert(alert_id)
-    except ModelException as error:
-        return JSONResponse(content={"message": error}, status_code=error.error_code)
+    controller.delete_alert(alert_id)
 
     return {"message": "OK"}
