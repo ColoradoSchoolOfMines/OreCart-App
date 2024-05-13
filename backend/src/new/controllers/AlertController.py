@@ -1,5 +1,5 @@
 from datetime import datetime, timezone
-from typing import List
+from typing import List, Optional
 
 from flask import app
 
@@ -8,7 +8,7 @@ from backend.src.new.models.alert import Alert
 
 
 class AlertController:
-    def get_alerts() -> List[Alert]:
+    def get_alerts(filter: Optional[str] = None) -> List[Alert]:
         with app.state.db.session() as session:
             query = session.query(AlertModel)
             if filter == "active":

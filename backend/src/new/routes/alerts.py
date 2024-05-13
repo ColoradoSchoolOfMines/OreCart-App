@@ -32,7 +32,7 @@ def get_alerts(
     """
 
     alerts_json: List[str] = []
-    for alert in AlertController.get_alerts():
+    for alert in AlertController.get_alerts(filter):
         alerts_json.append(alert.model_dump_json())
 
     return alerts_json
