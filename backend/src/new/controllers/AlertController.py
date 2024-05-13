@@ -3,21 +3,22 @@ from typing import List
 
 from flask import app
 
-from backend.src.new.db.alert import Alert
+from backend.src.new.db.alert import AlertModel
+from backend.src.new.models.alert import Alert
 
 
 class AlertController:
     def get_alerts() -> List[Alert]:
         with app.state.db.session() as session:
-            query = session.query(Alert)
+            query = session.query(AlertModel)
             if filter == "active":
                 now = datetime.now(timezone.utc)
                 query = query.filter(
-                    Alert.start_datetime <= now, Alert.end_datetime >= now
+                    AlertModel.start_datetime <= now, AlertModel.end_datetime >= now
                 )
             elif filter == "future":
                 now = datetime.now(timezone.utc)
-                query = query.filter(Alert.start_datetime > now)
+                query = query.filter(AlertModel.start_datetime > now)
             elif filter is not None:
                 # TODO Raise custom exception
                 # raise HTTPException(status_code=400, detail=f"Invalid filter {filter}")

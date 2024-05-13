@@ -5,22 +5,24 @@ from src.db.base import Base
 from src.db.types import TZDateTime
 
 
-class Alert(Base):
+class AlertModel(Base):
     __tablename__ = "alerts"
-    id: Mapped[int] = mapped_column(
-        primary_key=True, autoincrement=True
-    )
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     text: Mapped[str] = mapped_column()
     start_datetime: Mapped[datetime] = mapped_column(TZDateTime)
     end_datetime: Mapped[datetime] = mapped_column(TZDateTime)
 
-    routes_disabled: Mapped["Route"] = relationship(back_populates="disabled_by", secondary="route_disables")
-    stops_disabled: Mapped["Stop"] = relationship(back_populates="disabled_by", secondary="route_disables")
+    routes_disabled: Mapped["Route"] = relationship(
+        back_populates="disabled_by", secondary="route_disables"
+    )
+    stops_disabled: Mapped["Stop"] = relationship(
+        back_populates="disabled_by", secondary="route_disables"
+    )
 
     def __eq__(self, __value: object) -> bool:
         # Exclude ID since it'll always differ, only compare on content
         return (
-            isinstance(__value, Alert)
+            isinstance(__value, AlertModel)
             and self.text == __value.text
             and self.start_datetime == __value.start_datetime
             and self.end_datetime == __value.end_datetime

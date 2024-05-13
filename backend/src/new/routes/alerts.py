@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from backend.src.new.controllers.AlertController import AlertController
-from backend.src.new.db.alert import Alert
+from backend.src.new.models.alert import Alert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 controller = AlertController()
@@ -33,7 +33,7 @@ def get_alerts(
 
     alerts_json: List[str] = []
     for alert in AlertController.get_alerts():
-        alerts_json.append(alert.model_dump())
+        alerts_json.append(alert.model_dump_json())
 
     return alerts_json
 
