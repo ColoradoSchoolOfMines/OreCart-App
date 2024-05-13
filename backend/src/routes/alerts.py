@@ -1,9 +1,9 @@
 from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Request
-
-from backend.src.controller.AlertController import AlertController
-from backend.src.models.alert import Alert
+from src.controller.AlertController import AlertController
+from src.db.base import make_session
+from src.models.alert import Alert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
 controller = AlertController()
@@ -28,7 +28,9 @@ async def get_alerts(
         - startDateTime
         - endDateTime
     """
-    with req.app.state.db.session() as session:
+    session_maker = make_session()
+
+    with session_maker as session:
         return await controller.get_alerts(session, filter)
 
 

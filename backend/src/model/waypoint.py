@@ -1,6 +1,6 @@
 from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
-from src.db import Base
+from src.db.base import Base
 
 
 class Waypoint(Base):

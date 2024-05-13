@@ -2,7 +2,7 @@
 
 # from sqlalchemy import ForeignKeyConstraint, UniqueConstraint
 # from sqlalchemy.orm import Mapped, mapped_column
-# from src.db import Base
+# from src.db.base import Base
 # from src.model.types import TZDateTime
 
 
@@ -13,7 +13,7 @@
 #         UniqueConstraint("route_id", "dow"),
 #     )
 #     id: Mapped[int] = mapped_column(
-#         primary_key=True, autoincrement=True, 
+#         primary_key=True, autoincrement=True,
 #     )
 #     route_id: Mapped[int] = mapped_column()
 #     dow: Mapped[int] = mapped_column()

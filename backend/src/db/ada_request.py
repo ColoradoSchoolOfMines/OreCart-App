@@ -2,7 +2,7 @@
 
 # from sqlalchemy import ForeignKey
 # from sqlalchemy.orm import Mapped, mapped_column, relationship
-# from src.db import Base
+# from src.db.base import Base
 # from src.model.types import TZDateTime
 
 # from typing import Optional

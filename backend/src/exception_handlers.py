@@ -1,11 +1,7 @@
+from controller.AlertController import InvalidFilterException, NotFoundException
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from flask import app
-
-from backend.src.controller.AlertController import (
-    InvalidFilterException,
-    NotFoundException,
-)
 
 
 @app.exception_handler(InvalidFilterException)
