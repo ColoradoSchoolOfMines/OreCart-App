@@ -10,7 +10,7 @@ controller = AlertController()
 
 
 @router.get("/")
-def get_alerts(
+async def get_alerts(
     req: Request, filter: Optional[str] = None
 ) -> List[Dict[str, Union[str, int]]]:
     """
@@ -29,11 +29,11 @@ def get_alerts(
         - endDateTime
     """
     with req.app.state.db.session() as session:
-        return controller.get_alerts(session, filter)
+        return await controller.get_alerts(session, filter)
 
 
 @router.get("/{alert_id}")
-def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
+async def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
     """
     ## Get alert with parameter ID.
 
@@ -47,11 +47,11 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
         - endDateTime
     """
     with req.app.state.db.session() as session:
-        return controller.get_alert(session, alert_id)
+        return await controller.get_alert(session, alert_id)
 
 
 @router.post("/")
-def post_alert(req: Request, alert_model: Alert) -> Dict[str, str]:
+async def post_alert(req: Request, alert_model: Alert) -> Dict[str, str]:
     """
     ## Create new alert.
 
@@ -60,13 +60,15 @@ def post_alert(req: Request, alert_model: Alert) -> Dict[str, str]:
     **:return:** *"OK"* message
     """
     with req.app.state.db.session() as session:
-        controller.create_alert(session, alert_model)
+        await controller.create_alert(session, alert_model)
 
     return {"message": "OK"}
 
 
 @router.put("/{alert_id}")
-def update_alert(req: Request, alert_id: int, alert_model: Alert) -> Dict[str, str]:
+async def update_alert(
+    req: Request, alert_id: int, alert_model: Alert
+) -> Dict[str, str]:
     """
     ## Update existing alert of parameter ID.
 
@@ -75,13 +77,13 @@ def update_alert(req: Request, alert_id: int, alert_model: Alert) -> Dict[str, s
     **:return:** *"OK"* message
     """
     with req.app.state.db.session() as session:
-        controller.update_alert(session, alert_id, alert_model)
+        await controller.update_alert(session, alert_id, alert_model)
 
     return {"message": "OK"}
 
 
 @router.delete("/{alert_id}")
-def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
+async def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
     """
     ## Delete existing alert with parameter ID.
 
@@ -90,6 +92,6 @@ def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
     **:return:** *"OK"* message
     """
     with req.app.state.db.session() as session:
-        controller.delete_alert(session, alert_id)
+        await controller.delete_alert(session, alert_id)
 
     return {"message": "OK"}
