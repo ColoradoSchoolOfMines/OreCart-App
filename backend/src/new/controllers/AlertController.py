@@ -23,7 +23,7 @@ class AlertController:
                 # TODO Raise custom exception
                 # raise HTTPException(status_code=400, detail=f"Invalid filter {filter}")
                 pass
-            alerts = query.all()
+            alerts: List[AlertModel] = query.all()
 
         returned_alerts: List[Alert] = []
         for alert in alerts:
@@ -39,72 +39,6 @@ class AlertController:
             )
 
         return returned_alerts
-
-
-# from datetime import datetime, timezone
-# from typing import Dict, List, Optional, Union
-
-# from fastapi import APIRouter, HTTPException, Request
-# from fastapi.responses import JSONResponse
-# from pydantic import BaseModel
-# from src.model.alert import Alert
-
-# router = APIRouter(prefix="/alerts", tags=["alerts"])
-
-
-# class AlertModel(BaseModel):
-#     """
-#     A JSON model mapping
-#     for the Alert object.
-#     """
-
-#     text: str
-#     start_time: int
-#     end_time: int
-
-
-# @router.get("/")
-# def get_alerts(
-#     req: Request, filter: Optional[str] = None
-# ) -> List[Dict[str, Union[str, int]]]:
-#     """
-#     ## Get all alerts. Default returns all alerts (past, present, and future)
-
-#     **:param filter:** Optional string filter. Valid values are:
-
-#         - "active": returns active alerts
-#         - "future": returns current and future alerts
-
-#     **:return:** alerts in format
-
-#         - id
-#         - text
-#         - startDateTime
-#         - endDateTime
-#     """
-#     with req.app.state.db.session() as session:
-#         query = session.query(Alert)
-#         if filter == "active":
-#             now = datetime.now(timezone.utc)
-#             query = query.filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
-#         elif filter == "future":
-#             now = datetime.now(timezone.utc)
-#             query = query.filter(Alert.start_datetime > now)
-#         elif filter is not None:
-#             raise HTTPException(status_code=400, detail=f"Invalid filter {filter}")
-#         alerts = query.all()
-
-#     alerts_json: List[Dict[str, Union[str, int]]] = []
-#     for alert in alerts:
-#         alert_json = {
-#             "id": alert.id,
-#             "text": alert.text,
-#             "startDateTime": int(alert.start_datetime.timestamp()),
-#             "endDateTime": int(alert.end_datetime.timestamp()),
-#         }
-#         alerts_json.append(alert_json)
-
-#     return alerts_json
 
 
 # @router.get("/{alert_id}")

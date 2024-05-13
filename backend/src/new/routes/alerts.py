@@ -32,34 +32,10 @@ def get_alerts(
     """
 
     alerts_json: List[str] = []
-    for alert in AlertController.get_alerts(filter):
-        alerts_json.append(alert.model_dump_json())
+    for alert in controller.get_alerts(filter):
+        alerts_json.append(alert.json())
 
     return alerts_json
-
-    # with req.app.state.db.session() as session:
-    #     query = session.query(Alert)
-    #     if filter == "active":
-    #         now = datetime.now(timezone.utc)
-    #         query = query.filter(Alert.start_datetime <= now, Alert.end_datetime >= now)
-    #     elif filter == "future":
-    #         now = datetime.now(timezone.utc)
-    #         query = query.filter(Alert.start_datetime > now)
-    #     elif filter is not None:
-    #         raise HTTPException(status_code=400, detail=f"Invalid filter {filter}")
-    #     alerts = query.all()
-
-    # alerts_json: List[Dict[str, Union[str, int]]] = []
-    # for alert in alerts:
-    #     alert_json = {
-    #         "id": alert.id,
-    #         "text": alert.text,
-    #         "startDateTime": int(alert.start_datetime.timestamp()),
-    #         "endDateTime": int(alert.end_datetime.timestamp()),
-    #     }
-    #     alerts_json.append(alert_json)
-
-    # return alerts_json
 
 
 @router.get("/{alert_id}")
