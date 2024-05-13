@@ -52,86 +52,46 @@ def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
         - startDateTime
         - endDateTime
     """
-    with req.app.state.db.session() as session:
-        alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
-        if alert is None:
-            return JSONResponse(content={"message": "Alert not found"}, status_code=404)
-
-    alert_json: Dict[str, Union[str, int]] = {
-        "id": alert.id,
-        "text": alert.text,
-        "startDateTime": int(alert.start_datetime.timestamp()),
-        "endDateTime": int(alert.end_datetime.timestamp()),
-    }
-
-    return alert_json
+    return controller.get_alert(alert_id).json()
 
 
-# @router.post("/")
-# def post_alert(req: Request, alert_model: AlertModel) -> Dict[str, str]:
-#     """
-#     ## Create new alert.
+@router.post("/")
+def post_alert(req: Request, alert_model: Alert) -> Dict[str, str]:
+    """
+    ## Create new alert.
 
-#     **:param alert_model:** Alert model containing text, start-time, end-time
+    **:param alert_model:** Alert model containing text, start-time, end-time
 
-#     **:return:** *"OK"* message
-#     """
-#     with req.app.state.db.session() as session:
-#         dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
-#         dt_end_time = datetime.fromtimestamp(alert_model.end_time, timezone.utc)
+    **:return:** *"OK"* message
+    """
+    controller.create_alert(alert_model)
 
-#         alert = Alert(
-#             text=alert_model.text,
-#             start_datetime=dt_start_time,
-#             end_datetime=dt_end_time,
-#         )
-#         session.add(alert)
-#         session.commit()
-
-#     return {"message": "OK"}
+    return {"message": "OK"}
 
 
-# @router.put("/{alert_id}")
-# def update_alert(
-#     req: Request, alert_id: int, alert_model: AlertModel
-# ) -> Dict[str, str]:
-#     """
-#     ## Update existing alert of parameter ID.
+@router.put("/{alert_id}")
+def update_alert(req: Request, alert_id: int, alert_model: Alert) -> Dict[str, str]:
+    """
+    ## Update existing alert of parameter ID.
 
-#     **:param alert_id:** Unique integer ID
+    **:param alert_id:** Unique integer ID
 
-#     **:return:** *"OK"* message
-#     """
-#     with req.app.state.db.session() as session:
-#         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
-#         if alert is None:
-#             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
+    **:return:** *"OK"* message
+    """
+    controller.update_alert(alert_id, alert_model)
 
-#         dt_start_time = datetime.fromtimestamp(alert_model.start_time, timezone.utc)
-#         dt_end_time = datetime.fromtimestamp(alert_model.end_time, timezone.utc)
-
-#         alert.text = alert_model.text
-#         alert.start_datetime = dt_start_time
-#         alert.end_datetime = dt_end_time
-#         session.commit()
-
-#     return {"message": "OK"}
+    return {"message": "OK"}
 
 
-# @router.delete("/{alert_id}")
-# def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
-#     """
-#     ## Delete existing alert with parameter ID.
+@router.delete("/{alert_id}")
+def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
+    """
+    ## Delete existing alert with parameter ID.
 
-#     **:param alert_id:** Unique integer ID
+    **:param alert_id:** Unique integer ID
 
-#     **:return:** *"OK"* message
-#     """
-#     with req.app.state.db.session() as session:
-#         alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
-#         if alert is None:
-#             return JSONResponse(content={"message": "Alert not found"}, status_code=404)
-#         session.query(Alert).filter_by(id=alert_id).delete()
-#         session.commit()
+    **:return:** *"OK"* message
+    """
+    controller.delete_alert(alert_id)
 
-#     return {"message": "OK"}
+    return {"message": "OK"}
