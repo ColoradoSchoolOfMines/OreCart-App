@@ -1,10 +1,9 @@
 from typing import Dict, List, Optional, Union
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 
 from backend.src.new.controllers.AlertController import AlertController
-from backend.src.new.ModelException import ModelException
 from backend.src.new.models.alert import Alert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
