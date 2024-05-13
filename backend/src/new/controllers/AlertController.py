@@ -41,7 +41,7 @@ class AlertController:
 
     def get_alert(alert_id: int) -> Alert:
         with app.state.db.session() as session:
-            alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
+            alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
             if alert is None:
                 raise ModelException(message="Alert not found", error_code=404)
         return alert
@@ -61,7 +61,7 @@ class AlertController:
 
     def update_alert(alert_id: int, alert_json: Alert):
         with app.state.db.session() as session:
-            alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
+            alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
             if alert is None:
                 raise ModelException(message="Alert not found", error_code=404)
             dt_start_time = datetime.fromtimestamp(alert_json.start_time, timezone.utc)
@@ -74,8 +74,8 @@ class AlertController:
 
     def delete_alert(alert_id: int):
         with app.state.db.session() as session:
-            alert: Alert = session.query(Alert).filter_by(id=alert_id).first()
+            alert: Alert = session.query(AlertModel).filter_by(id=alert_id).first()
             if alert is None:
                 raise ModelException(message="Alert not found", error_code=404)
-            session.query(Alert).filter_by(id=alert_id).delete()
+            session.query(AlertModel).filter_by(id=alert_id).delete()
             session.commit()
