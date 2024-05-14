@@ -12,6 +12,8 @@
 
 #include "Modem.hpp"
 
+#include "../../../common/Semaphore.hpp"
+
 // Use a PIMPL struct here so we can fully hide all of the modem-specific types
 // required.
 struct Modem::ModemImpl
@@ -19,7 +21,6 @@ struct Modem::ModemImpl
     std::unique_ptr<nrf_addrinfo, decltype(&nrf_freeaddrinfo)> addr;
     int socket;
     Speed speed;
-    k_sem lock;
 };
 
 // Here's more or less the issue with the NRF modem: It uses the same antenna to
@@ -28,16 +29,13 @@ struct Modem::ModemImpl
 // requires us to make locks that we can block on until we can definitively make
 // sure we are in the correct window required to connect to LTE or GNSS. Hence,
 // this semaphore struct.
-static struct
-{
-    k_sem lte;
-    k_sem gnss;
-} modem_lock;
+Semaphore lte{0, 1};
+Semaphore gnss{0, 1};
 
 // A total window cycle will run for 5.12s, split evenly between LTE and GNSS,
 // UNLESS LTE still has data to send, in which it's window will bleed over and
 // deny GNSS connectivity for the entire window cycle.
-#define MODEM_WINDOW_SIZE K_MSEC((1 << 9) * 10)
+#define MODEM_WINDOW_SIZE ((1 << 9) * 10)
 
 static void lte_event_handler(const lte_lc_evt *const evt)
 {
@@ -49,14 +47,14 @@ static void lte_event_handler(const lte_lc_evt *const evt)
     if (evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED)
     {
         // Connected to LTE network, can't use GNSS
-        k_sem_give(&modem_lock.lte);
-        k_sem_reset(&modem_lock.gnss);
+        lte.give();
+        gnss.reset();
     }
     else
     {
-        // Disconnected from LTE network, can use GNSS
-        k_sem_give(&modem_lock.gnss);
-        k_sem_reset(&modem_lock.lte);
+        // Connected to GNSS network, can't use LTE
+        lte.reset();
+        gnss.give();
     }
 }
 
@@ -89,9 +87,9 @@ Modem::Modem(const std::string_view domain)
     }
     nrf_modem_lib_init();
 
-    // Lock initialization
-    k_sem_init(&modem_lock.lte, 0, 1);
-    k_sem_init(&modem_lock.gnss, 0, 1);
+    lte.reset();
+    gnss.reset();
+
     // lte_lc_connect_async adds a handler before connecting, so presumably so
     // can we. Assume the same for GNSS.
     lte_lc_register_handler(&lte_event_handler);
@@ -117,10 +115,12 @@ Modem::Modem(const std::string_view domain)
     std::unique_ptr<nrf_addrinfo, decltype(&nrf_freeaddrinfo)> addr{
         res, nrf_freeaddrinfo};
     const int socket = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, NRF_IPPROTO_TCP);
-    const Speed speed = Speed::NORMAL; // This will be the default socket speed.
-    k_sem lock;
-    k_sem_init(&lock, 1, 1);
-    this->data = std::make_unique<ModemImpl>(std::move(addr), socket, speed, lock);
+    if (socket < 0)
+    {
+        throw std::runtime_error("Failed to create socket, error: " +
+                                 std::to_string(socket));
+    }
+    this->data = std::make_unique<ModemImpl>(std::move(addr), socket, Speed::NORMAL);
 }
 
 Modem::~Modem()
@@ -135,7 +135,6 @@ Modem::~Modem()
 
 std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet, const Speed speed)
 {
-    k_sem_take(&data->lock, K_FOREVER);
     if (data->speed != speed)
     {
         int option;
@@ -163,15 +162,18 @@ std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet, co
         data->speed = speed;
     }
 
-    int res;
     // Block until our LTE window is available. We shouldn't need to wait longer
     // than the entire window size.
-    res = k_sem_take(&modem_lock.lte, MODEM_WINDOW_SIZE);
-    if (res != 0)
+    try
     {
-        throw std::runtime_error("Failed to obtain LTE window, error: " +
-                                 std::to_string(res));
+        lte.take(MODEM_WINDOW_SIZE);
     }
+    catch (const std::exception &e)
+    {
+        throw std::runtime_error("Failed to obtain LTE window");
+    }
+
+    int res;
     // We are on LTE now, send the packet.
     res = nrf_sendto(data->socket, packet.data(), packet.size(), 0,
                      data->addr->ai_addr, data->addr->ai_addrlen);
@@ -194,30 +196,31 @@ std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet, co
                 "Failed to recieve TCP response, error: " +
                 std::to_string(res));
         }
-        k_sem_give(&data->lock);
         return std::move(resp);
     }
 
-    k_sem_give(&data->lock);
     return {};
 }
 
 Coordinate Modem::locate() const
 {
-    int err;
-    // Block until our GNSS window is available.
-    err = k_sem_take(&modem_lock.gnss, MODEM_WINDOW_SIZE);
-    if (err != 0)
+    // First wait for the GNSS window to be available.
+    try
     {
-        throw std::runtime_error("Failed to obtain GNSS window, error: " +
-                                 std::to_string(err));
+        gnss.take(MODEM_WINDOW_SIZE);
+    }
+    catch (const std::exception &e)
+    {
+        throw std::runtime_error("Failed to obtain GNSS window");
     }
     // Then let GNSS data collect until the window is over.
-    err = k_sem_take(&modem_lock.lte, MODEM_WINDOW_SIZE);
-    if (err != 0)
+    try
     {
-        throw std::runtime_error("Failed to finish GNSS window, error: " +
-                                 std::to_string(err));
+        lte.take(MODEM_WINDOW_SIZE);
+    }
+    catch (const std::exception &e)
+    {
+        throw std::runtime_error("Failed to obtain LTE window");
     }
     // Whatever location was collected will be set to the static variable and
     // should be completely up-to-date.

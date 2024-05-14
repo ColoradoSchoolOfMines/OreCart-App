@@ -1,8 +1,9 @@
 #pragma once
 
 #include <memory>
-#include <queue>
 #include <optional>
+
+#include "../../common/Channel.hpp"
 
 #include "stack/Modem.hpp"
 #include "stack/HTTP.hpp"
@@ -22,6 +23,7 @@ private:
 
     std::shared_ptr<Modem> modem;
     std::unique_ptr<API> api;
-    std::queue<NetTask> tasks;
+
+    Channel<NetTask> tasks;
     std::optional<int> current_tracking_route_id;
 };

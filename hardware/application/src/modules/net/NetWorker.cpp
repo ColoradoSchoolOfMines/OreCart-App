@@ -10,12 +10,6 @@ void NetWorker::operate()
 {
     while (true)
     {
-        while (!tasks.empty())
-        {
-            consume(tasks.front());
-            tasks.pop();
-        }
-
         if (current_tracking_route_id.has_value())
         {
             Coordinate coordinate = modem->locate();
@@ -23,13 +17,24 @@ void NetWorker::operate()
                 .timestamp = 0,
                 .coord = coordinate};
             api->send_location(location);
+
+            // We want to ping as frequently as possible, so only consume one task every
+            // location ping (if we even have one).
+            if (!tasks.empty())
+            {
+                consume(tasks.recieve());
+            }
+        }
+        else
+        {
+            consume(tasks.recieve());
         }
     }
 }
 
 void NetWorker::add_task(NetTask task)
 {
-    tasks.push(task);
+    tasks.send(task);
 }
 
 void NetWorker::consume(NetTask task)

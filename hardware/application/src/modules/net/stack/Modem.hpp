@@ -41,6 +41,8 @@ public:
      */
     Modem(const std::string_view domain);
     ~Modem();
+    Modem(const Modem &) = delete;
+    Modem &operator=(const Modem &) = delete;
 
     /**
      * Send a packet over LTE to the server at the specified domain. Will block for at most 5 seconds
