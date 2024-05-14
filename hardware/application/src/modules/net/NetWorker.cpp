@@ -3,33 +3,26 @@
 #include <memory>
 #include <exception>
 #include <queue>
+#include <functional>
+
+#include "result/NetResult.hpp"
 
 NetWorker::NetWorker(const std::shared_ptr<Modem> modem, std::unique_ptr<API> api) : modem(modem), api(std::move(api)) {}
 
-void NetWorker::operate()
+NetResult NetWorker::step()
 {
-    while (true)
+    if (current_tracking_route_id.has_value())
     {
-        if (current_tracking_route_id.has_value())
-        {
+        // Just send locations until we need to do something else.
+        while (tasks.empty()) {
             Coordinate coordinate = modem->locate();
             Location location = {
                 .timestamp = 0,
                 .coord = coordinate};
             api->send_location(location);
-
-            // We want to ping as frequently as possible, so only consume one task every
-            // location ping (if we even have one).
-            if (!tasks.empty())
-            {
-                consume(tasks.recieve());
-            }
-        }
-        else
-        {
-            consume(tasks.recieve());
         }
     }
+    return consume(tasks.recieve());
 }
 
 void NetWorker::add_task(NetTask task)
@@ -37,15 +30,21 @@ void NetWorker::add_task(NetTask task)
     tasks.send(task);
 }
 
-void NetWorker::consume(NetTask task)
+NetResult NetWorker::consume(NetTask task)
 {
-    switch (task.type)
+    if (task.type == NetTask::Type::START_TRACKING)
     {
-    case NetTask::Type::START_TRACKING:
         api->send_route_selection(task.route_id);
         current_tracking_route_id = task.route_id;
-        break;
-    default:
-        break;
+        return NetResult::started_tracking();
+    }
+    else if (task.type == NetTask::Type::GET_ROUTES)
+    {
+        std::vector<Route> routes = api->get_routes();
+        return NetResult::got_routes(routes);
+    }
+    else
+    {
+        throw std::invalid_argument("Invalid task type");
     }
 }

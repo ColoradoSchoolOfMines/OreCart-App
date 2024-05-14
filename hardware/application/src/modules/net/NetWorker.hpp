@@ -2,6 +2,7 @@
 
 #include <memory>
 #include <optional>
+#include <functional>
 
 #include "../../common/Channel.hpp"
 
@@ -9,17 +10,18 @@
 #include "stack/HTTP.hpp"
 #include "stack/API.hpp"
 #include "task/NetTask.hpp"
+#include "result/NetResult.hpp"
 
 class NetWorker
 {
 public:
     NetWorker(const std::shared_ptr<Modem> modem, std::unique_ptr<API> api);
 
-    void operate();
+    NetResult step();
     void add_task(NetTask task);
 
 private:
-    void consume(NetTask task);
+    NetResult consume(NetTask task);
 
     std::shared_ptr<Modem> modem;
     std::unique_ptr<API> api;

@@ -2,7 +2,10 @@
 #include "stack/HTTP.hpp"
 #include "stack/API.hpp"
 #include "task/NetTask.hpp"
-#include "task/NetTaskConverter.hpp"
+#include "task/NetTaskInterface.hpp"
+#include "result/NetResult.hpp"
+#include "result/NetResultInterface.hpp"
+#include "result/NetResult.hpp"
 #include "NetWorker.hpp"
 #include <app_event_manager.h>
 
@@ -14,7 +17,9 @@ extern void net_thread(void *d0, void *d1, void *d2)
     std::shared_ptr<Modem> modem = std::make_shared<Modem>("");
     std::unique_ptr<API> api = std::make_unique<API>(modem, std::move(http), "");
     worker = new NetWorker(modem, std::move(api));
-    worker->operate();
+    while (true) {
+        NetResultInterface::send(worker->step());
+    }
     delete worker;
     worker = nullptr;
 }
