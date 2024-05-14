@@ -15,6 +15,7 @@
 class NetWorker
 {
 public:
+    NetWorker();
     NetWorker(const std::shared_ptr<Modem> modem, std::unique_ptr<API> api);
 
     NetResult step();

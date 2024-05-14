@@ -13,10 +13,7 @@ NetWorker *worker = nullptr;
 
 extern void net_thread(void *d0, void *d1, void *d2)
 {
-    std::unique_ptr<HTTP> http = std::make_unique<HTTP>();
-    std::shared_ptr<Modem> modem = std::make_shared<Modem>("");
-    std::unique_ptr<API> api = std::make_unique<API>(modem, std::move(http), "");
-    worker = new NetWorker(modem, std::move(api));
+    worker = new NetWorker();
     while (true) {
         NetResultInterface::send(worker->step());
     }
@@ -37,10 +34,10 @@ static bool net_event_handler(const app_event_header *aeh)
         return false;
     }
     std::optional<NetTask> task = NetTaskInterface::recieve(aeh);
-    if (task.has_value())
-    {
-        worker->add_task(task.value());
+    if (!task.has_value()) {
+        return false;
     }
+    worker->add_task(*task);
     return false;
 }
 

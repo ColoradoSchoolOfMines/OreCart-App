@@ -7,6 +7,15 @@
 
 #include "result/NetResult.hpp"
 
+NetWorker::NetWorker() {
+    std::unique_ptr<HTTP> http = std::make_unique<HTTP>();
+    std::shared_ptr<Modem> modem = std::make_shared<Modem>("");
+    std::unique_ptr<API> api = std::make_unique<API>(modem, std::move(http), "");
+    this->modem = modem;
+    this->api = std::move(api);
+    this->current_tracking_route_id = std::nullopt;
+}
+
 NetWorker::NetWorker(const std::shared_ptr<Modem> modem, std::unique_ptr<API> api) : modem(modem), api(std::move(api)) {}
 
 NetResult NetWorker::step()
