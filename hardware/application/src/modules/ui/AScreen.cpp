@@ -48,7 +48,7 @@ void AScreen::redraw()
     }
 }
 
-void AScreen::add_view(std::unique_ptr<IView> view)
+void AScreen::add_view(std::shared_ptr<IView> view)
 {
     views.push_back(view);
 }

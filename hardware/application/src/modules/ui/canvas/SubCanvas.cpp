@@ -9,7 +9,7 @@ Dimension SubCanvas::size() const
     return parent.size();
 }
 
-void SubCanvas::blit(uint16_t *pixels, Rect bounds) const
+void SubCanvas::blit(const uint16_t *pixels, Rect bounds) const
 {
     parent.blit(pixels, {bounds.x, bounds.y, bounds.w + adj.w, bounds.h + adj.h});
 }

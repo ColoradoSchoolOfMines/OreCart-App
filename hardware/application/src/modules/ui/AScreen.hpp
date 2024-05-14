@@ -17,10 +17,10 @@ class AScreen
 protected:
     void redraw();
     
-    void add_view(std::unique_ptr<IView> view);
+    void add_view(std::shared_ptr<IView> view);
 
 private:
     ICanvas &canvas;
     Rect drawn_area;
-    std::vector<std::unique_ptr<IView>> views;
+    std::vector<std::shared_ptr<IView>> views;
 };
