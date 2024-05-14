@@ -3,7 +3,7 @@
 #include <memory>
 #include <cstdint>
 
-#include "Rect.hpp"
+#include "Geometry.hpp"
 
 class ICanvas
 {
@@ -11,8 +11,8 @@ public:
     ICanvas() {}
     virtual ~ICanvas() {}
 
-    virtual unsigned int width() const = 0;
-    virtual unsigned int height() const = 0;
+    virtual Dimension size() const = 0;
 
-    virtual void blit(uint16_t *pixels, Rect bounds) const = 0;
+    virtual void blit(const uint16_t *pixels, Rect bounds) const = 0;
+    virtual void clear(Rect bounds) const = 0;
 };

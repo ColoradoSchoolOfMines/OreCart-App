@@ -4,27 +4,28 @@
 #include <cinttypes>
 
 #include "ICanvas.hpp"
-#include "Rect.hpp"
+#include "Geometry.hpp"
 
 template <unsigned int W, unsigned int H>
 class Glyph
 {
 public:
-    Glyph(std::array<uint16_t, W * H> arr);
+    Glyph(const std::array<uint16_t, W * H> &arr);
 
-    void draw(ICanvas &canvas, unsigned int x, unsigned int y);
+    void draw(ICanvas &canvas, unsigned int x, unsigned int y) const;
 
 private:
-    std::array<uint16_t, W * H> arr;
+    const std::array<uint16_t, W * H> &arr;
 };
 
 template <unsigned int W, unsigned int H>
-Glyph<W, H>::Glyph(std::array<uint16_t, W * H> arr) : arr(arr) {}
+Glyph<W, H>::Glyph(const std::array<uint16_t, W * H> &arr) : arr(arr) {}
 
 template <unsigned int W, unsigned int H>
-void Glyph<W, H>::draw(ICanvas &canvas, unsigned int x, unsigned int y)
+void Glyph<W, H>::draw(ICanvas &canvas, unsigned int x, unsigned int y) const
 {
-    if (x < 0 || y < 0 || x + W >= canvas.width() || y + H >= canvas.height())
+    Dimension size = canvas.size();
+    if (x < 0 || y < 0 || x + W >= size.w || y + H >= size.h)
     {
         throw std::runtime_error("Invalid blit parameters");
     }
