@@ -18,11 +18,12 @@
 #include "modules/ui/canvas/DisplayCanvas.hpp"
 #include "modules/ui/canvas/Glyph.hpp"
 #include "modules/ui/text/Text.hpp"
+#include "modules/ui/route_select/RouteSelectScreen.hpp"
 
 int main()
 {
     DisplayCanvas canvas;
-    Text text;
-    text.set_text("Welcome To OreCart!");
-    text.draw(canvas);
+    RouteSelectScreen screen(canvas);
+    screen.attach();
+    while(1){}
 }

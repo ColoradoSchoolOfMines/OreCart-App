@@ -8,11 +8,12 @@
 
 class AScreen
 {
+public:
     AScreen(ICanvas &canvas);
     virtual ~AScreen(){};
 
-    void attach();
-    void detach();
+    virtual void attach();
+    virtual void detach();
 
 protected:
     void redraw();

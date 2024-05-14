@@ -17,7 +17,7 @@ void Text::set_text(const std::string_view text)
 
 Dimension Text::measure(Dimension limits) const
 {
-    return {text.size() * 11, 11};
+    return {text.size() * 11, 20};
 }
 
 void Text::draw(ICanvas &canvas) const
@@ -29,7 +29,7 @@ void Text::draw(ICanvas &canvas) const
         {
             continue;
         }
-        const Glyph<11, 24> &glyph = FONT[c - 33];
+        const Glyph<11, 20> &glyph = FONT[c - 33];
         glyph.draw(canvas, i * 11, 0);
     }
 }

@@ -14,8 +14,9 @@ target_sources(
 
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/canvas/DisplayCanvas.cpp   
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/canvas/SubCanvas.cpp   
-    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/text/Text.cpp 
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/text/Text.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/AScreen.cpp
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/route_select/RouteSelectScreen.cpp
 
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )

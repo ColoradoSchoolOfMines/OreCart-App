@@ -30,6 +30,11 @@ def render_font_to_byte_arrays(font_path, font_size, pixel_height):
     raw_height = max_height
     scaled_width = int(pixel_height * raw_width / raw_height)
     scaled_height = pixel_height
+    adj = 4
+    cropped_height = scaled_height - adj
+
+    final_width = scaled_width
+    final_height = cropped_height
 
     for char_code in range(33, 127):
         char = chr(char_code)
@@ -38,12 +43,13 @@ def render_font_to_byte_arrays(font_path, font_size, pixel_height):
         draw = ImageDraw.Draw(image)
         draw.text((0, 0), char, font=font, fill=(255, 255, 255))
         image = image.resize((scaled_width, scaled_height))
+        image = image.crop((0, adj, scaled_width, scaled_height))
 
         char_name = unicodedata.name(char).upper().replace(" ", "_").replace("-", "_")
 
-
-        print(f"const std::array<uint16_t, {scaled_width * scaled_height}> {char_name}_DATA = {{")
-        for y in range(scaled_height):
+        image.save(f"tests/char_{char_name}.png")
+        print(f"const std::array<uint16_t, {final_width * final_height}> {char_name}_DATA = {{")
+        for y in range(cropped_height):
             print("    ", end="")
             for x in range(scaled_width):
                 r, g, b = image.getpixel((x, y))
@@ -54,12 +60,12 @@ def render_font_to_byte_arrays(font_path, font_size, pixel_height):
         print("};")
         print("")
 
-        print(f"const Glyph<{scaled_width}, {scaled_height}> {char_name} {{ {char_name}_DATA }};" )
+        print(f"const Glyph<{final_width}, {final_height}> {char_name} {{ {char_name}_DATA }};" )
         print("")
 
         names.append(char_name)
     
-    print (f"const std::array<Glyph<{scaled_width}, {scaled_height}>, {len(names)}> FONT = {{")
+    print (f"const std::array<Glyph<{final_width}, {final_height}>, {len(names)}> FONT = {{")
     for name in names:
         print(f"    {name},")
     print("};")

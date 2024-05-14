@@ -16,32 +16,40 @@ void AScreen::redraw()
 {
     Dimension bounds;
     std::vector<Dimension> sizes;
-    std::vector<IView> valid_views;
-    for (int i = 0; i < views.size(); i++)
+    std::vector<std::shared_ptr<IView>> valid_views;
+    for (size_t i = 0; i < views.size(); i++)
     {
         IView &view = *views[i];
         Dimension size = view.measure(canvas.size());
+        Dimension new_bounds = bounds;
         if (size.w > bounds.w)
         {
-            bounds.w = size.w;
+            new_bounds.w = size.w;
         }
-        bounds.h += size.h;
+        new_bounds.h += size.h;
+        if (new_bounds > canvas.size())
+        {
+            break;
+        }
+        bounds = new_bounds;
         sizes.push_back(size);
+        valid_views.push_back(views[i]);
     }
-    if (bounds > canvas.size())
-    {
-        throw std::runtime_error("AFragment::redraw: bounds exceed canvas size");
-    }
+    printf("bounds: %d %d\n", bounds.w, bounds.h);
     
     Dimension half = (canvas.size() - bounds) / 2;
-    canvas.clear(drawn_area);
+    printf("half: %d %d\n", half.w, half.h);
+    // canvas.clear(drawn_area);
     drawn_area = {half.w, half.h, bounds};
+    printf("drawn_area: %d %d %d %d\n", drawn_area.x, drawn_area.y, drawn_area.w, drawn_area.h);
+    
 
     Point pos = drawn_area.pos();
-    for (size_t i = 0; i < views.size(); i++)
+    for (size_t i = 0; i < sizes.size(); i++)
     {
+    printf("pos: %d %d\n", pos.x, pos.y);
         Dimension size = sizes[i];
-        Rect area{0, 0, size};
+        Rect area{pos, size};
         SubCanvas subcanvas{canvas, area};
         views[i]->draw(subcanvas);
         pos.y += size.h;
