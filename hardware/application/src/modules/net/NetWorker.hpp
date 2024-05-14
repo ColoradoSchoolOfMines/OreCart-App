@@ -8,7 +8,7 @@
 #include "stack/Modem.hpp"
 #include "stack/HTTP.hpp"
 #include "stack/API.hpp"
-#include "events/NetTask.h"
+#include "task/NetTask.hpp"
 
 class NetWorker
 {

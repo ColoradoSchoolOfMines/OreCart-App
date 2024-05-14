@@ -8,7 +8,9 @@ target_sources(
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/stack/API.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/stack/HTTP.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/stack/Modem.cpp
-    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/events/net_task_event.c
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/task/net_task_event.c
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/task/NetTask.cpp
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/task/NetTaskConverter.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/net_module.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/NetWorker.cpp
 

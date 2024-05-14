@@ -1,8 +1,8 @@
 #include "stack/Modem.hpp"
 #include "stack/HTTP.hpp"
 #include "stack/API.hpp"
-#include "events/net_task_event.h"
-#include "events/net_task_factory.h"
+#include "task/NetTask.hpp"
+#include "task/NetTaskConverter.hpp"
 #include "NetWorker.hpp"
 #include <app_event_manager.h>
 
@@ -31,13 +31,11 @@ static bool net_event_handler(const app_event_header *aeh)
     {
         return false;
     }
-    if (!is_net_task_event(aeh))
+    std::optional<NetTask> task = NetTaskInterface::recieve(aeh);
+    if (task.has_value())
     {
-        return false;
+        worker->add_task(task.value());
     }
-    const net_task_event *event = cast_net_task_event(aeh);
-    const NetTask task = event->net_task;
-    worker->add_task(task);
     return false;
 }
 
@@ -53,8 +51,6 @@ namespace net
 
     void begin_tracking(const int route_id)
     {
-        net_task_event *event = new_net_task_event();
-        event->net_task = net_task_begin_tracking(route_id);
-        APP_EVENT_SUBMIT(event);
+        NetTaskInterface::send(NetTask::start_tracking(route_id));
     }
 }

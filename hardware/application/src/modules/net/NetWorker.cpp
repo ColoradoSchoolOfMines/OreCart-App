@@ -41,7 +41,7 @@ void NetWorker::consume(NetTask task)
 {
     switch (task.type)
     {
-    case NetTaskType::BEGIN_TRACKING:
+    case NetTask::Type::START_TRACKING:
         api->send_route_selection(task.route_id);
         current_tracking_route_id = task.route_id;
         break;
