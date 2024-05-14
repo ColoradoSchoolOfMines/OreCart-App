@@ -1,5 +1,3 @@
-import asyncio
-
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -35,5 +33,4 @@ app.include_router(vans.router)
 @app.on_event("startup")
 def startup_event():
     init()
-
     app.state.van_tracker: VanTracker = van_tracker()
