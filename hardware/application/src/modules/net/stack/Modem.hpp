@@ -16,22 +16,6 @@
 class Modem
 {
 public:
-    /**
-     * Controls the pace in which packets will be sent over lte.
-     */
-    enum Speed
-    {
-        /**
-         * Ensure the packet is sent and a response recieved. May delay connecting to GNSS.
-         */
-        NORMAL,
-
-        /**
-         * Just yeet the packet into the void, don't even expect a response. Will ensure that
-         * connecting to GNSS will be as fast as possible.
-         */
-        YEET
-    };
 
     /**
      * Create a new and internally activate the Modem.
@@ -45,14 +29,23 @@ public:
     Modem &operator=(const Modem &) = delete;
 
     /**
-     * Send a packet over LTE to the server at the specified domain. Will block for at most 5 seconds
+     * Send a packet over LTE to the server and wait for a response. Will block for at most 5 seconds
      * until the Modem is connected to the LTE network.
-     *
+     * 
      * @param packet the packet to send
-     * @param speed the speed to send the packet
+     * @return the response from the server
      * @throws std::runtime_error if the packet was not sent
      */
-    std::optional<std::vector<char>> send(const std::vector<char> &packet, const Speed speed);
+    std::vector<char> send(const std::vector<char> &packet);
+
+    /**
+     * Yeet a packet over LTE to the server without expecting any response. Will block for at most 5 seconds
+     * until the Modem is connected to the LTE network. 
+     *
+     * @param packet the packet to send
+     * @throws std::runtime_error if the packet was not sent
+     */
+    void yeet(const std::vector<char> &packet);
 
     /**
      * Poll and then return the current location from GNSS. Will block for at most 5 seconds to ensure
@@ -65,4 +58,7 @@ public:
 private:
     struct ModemImpl;
     std::unique_ptr<ModemImpl> data;
+
+    void send_impl(const std::vector<char> &packet);
+    void recieve_impl(std::vector<char> &resp);
 };

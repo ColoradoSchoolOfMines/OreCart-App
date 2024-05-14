@@ -14,6 +14,25 @@
 
 #include "../../../common/Semaphore.hpp"
 
+/**
+ * Controls the pace in which packets will be sent over lte.
+ */
+enum Speed
+{
+    /**
+     * Ensure the packet is sent and a response recieved. May delay connecting to GNSS.
+     */
+    NORMAL,
+
+    /**
+     * Just yeet the packet into the void, don't even expect a response. Will ensure that
+     * connecting to GNSS will be as fast as possible.
+     */
+    YEET
+};
+
+#define NRF_SO_RAI 61
+
 // Use a PIMPL struct here so we can fully hide all of the modem-specific types
 // required.
 struct Modem::ModemImpl
@@ -21,6 +40,38 @@ struct Modem::ModemImpl
     std::unique_ptr<nrf_addrinfo, decltype(&nrf_freeaddrinfo)> addr;
     int socket;
     Speed speed;
+
+    void set_speed(const Speed speed)
+    {
+        if (speed == this->speed)
+        {
+            return;
+        }
+        this->speed = speed;
+        int option;
+        if (speed == Speed::YEET)
+        {
+            // This indicates that we will send just one packet of data and then
+            // disconnect, which prevents the LTE window from bleeding into the GNSS
+            // window and delaying location pinging. This allows for the fastest
+            // possible operation of the Modem.
+            option = NRF_SO_RAI_LAST;
+        }
+        else
+        {
+            // This indicates that we intend to send more data, and so the window may be
+            // extended into the GNSS window.
+            option = NRF_SO_RAI_ONGOING;
+        }
+        const int err = nrf_setsockopt(socket, NRF_SOL_SECURE, NRF_SO_RAI,
+                                       &option, sizeof(option));
+        if (err != 0)
+        {
+            throw std::runtime_error("Failed to set NRF_SO_RAI option, error: " +
+                                     std::to_string(err));
+        }
+        this->speed = speed;
+    }
 };
 
 // Here's more or less the issue with the NRF modem: It uses the same antenna to
@@ -131,37 +182,8 @@ Modem::~Modem()
     nrf_modem_lib_shutdown();
 }
 
-#define NRF_SO_RAI 61
-
-std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet, const Speed speed)
+std::vector<char> Modem::send(const std::vector<char> &packet)
 {
-    if (data->speed != speed)
-    {
-        int option;
-        if (speed == Speed::YEET)
-        {
-            // This indicates that we will send just one packet of data and then
-            // disconnect, which prevents the LTE window from bleeding into the GNSS
-            // window and delaying location pinging. This allows for the fastest
-            // possible operation of the Modem.
-            option = NRF_SO_RAI_LAST;
-        }
-        else
-        {
-            // This indicates that we intend to send more data, and so the window may be
-            // extended into the GNSS window.
-            option = NRF_SO_RAI_ONGOING;
-        }
-        const int err = nrf_setsockopt(data->socket, NRF_SOL_SECURE, NRF_SO_RAI,
-                                       &option, sizeof(option));
-        if (err != 0)
-        {
-            throw std::runtime_error("Failed to set NRF_SO_RAI option, error: " +
-                                     std::to_string(err));
-        }
-        data->speed = speed;
-    }
-
     // Block until our LTE window is available. We shouldn't need to wait longer
     // than the entire window size.
     try
@@ -173,33 +195,52 @@ std::optional<std::vector<char>> Modem::send(const std::vector<char> &packet, co
         throw std::runtime_error("Failed to obtain LTE window");
     }
 
-    int res;
-    // We are on LTE now, send the packet.
-    res = nrf_sendto(data->socket, packet.data(), packet.size(), 0,
-                     data->addr->ai_addr, data->addr->ai_addrlen);
+    data->set_speed(Speed::NORMAL);
+    send_impl(packet);
+    std::vector<char> resp(1 << 10);
+    recieve_impl(resp);
+    return resp;
+}
+
+void Modem::yeet(const std::vector<char> &packet)
+{
+    // Block until our LTE window is available. We shouldn't need to wait longer
+    // than the entire window size.
+    try
+    {
+        lte.take(MODEM_WINDOW_SIZE);
+    }
+    catch (const std::exception &e)
+    {
+        throw std::runtime_error("Failed to obtain LTE window");
+    }
+
+    data->set_speed(Speed::YEET);
+    send_impl(packet);
+}
+
+void Modem::send_impl(const std::vector<char> &packet)
+{
+    const int res = nrf_sendto(data->socket, packet.data(), packet.size(), 0,
+                               data->addr->ai_addr, data->addr->ai_addrlen);
     if (res < 0)
     {
         throw std::runtime_error(
             "Failed to send TCP packet, error: " +
             std::to_string(res));
     }
+}
 
-    if (data->speed == Speed::NORMAL)
-    {
-        // TODO: One day 1024 bytes my not actually be enough
-        std::vector<char> resp = std::vector<char>(1 << 10);
-        res = nrf_recvfrom(data->socket, resp.data(), resp.size(), 0,
+void Modem::recieve_impl(std::vector<char> &resp)
+{
+    int res = nrf_recvfrom(data->socket, resp.data(), resp.size(), 0,
                            data->addr->ai_addr, &data->addr->ai_addrlen);
-        if (res < 0)
-        {
-            throw std::runtime_error(
-                "Failed to recieve TCP response, error: " +
-                std::to_string(res));
-        }
-        return std::move(resp);
+    if (res < 0)
+    {
+        throw std::runtime_error(
+            "Failed to recieve TCP response, error: " +
+            std::to_string(res));
     }
-
-    return {};
 }
 
 Coordinate Modem::locate() const

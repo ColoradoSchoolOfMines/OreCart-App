@@ -1,6 +1,8 @@
 #include "HTTP.hpp"
 #include <sstream>
 #include <string_view>
+#include <algorithm>
+#include <string>
 
 HTTP::HTTP() {}
 
@@ -26,6 +28,37 @@ std::string_view HTTP::build_header(const std::string_view &method, const std::s
     oss << "Content-Length: " << contentLength << "\r\n";
     oss << "\r\n";
     return oss.str();
+}
+
+std::vector<char> HTTP::body(const std::vector<char> &response) const
+{
+    // Convert the response to a string
+    std::string responseStr(response.begin(), response.end());
+
+    // Find the position of the double line break that separates the header and body
+    size_t bodyStartPos = responseStr.find("\r\n\r\n");
+
+    if (bodyStartPos == std::string::npos) {
+        // Invalid response, return an empty body
+        return {};
+    }
+
+    // Extract the body from the response
+    std::vector<char> responseBody(response.begin() + bodyStartPos + 4, response.end());
+
+    // Check the status of the response
+    std::string responseHeader(response.data(), bodyStartPos);
+    std::istringstream iss(responseHeader);
+    std::string httpVersion;
+    int statusCode;
+    iss >> httpVersion >> statusCode;
+
+    if (httpVersion != "HTTP/1.1" || statusCode != 200) {
+        // Invalid status, return an empty body
+        return {};
+    }
+
+    return responseBody;
 }
 
 std::vector<char> HTTP::construct_packet(const std::string_view &header, const std::vector<char> &body) const
