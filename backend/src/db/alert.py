@@ -12,12 +12,12 @@ class AlertModel(Base):
     start_datetime: Mapped[datetime] = mapped_column(TZDateTime)
     end_datetime: Mapped[datetime] = mapped_column(TZDateTime)
 
-    routes_disabled: Mapped["Route"] = relationship(
-        back_populates="disabled_by", secondary="route_disables"
-    )
-    stops_disabled: Mapped["Stop"] = relationship(
-        back_populates="disabled_by", secondary="route_disables"
-    )
+    # routes_disabled: Mapped["Route"] = relationship(
+    #     back_populates="disabled_by", secondary="route_disables"
+    # )
+    # stops_disabled: Mapped["Stop"] = relationship(
+    #     back_populates="disabled_by", secondary="route_disables"
+    # )
 
     def __eq__(self, __value: object) -> bool:
         # Exclude ID since it'll always differ, only compare on content

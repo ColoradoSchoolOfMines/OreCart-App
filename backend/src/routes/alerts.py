@@ -30,7 +30,7 @@ async def get_alerts(
     """
     session_maker = make_session()
 
-    with session_maker as session:
+    async with session_maker() as session:
         return await controller.get_alerts(session, filter)
 
 
