@@ -55,6 +55,14 @@ public:
      */
     Coordinate locate() const;
 
+
+    /**
+     * Get a per-sim identifier for this modem. Usefor for higher layers in the stack.
+     * 
+     * @return the identifier
+     */
+    std::string_view id() const;
+
 private:
     struct ModemImpl;
     std::unique_ptr<ModemImpl> data;

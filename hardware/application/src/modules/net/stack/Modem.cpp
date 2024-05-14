@@ -4,8 +4,10 @@
 #include <vector>
 #include <optional>
 
+#include <modem/modem_info.h>
 #include <modem/lte_lc.h>
 #include <modem/nrf_modem_lib.h>
+#include <modem/pdn.h>
 #include <nrf_modem.h>
 #include <nrf_modem_gnss.h>
 #include <nrf_socket.h>
@@ -266,4 +268,16 @@ Coordinate Modem::locate() const
     // Whatever location was collected will be set to the static variable and
     // should be completely up-to-date.
     return location;
+}
+
+std::string_view Modem::id() const
+{
+    char *iccid_str = new char[23];
+    int res = modem_info_string_get(MODEM_INFO_ICCID, iccid_str, 23);
+    if (res < 0)
+    {
+        throw std::runtime_error("Failed to get ICCID, error: " +
+                                 std::to_string(res));
+    }
+    return std::string_view(iccid_str);
 }

@@ -6,11 +6,12 @@
 #include <functional>
 
 #include "result/NetResult.hpp"
+#include "../../Config.hpp"
 
 NetWorker::NetWorker() {
     std::unique_ptr<HTTP> http = std::make_unique<HTTP>();
-    std::shared_ptr<Modem> modem = std::make_shared<Modem>("");
-    std::unique_ptr<API> api = std::make_unique<API>(modem, std::move(http), "");
+    std::shared_ptr<Modem> modem = std::make_shared<Modem>(DOMAIN);
+    std::unique_ptr<API> api = std::make_unique<API>(modem, std::move(http), modem->id());
     this->modem = modem;
     this->api = std::move(api);
     this->current_tracking_route_id = std::nullopt;
