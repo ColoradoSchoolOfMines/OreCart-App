@@ -29,7 +29,6 @@ async def get_alerts(
         - endDateTime
     """
     session_maker = make_session()
-
     async with session_maker() as session:
         return await controller.get_alerts(session, filter)
 
@@ -48,7 +47,8 @@ async def get_alert(req: Request, alert_id: int) -> Dict[str, Union[str, int]]:
         - startDateTime
         - endDateTime
     """
-    with req.app.state.db.session() as session:
+    session_maker = make_session()
+    async with session_maker() as session:
         return await controller.get_alert(session, alert_id)
 
 
@@ -61,7 +61,8 @@ async def post_alert(req: Request, alert_model: Alert) -> Dict[str, str]:
 
     **:return:** *"OK"* message
     """
-    with req.app.state.db.session() as session:
+    session_maker = make_session()
+    async with session_maker() as session:
         await controller.create_alert(session, alert_model)
 
     return {"message": "OK"}
@@ -78,7 +79,8 @@ async def update_alert(
 
     **:return:** *"OK"* message
     """
-    with req.app.state.db.session() as session:
+    session_maker = make_session()
+    async with session_maker() as session:
         await controller.update_alert(session, alert_id, alert_model)
 
     return {"message": "OK"}
@@ -93,7 +95,8 @@ async def delete_alert(req: Request, alert_id: int) -> Dict[str, str]:
 
     **:return:** *"OK"* message
     """
-    with req.app.state.db.session() as session:
+    session_maker = make_session()
+    async with session_maker() as session:
         await controller.delete_alert(session, alert_id)
 
     return {"message": "OK"}
