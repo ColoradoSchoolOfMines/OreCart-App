@@ -8,7 +8,7 @@
 # from typing import Optional
 
 
-# class ADARequest(Base):
+# class ADARequestModel(Base):
 #     __tablename__ = "ada_requests"
 #     id: Mapped[int] = mapped_column(
 #         primary_key=True, autoincrement=True
@@ -24,7 +24,7 @@
 #     def __eq__(self, __value: object) -> bool:
 #         # Exclude ID since it'll always differ, only compare on content
 #         return (
-#             isinstance(__value, ADARequest)
+#             isinstance(__value, ADARequestModel)
 #             and self.pickup_spot == __value.pickup_spot
 #             and self.pickup_time == __value.pickup_time
 #             and self.wheelchair == __value.wheelchair

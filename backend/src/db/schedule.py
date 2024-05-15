@@ -6,7 +6,7 @@
 # from src.model.types import TZDateTime
 
 
-# class Schedule(Base):
+# class ScheduleModel(Base):
 #     __tablename__ = "schedules"
 #     __table_args__ = (
 #         ForeignKeyConstraint(["route_id"], ["routes.id"]),
@@ -23,7 +23,7 @@
 #     def __eq__(self, __value: object) -> bool:
 #         # Exclude ID since it'll always differ, only compare on content
 #         return (
-#             isinstance(__value, Schedule)
+#             isinstance(__value, ScheduleModel)
 #             and self.route_id == __value.route_id
 #             and self.dow == __value.dow
 #             and self.start_time == __value.start_time

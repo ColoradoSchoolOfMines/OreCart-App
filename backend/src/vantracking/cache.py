@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from src.model.stop import Stop
+from src.db.stop import StopModel
 from src.vantracking.location import Location
 
 
@@ -10,7 +10,7 @@ class VanStateCache(ABC):
         pass
 
     @abstractmethod
-    def add(self, van_id: int, stops: list[Stop]):
+    def add(self, van_id: int, stops: list[StopModel]):
         """
         Add a new van state to the cache tied to the van ID. The stop list will be used for time
         estimates, so it should be in the exact order the van will visit each stop. The van state
@@ -32,7 +32,7 @@ class VanStateCache(ABC):
         """
 
     @abstractmethod
-    def get_stops(self, van_id: int) -> list[Stop]:
+    def get_stops(self, van_id: int) -> list[StopModel]:
         """
         Get the current stop list tied to the van ID (if it exists). Should throw an exception if
         the van state does not exist.

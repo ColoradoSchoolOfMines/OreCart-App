@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from math import cos, radians, sqrt
 from typing import Optional
 
-from src.model.stop import Stop
+from src.db.stop import StopModel
 from src.vantracking.cache import VanStateCache
 from src.vantracking.coordinate import Coordinate
 from src.vantracking.location import Location
@@ -26,7 +26,7 @@ class VanTracker:
     def __contains__(self, van_id: int):
         return van_id in self.cache
 
-    def init_van(self, van_id: int, stops: list[Stop]):
+    def init_van(self, van_id: int, stops: list[StopModel]):
         """
         Initialize a van state tied to the van ID. The stop list will be used for time estimates, so it should be in the
         exact order the van will visit each stop. The van state must be consistently updated with push_location or it

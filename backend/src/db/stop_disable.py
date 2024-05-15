@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from src.db.base import Base
 
 
-class StopDisable(Base):
+class StopDisableModel(Base):
     __tablename__ = "stop_disables"
     id: Mapped[int] = mapped_column(
         primary_key=True, autoincrement=True, nullable=False
@@ -14,7 +14,7 @@ class StopDisable(Base):
     def __eq__(self, __value: object) -> bool:
         # Exclude ID since it'll always differ, only compare on content
         return (
-            isinstance(__value, StopDisable)
+            isinstance(__value, StopDisableModel)
             and self.alert_id == __value.alert_id
             and self.stop_id == __value.stop_id
         )

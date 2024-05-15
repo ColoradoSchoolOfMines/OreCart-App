@@ -3,7 +3,7 @@ from collections import deque
 from typing import Any, Optional
 
 from cachetools import FIFOCache
-from src.model.stop import Stop
+from src.db.stop import StopModel
 from src.vantracking.cache import VanStateCache
 from src.vantracking.cachetools.ttl import TTL
 from src.vantracking.cachetools.ttlqueue import TTLQueue
@@ -31,7 +31,7 @@ class CachetoolsVanStateCache(VanStateCache):
     def __contains__(self, van_id: int):
         return van_id in self.cache
 
-    def add(self, van_id: int, stops: list[Stop]):
+    def add(self, van_id: int, stops: list[StopModel]):
         # Remove van states that haven't been updated in a while while we can safely mutate
         # the cache.
         self.__expire()
@@ -61,7 +61,7 @@ class CachetoolsVanStateCache(VanStateCache):
         # This van state is still being updated by something, so we should extend its lifespan.
         entry.refresh()
 
-    def get_stops(self, van_id: int) -> list[Stop]:
+    def get_stops(self, van_id: int) -> list[StopModel]:
         entry = self.cache.get(van_id)
         if entry is None:
             raise KeyError("Van state does not exist")

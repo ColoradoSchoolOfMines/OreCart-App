@@ -7,18 +7,17 @@ from src.db.base import Base
 from src.model.types import TZDateTime
 
 
-class VanLocation(Base):
+class VanLocationModel(Base):
     __tablename__ = "van_location"
 
     id: Mapped[int] = mapped_column(
-        primary_key=True, autoincrement=True, 
+        primary_key=True,
+        autoincrement=True,
     )
     created_at: Mapped[datetime] = mapped_column(
         TZDateTime, server_default=func.now()  # pylint: disable=all
     )
-    session_id: Mapped[int] = mapped_column(
-        ForeignKey("van_tracker_session.id")
-    )
+    session_id: Mapped[int] = mapped_column(ForeignKey("van_tracker_session.id"))
     lat: Mapped[float] = mapped_column()
     lon: Mapped[float] = mapped_column()
 
@@ -26,7 +25,7 @@ class VanLocation(Base):
 
     def __eq__(self, other: object) -> bool:
         return (
-            isinstance(other, VanLocation)
+            isinstance(other, VanLocationModel)
             and self.created_at == other.created_at
             and self.session_id == other.session_id
             and self.lat == other.lat
