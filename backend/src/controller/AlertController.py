@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from typing import List, Optional
 
@@ -17,11 +18,34 @@ class NotFoundException(Exception):
         self.id = id
 
 
-class AlertControllerImpl:
-    pass
+class AlertController(ABC):
+    @abstractmethod
+    async def get_alerts(
+        self, session: AsyncSession, filter: Optional[str] = None
+    ) -> List[Alert]:
+        pass
+
+    @abstractmethod
+    async def get_alert(self, session: AsyncSession, alert_id: int) -> Alert:
+        pass
+
+    @abstractmethod
+    async def create_alert(self, session: AsyncSession, alert: Alert):
+        pass
+
+    @abstractmethod
+    async def update_alert(self, session: AsyncSession, alert_id: int, alert: Alert):
+        pass
+
+    @abstractmethod
+    async def delete_alert(self, session: AsyncSession, alert_id: int):
+        pass
 
 
-class AlertController:
+class AlertControllerImpl(AlertController):
+    # def get_alert_controller(self) -> AlertControllerImpl:
+    #     return AlertControllerImpl()
+
     async def get_alerts(
         self, session: AsyncSession, filter: Optional[str] = None
     ) -> List[Alert]:
