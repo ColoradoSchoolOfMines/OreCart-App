@@ -17,6 +17,10 @@ class NotFoundException(Exception):
         self.id = id
 
 
+class AlertControllerImpl:
+    pass
+
+
 class AlertController:
     async def get_alerts(
         self, session: AsyncSession, filter: Optional[str] = None

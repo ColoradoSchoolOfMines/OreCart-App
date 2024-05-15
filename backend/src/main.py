@@ -7,7 +7,6 @@ from src.db.base import init
 from .hardware import HardwareExceptionMiddleware
 from .routes import alerts
 from .vantracking.factory import van_tracker
-from .vantracking.tracker import VanTracker
 
 load_dotenv()
 
@@ -33,4 +32,4 @@ app.include_router(alerts.router)
 @app.on_event("startup")
 def startup_event():
     init()
-    app.state.van_tracker: VanTracker = van_tracker()
+    app.state.van_tracker = van_tracker()
