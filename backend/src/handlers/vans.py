@@ -8,7 +8,8 @@ from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
 from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
-from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
+from src.hardware import (HardwareErrorCode, HardwareHTTPException,
+                          HardwareOKResponse)
 from src.model.route import Route
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
@@ -17,26 +18,6 @@ from src.request import process_include
 from src.vantracking.coordinate import Coordinate
 from src.vantracking.location import Location
 from starlette.responses import Response
-
-
-class VanModel(BaseModel):
-    """
-    A model for the request body to make a new van or update a van
-    """
-
-    route_id: int
-    guid: str
-
-
-class VanLocation(BaseModel):
-    """
-    A model for the request body to make a new van or update a van
-    """
-
-    timestamp: datetime
-    latitude: float
-    longitude: float
-
 
 router = APIRouter(prefix="/vans", tags=["vans"])
 
