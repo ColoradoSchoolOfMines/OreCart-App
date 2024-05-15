@@ -10,12 +10,17 @@ Text::~Text()
 {
 }
 
+std::string_view Text::get_text() const
+{
+    return text;
+}
+
 void Text::set_text(const std::string_view text)
 {
     this->text = text;
 }
 
-Dimension Text::measure(Dimension limits) const
+Dimension Text::measure(Dimension limits)
 {
     return {text.size() * 11, 20};
 }

@@ -1,3 +1,3 @@
 #pragma once
 
-#define DOMAIN "example.com"
+#define DOMAIN "orecart-stub.onrender.com"

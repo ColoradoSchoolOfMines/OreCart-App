@@ -9,6 +9,6 @@ public:
     IView() {}
     virtual ~IView(){};
 
-    virtual Dimension measure(Dimension limits) const = 0;
+    virtual Dimension measure(Dimension limits) = 0;
     virtual void draw(ICanvas &canvas) const = 0;
 };

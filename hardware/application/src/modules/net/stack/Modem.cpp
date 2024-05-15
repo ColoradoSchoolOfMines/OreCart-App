@@ -134,40 +134,50 @@ static void gnss_event_handler(int event)
 Modem::Modem(const std::string_view domain)
 {
     // Modem library initialization.
+    printf("NRF init");
     if (nrf_modem_is_initialized())
     {
         throw std::logic_error("Only one Modem can exist at a time");
     }
     nrf_modem_lib_init();
 
+    printf("Reset locks");
     lte.reset();
     gnss.reset();
 
     // lte_lc_connect_async adds a handler before connecting, so presumably so
     // can we. Assume the same for GNSS.
+    printf("Handlers");
     lte_lc_register_handler(&lte_event_handler);
     nrf_modem_gnss_event_handler_set(&gnss_event_handler);
 
     // LTE & GNSS initialization
+    printf("Connect");
     lte_lc_connect();
     lte_lc_func_mode_set(LTE_LC_FUNC_MODE_ACTIVATE_LTE);
     lte_lc_func_mode_set(LTE_LC_FUNC_MODE_ACTIVATE_GNSS);
 
     // Domain resolution
+    printf("Domain");
     const nrf_addrinfo hints{.ai_family = NRF_AF_INET,
                              .ai_socktype = NRF_SOCK_STREAM};
     nrf_addrinfo *res;
+    printf("Made domain");
     const int err = nrf_getaddrinfo(domain.data(), nullptr, &hints, &res);
+    printf("Domain good %d\n", errno);
     if (err != 0)
     {
+        printf("Threw domain error!");
         throw std::runtime_error("Failed to resolve domain address, error: " +
                                  std::to_string(err));
     }
 
     // Socket and data initialization.
+    printf("Socket init");
     std::unique_ptr<nrf_addrinfo, decltype(&nrf_freeaddrinfo)> addr{
         res, nrf_freeaddrinfo};
     const int socket = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, NRF_IPPROTO_TCP);
+    printf("errno: %d\n", errno);
     if (socket < 0)
     {
         throw std::runtime_error("Failed to create socket, error: " +
