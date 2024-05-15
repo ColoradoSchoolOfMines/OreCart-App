@@ -22,6 +22,13 @@ void RectShape::set_size(Dimension size)
 
 void RectShape::draw(ICanvas &canvas, unsigned int x, unsigned int y) const
 {
+    if (size.w == 0 || size.h == 0) {
+        return;
+    }
+    if (x < 0 || y < 0 || x + size.w > canvas.size().w || y + size.h > canvas.size().h) {
+        throw std::runtime_error("Invalid draw parameters");
+    }
+
     canvas.blit(ones.data(), {x, y, size.w, stroke});
     canvas.blit(ones.data(), { x, y, stroke, size.h});
     canvas.blit(ones.data(), { x + size.w - stroke, y, stroke, size.h});
