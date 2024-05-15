@@ -31,7 +31,7 @@ DisplayCanvas::DisplayCanvas()
     {
         throw std::runtime_error("Failed to turn off display blanking");
     }
-    
+
     display_capabilities capabilities;
     display_get_capabilities(display, &capabilities);
     
