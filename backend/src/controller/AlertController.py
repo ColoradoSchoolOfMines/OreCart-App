@@ -33,28 +33,34 @@ class AlertController:
         elif filter is not None:
             raise InvalidFilterException(name=filter)
 
-        result = await session.scalars(query)
-        alerts: List[AlertModel] = result.all()
-
+        alerts: List[AlertModel] = (await session.scalars(query)).all()
         returned_alerts: List[Alert] = []
         for alert in alerts:
             returned_alerts.append(
                 Alert(
                     id=alert.id,
                     text=alert.text,
-                    startDateTime=int(alert.start_datetime.timestamp()),
-                    endDateTime=int(alert.end_datetime.timestamp()),
-                )
+                    start_time=int(alert.start_datetime.timestamp()),
+                    end_time=int(alert.end_datetime.timestamp()),
+                ).model_dump()
             )
 
         return returned_alerts
 
     async def get_alert(self, session: AsyncSession, alert_id: int) -> Alert:
         query = select(AlertModel).filter_by(id=alert_id)
-        alert: Alert = await session.execute(query).first()
+        alert: Alert = (await session.scalars(query)).first()
         if alert is None:
             raise NotFoundException(id=alert_id)
-        return alert
+
+        alertModel: AlertModel = Alert(
+            id=alert.id,
+            text=alert.text,
+            start_time=int(alert.start_datetime.timestamp()),
+            end_time=int(alert.end_datetime.timestamp()),
+        ).model_dump()
+
+        return alertModel
 
     async def create_alert(self, session: AsyncSession, alert: Alert):
         dt_start_time = datetime.fromtimestamp(alert.start_time, timezone.utc)
