@@ -56,7 +56,9 @@ void SelectGroup::draw(ICanvas &canvas) const {
     Point pos = {0, 0};
     for (size_t i = 0; i < sizes.size(); i++) {
         const Dimension &size = sizes[i];
-        SubCanvas sub_canvas(canvas, {pos.x, pos.y, size.w, size.h});
+        Dimension half_bounds = (canvas.size() - size) / 2;
+        Rect area{pos.x + half_bounds.w, pos.y, size};
+        SubCanvas sub_canvas(canvas, area);
         options[i].draw(sub_canvas);
         pos.y += size.h;
     }

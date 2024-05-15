@@ -6,7 +6,7 @@ SubCanvas::~SubCanvas(){};
 
 Dimension SubCanvas::size() const
 {
-    return parent.size();
+    return adj.size();
 }
 
 void SubCanvas::blit(const uint16_t *pixels, Rect bounds) const

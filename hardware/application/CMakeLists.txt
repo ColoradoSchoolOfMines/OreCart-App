@@ -23,6 +23,7 @@ target_sources(
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/text/Text.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/select/Select.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/select/SelectGroup.cpp
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/spacer/Spacer.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/AScreen.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/route_select/RouteSelectScreen.cpp
 

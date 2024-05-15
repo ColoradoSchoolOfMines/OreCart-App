@@ -37,19 +37,16 @@ void AScreen::redraw()
     }
     printf("bounds: %d %d\n", bounds.w, bounds.h);
     
-    Dimension half = (canvas.size() - bounds) / 2;
-    printf("half: %d %d\n", half.w, half.h);
-    // canvas.clear(drawn_area);
-    drawn_area = {half.w, half.h, bounds};
-    printf("drawn_area: %d %d %d %d\n", drawn_area.x, drawn_area.y, drawn_area.w, drawn_area.h);
-    
+    Dimension half_canvas = (canvas.size() - bounds) / 2;
+    canvas.clear(drawn_area);
+    drawn_area = {half_canvas.w, half_canvas.h, bounds};
 
     Point pos = drawn_area.pos();
     for (size_t i = 0; i < sizes.size(); i++)
     {
-    printf("pos: %d %d\n", pos.x, pos.y);
         Dimension size = sizes[i];
-        Rect area{pos, size};
+        Dimension half_bounds = (bounds - size) / 2;
+        Rect area{pos.x + half_bounds.w, pos.y, size};
         SubCanvas subcanvas{canvas, area};
         views[i]->draw(subcanvas);
         pos.y += size.h;
