@@ -4,24 +4,23 @@
 	};
 
     aliases {
-        leftbutton = &button0;
-        rightbutton = &button1;
-
+        downbutton = &button0;
+        upbutton = &button1;
         selectbutton = &button2;
     };
 
     buttons {
         compatible = "gpio-keys";
         button0: button_0 {
-            gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
-            label = "Left Button";
+            gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+            label = "Down Button";
         };
         button1: button_1 {
-            gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
-            label = "Right Button";
+            gpios = <&gpio0 3 GPIO_ACTIVE_HIGH>;
+            label = "Up Button";
         };
         button2: button_2 {
-            gpios = <&gpio0 2 GPIO_ACTIVE_HIGH>;
+            gpios = <&gpio0 4 GPIO_ACTIVE_HIGH>;
             label = "Select Button";
         };
     };
