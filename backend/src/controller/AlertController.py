@@ -43,9 +43,6 @@ class AlertController(ABC):
 
 
 class AlertControllerImpl(AlertController):
-    # def get_alert_controller(self) -> AlertControllerImpl:
-    #     return AlertControllerImpl()
-
     async def get_alerts(
         self, session: AsyncSession, filter: Optional[str] = None
     ) -> List[Alert]:
@@ -123,3 +120,7 @@ class AlertControllerImpl(AlertController):
         if alert is None:
             raise NotFoundException(id=alert_id)
         await session.execute(delete(AlertModel).where(id=alert_id))
+
+
+def get_alert_controller() -> AlertControllerImpl:
+    return AlertControllerImpl()

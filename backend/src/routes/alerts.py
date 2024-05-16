@@ -1,12 +1,12 @@
 from typing import Dict, List, Optional, Union
 
 from fastapi import APIRouter, Request
-from src.controller.AlertController import AlertController
+from src.controller.AlertController import get_alert_controller
 from src.db.base import make_session
 from src.models.alert import Alert
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
-controller = AlertController()
+controller = get_alert_controller()
 
 
 @router.get("/")
