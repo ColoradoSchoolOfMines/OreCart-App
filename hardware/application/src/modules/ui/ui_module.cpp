@@ -22,7 +22,7 @@ extern void ui_thread(void *d0, void *d1, void *d2)
 
 K_THREAD_DEFINE(ui_module_thread, NET_STACK,
                 ui_thread, NULL, NULL, NULL,
-                K_LOWEST_APPLICATION_THREAD_PRIO, 0, 0);
+                K_LOWEST_APPLICATION_THREAD_PRIO, 0, K_TICKS_FOREVER);
 
 static bool ui_event_handler(const app_event_header *aeh)
 {

@@ -21,7 +21,7 @@ extern void net_thread(void *d0, void *d1, void *d2)
 
 K_THREAD_DEFINE(net_module_thread, NET_STACK,
                 net_thread, NULL, NULL, NULL,
-                K_LOWEST_APPLICATION_THREAD_PRIO, 0, 0);
+                K_LOWEST_APPLICATION_THREAD_PRIO, 0, K_TICKS_FOREVER);
 
 static bool net_event_handler(const app_event_header *aeh)
 {
