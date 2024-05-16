@@ -3,7 +3,7 @@
 
 #include "UIWorker.hpp"
 
-#include "../control/button/ButtonInterface.hpp"
+#include "../control/button/button_terminal.hpp"
 
 UIWorker *ui_worker = nullptr;
 
@@ -30,7 +30,7 @@ static bool ui_event_handler(const app_event_header *aeh)
     {
         return false;
     }
-    std::optional<Button> button = ButtonInterface::recieve(aeh);
+    std::optional<Button> button = button_terminal::recieve(aeh);
     if (button.has_value()) {
         ui_worker->add_event(UIEvent::button_pressed(*button));
     }

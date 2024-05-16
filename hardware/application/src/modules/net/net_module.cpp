@@ -1,8 +1,7 @@
 #include "task/NetTask.hpp"
-#include "task/NetTaskInterface.hpp"
+#include "task/net_task_terminal.hpp"
 #include "result/NetResult.hpp"
-#include "result/NetResultInterface.hpp"
-#include "result/NetResult.hpp"
+#include "result/net_result_terminal.hpp"
 #include "NetWorker.hpp"
 #include <app_event_manager.h>
 
@@ -12,7 +11,7 @@ extern void net_thread(void *d0, void *d1, void *d2)
 {
     net_worker = new NetWorker();
     while (true) {
-        NetResultInterface::send(net_worker->step());
+        net_result_terminal::send(net_worker->step());
     }
     delete net_worker;
     net_worker = nullptr;
@@ -30,7 +29,7 @@ static bool net_event_handler(const app_event_header *aeh)
     {
         return false;
     }
-    std::optional<NetTask> task = NetTaskInterface::recieve(aeh);
+    std::optional<NetTask> task = net_task_terminal::recieve(aeh);
     if (!task.has_value()) {
         return false;
     }
@@ -50,6 +49,6 @@ namespace net
 
     void begin_tracking(const int route_id)
     {
-        NetTaskInterface::send(NetTask::start_tracking(route_id));
+        net_task_terminal::send(NetTask::start_tracking(route_id));
     }
 }

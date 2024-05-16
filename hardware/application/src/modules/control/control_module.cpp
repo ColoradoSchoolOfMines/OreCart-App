@@ -4,7 +4,7 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/gpio.h>
 
-#include "button/ButtonInterface.hpp"
+#include "button/button_terminal.hpp"
 
 #define DOWN_BTN_NODE	DT_ALIAS(downbutton)
 #define UP_BTN_NODE  DT_ALIAS(upbutton)
@@ -34,17 +34,17 @@ bool debounce(uint32_t &debounce) {
 
 void button_down_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
     if (!debounce(down_debounce)) return;
-    ButtonInterface::send(Button::DOWN);
+    button_terminal::send(Button::DOWN);
 }
 
 void button_up_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
     if (!debounce(up_debounce)) return;
-    ButtonInterface::send(Button::UP);
+    button_terminal::send(Button::UP);
 }
 
 void button_select_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
     if (!debounce(select_debounce)) return;
-    ButtonInterface::send(Button::SELECT);
+    button_terminal::send(Button::SELECT);
 }
 
 static int config_btn(const gpio_dt_spec* btn) {

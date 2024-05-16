@@ -1,6 +1,6 @@
-#include "NetResultInterface.hpp"
+#include "net_result_terminal.hpp"
 
-void NetResultInterface::send(const NetResult &result) {
+void net_result_terminal::send(const NetResult &result) {
     size_t size = result.routes.size() * sizeof(Route);
     net_result_event *event = new_net_result_event(size);
     switch (result.type) {
@@ -18,7 +18,7 @@ void NetResultInterface::send(const NetResult &result) {
 }
 
 
-std::optional<NetResult> NetResultInterface::recieve(const app_event_header *aeh) {
+std::optional<NetResult> net_result_terminal::recieve(const app_event_header *aeh) {
     if (!is_net_result_event(aeh))
     {
         return std::nullopt;

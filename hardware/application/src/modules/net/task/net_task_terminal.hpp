@@ -5,7 +5,7 @@
 
 #include <optional>
 
-namespace NetTaskInterface {
+namespace net_task_terminal {
     void send(const NetTask &task);
 
     std::optional<NetTask> recieve(const app_event_header *aeh);

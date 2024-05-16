@@ -1,13 +1,13 @@
-#include "ButtonInterface.hpp"
+#include "button_terminal.hpp"
 
-void ButtonInterface::send(const Button &button) {
+void button_terminal::send(const Button &button) {
     button_event *event = new_button_event();
     event->button = button;
     APP_EVENT_SUBMIT(event);
 }
 
 
-std::optional<Button> ButtonInterface::recieve(const app_event_header *aeh) {
+std::optional<Button> button_terminal::recieve(const app_event_header *aeh) {
     if (!is_button_event(aeh))
     {
         return std::nullopt;
