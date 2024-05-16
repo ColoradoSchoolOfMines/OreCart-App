@@ -6,16 +6,16 @@
 #include "NetWorker.hpp"
 #include <app_event_manager.h>
 
-NetWorker *worker = nullptr;
+NetWorker *net_worker = nullptr;
 
 extern void net_thread(void *d0, void *d1, void *d2)
 {
-    worker = new NetWorker();
+    net_worker = new NetWorker();
     while (true) {
-        NetResultInterface::send(worker->step());
+        NetResultInterface::send(net_worker->step());
     }
-    delete worker;
-    worker = nullptr;
+    delete net_worker;
+    net_worker = nullptr;
 }
 
 #define NET_STACK 1024
@@ -26,7 +26,7 @@ K_THREAD_DEFINE(net_module_thread, NET_STACK,
 
 static bool net_event_handler(const app_event_header *aeh)
 {
-    if (worker == nullptr)
+    if (net_worker == nullptr)
     {
         return false;
     }
@@ -34,7 +34,7 @@ static bool net_event_handler(const app_event_header *aeh)
     if (!task.has_value()) {
         return false;
     }
-    worker->add_task(*task);
+    net_worker->add_task(*task);
     return false;
 }
 

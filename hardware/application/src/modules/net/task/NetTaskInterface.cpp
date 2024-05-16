@@ -1,6 +1,6 @@
 #include "NetTaskInterface.hpp"
 
-void ButtonInterface::send(const NetTask &task) {
+void NetTaskInterface::send(const NetTask &task) {
     net_task_event *event = new_net_task_event();
     switch (task.type) {
         case NetTask::Type::GET_ROUTES:
@@ -17,7 +17,7 @@ void ButtonInterface::send(const NetTask &task) {
 }
 
 
-std::optional<NetTask> ButtonInterface::recieve(const app_event_header *aeh) {
+std::optional<NetTask> NetTaskInterface::recieve(const app_event_header *aeh) {
     if (!is_net_task_event(aeh))
     {
         return std::nullopt;
