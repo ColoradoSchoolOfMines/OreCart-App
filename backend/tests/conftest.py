@@ -3,9 +3,7 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-from pydantic import BaseModel
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from src.db.base import Base
 
 
@@ -21,9 +19,9 @@ class MockRouteArgs:
 
 @pytest.fixture
 def mock_session():
-    engine = create_engine("sqlite:///:memory:")
+    engine = create_async_engine("sqlite:///:memory:")
     Base.metadata.create_all(engine)
-    Session = sessionmaker(bind=engine)
+    Session = async_sessionmaker(bind=engine)
     return Session()
 
 

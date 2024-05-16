@@ -3,15 +3,11 @@ from unittest.mock import MagicMock
 
 import pytest
 from fastapi import HTTPException
-from src.handlers.alert import (
-    AlertModel,
-    delete_alert,
-    get_alert,
-    get_alerts,
-    post_alert,
-    update_alert,
-)
-from src.model.alert import Alert
+from src.controller.AlertController import get_alert_controller
+from src.db.alert import AlertModel
+from src.models.alert import Alert
+
+controller = get_alert_controller()
 
 
 @pytest.fixture
