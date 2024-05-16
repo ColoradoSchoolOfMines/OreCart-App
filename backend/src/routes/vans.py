@@ -1,15 +1,13 @@
 import asyncio
-import json
 import struct
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Set, Union
 
 from fastapi import APIRouter, HTTPException, Query, Request, WebSocket
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse, StreamingResponse
-from pydantic import BaseModel
-from src.hardware import (HardwareErrorCode, HardwareHTTPException,
-                          HardwareOKResponse)
+from fastapi.responses import JSONResponse, Response
+from src.controller.VanController import VanController
+from src.db.base import make_session
+from src.hardware import HardwareErrorCode, HardwareHTTPException, HardwareOKResponse
 from src.model.route import Route
 from src.model.route_stop import RouteStop
 from src.model.stop import Stop
@@ -17,9 +15,9 @@ from src.model.van import Van
 from src.request import process_include
 from src.vantracking.coordinate import Coordinate
 from src.vantracking.location import Location
-from starlette.responses import Response
 
 router = APIRouter(prefix="/vans", tags=["vans"])
+vanController = VanController()
 
 INCLUDE_LOCATION = "location"
 INCLUDES: Set[str] = {
@@ -28,9 +26,11 @@ INCLUDES: Set[str] = {
 
 
 @router.get("/")
-def get_vans(
+async def get_vans(
     req: Request, include: Union[List[str], None] = Query(default=None)
-) -> JSONResponse:
+) -> (
+    JSONResponse
+):  # TODO does this need to return a JSONResponse or do we need to type this?
     """
     ## Get all vans.
 
@@ -44,29 +44,9 @@ def get_vans(
         - routeId
         - guid
     """
-    include_set = process_include(include=include, allowed=INCLUDES)
-    with req.app.state.db.session() as session:
-        vans: List[Van] = session.query(Van).order_by(Van.id).all()
-
-        last_id = vans[0].id if vans else None
-        resp: List[Dict[str, Optional[Union[int, float, str]]]] = []
-        for van in vans:
-            if last_id is not None:
-                gap = van.id - last_id
-                for i in range(1, gap):
-                    resp.append(
-                        {"id": last_id + i, "routeId": van.route_id, "guid": "16161616"}
-                    )
-            resp.append(
-                {
-                    "id": van.id,
-                    "routeId": van.route_id,
-                    "guid": van.guid,
-                }
-            )
-            last_id = van.id
-
-    return JSONResponse(content=resp)
+    session_maker = make_session()
+    async with session_maker() as session:
+        return await vanController.get_vans(session)
 
 
 @router.get("/{van_id}")

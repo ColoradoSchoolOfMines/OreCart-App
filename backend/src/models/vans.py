@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class VanModel(BaseModel):
+class Van(BaseModel):
     """
     A model for the request body to make a new van or update a van
     """
