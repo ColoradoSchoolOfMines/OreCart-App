@@ -6,7 +6,7 @@
 #include <optional>
 
 namespace ButtonInterface {
-    static void send(const Button &button);
+    void send(const Button &button);
 
-    static std::optional<Button> recieve(const app_event_header *aeh);
+    std::optional<Button> recieve(const app_event_header *aeh);
 }

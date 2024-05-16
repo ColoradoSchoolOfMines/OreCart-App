@@ -14,8 +14,8 @@ target_sources(
     # app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/result/net_result_event.c
     # app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/result/NetResult.cpp
     # app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/result/NetResultInterface.cpp
-    # app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/net_module.cpp
     # app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/NetWorker.cpp
+    # app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/net/net_module.cpp
     
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/control/button/button_event.c
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/control/button/ButtonInterface.cpp
@@ -28,8 +28,11 @@ target_sources(
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/select/Select.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/select/SelectGroup.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/spacer/Spacer.cpp
-    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/AScreen.cpp
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/screen/AScreen.cpp
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/route_select/RouteSelectScreen.cpp
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/event/UIEvent.cpp
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/UIWorker.cpp
+    app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/modules/ui/ui_module.cpp
 
     app PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
 )

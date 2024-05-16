@@ -2,9 +2,11 @@
 
 #include <vector>
 
-#include "IView.hpp"
-#include "canvas/ICanvas.hpp"
-#include "canvas/SubCanvas.hpp"
+#include "../IView.hpp"
+#include "../canvas/ICanvas.hpp"
+#include "../canvas/SubCanvas.hpp"
+
+#include "../../control/button/Button.hpp"
 
 class AScreen
 {
@@ -14,6 +16,8 @@ public:
 
     virtual void attach();
     virtual void detach();
+
+    virtual void on_button(Button &button);
 
 protected:
     void redraw();

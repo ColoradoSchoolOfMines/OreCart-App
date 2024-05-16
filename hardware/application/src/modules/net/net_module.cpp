@@ -1,6 +1,3 @@
-#include "stack/Modem.hpp"
-#include "stack/HTTP.hpp"
-#include "stack/API.hpp"
 #include "task/NetTask.hpp"
 #include "task/NetTaskInterface.hpp"
 #include "result/NetResult.hpp"

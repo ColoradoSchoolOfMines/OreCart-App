@@ -12,6 +12,11 @@ void AScreen::detach()
     canvas.clear(drawn_area);
 }
 
+void AScreen::on_button(Button &button)
+{
+    // Do nothing
+}
+
 void AScreen::redraw()
 {
     Dimension bounds;

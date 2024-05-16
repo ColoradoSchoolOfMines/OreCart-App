@@ -6,41 +6,55 @@
 
 #include "button/ButtonInterface.hpp"
 
-#define LEFT_BTN_NODE	DT_ALIAS(leftbutton)
-#define RIGHT_BTN_NODE  DT_ALIAS(rightbutton)
-#define CENTER_BTN_NODE DT_ALIAS(centerbutton)
+#define DOWN_BTN_NODE	DT_ALIAS(downbutton)
+#define UP_BTN_NODE  DT_ALIAS(upbutton)
+#define SELECT_BTN_NODE DT_ALIAS(selectbutton)
 
-static const struct gpio_dt_spec left_btn = GPIO_DT_SPEC_GET_OR(LEFT_BTN_NODE, gpios, {0});
-static const struct gpio_dt_spec right_btn = GPIO_DT_SPEC_GET_OR(RIGHT_BTN_NODE, gpios, {0});
-static const struct gpio_dt_spec center_btn = GPIO_DT_SPEC_GET_OR(CENTER_BTN_NODE, gpios, {0});
+static const struct gpio_dt_spec down_btn = GPIO_DT_SPEC_GET_OR(DOWN_BTN_NODE, gpios, {0});
+static const struct gpio_dt_spec up_btn = GPIO_DT_SPEC_GET_OR(UP_BTN_NODE, gpios, {0});
+static const struct gpio_dt_spec select_btn = GPIO_DT_SPEC_GET_OR(SELECT_BTN_NODE, gpios, {0});
 
-static struct gpio_callback left_button_cb_data;
-static struct gpio_callback right_button_cb_data;
-static struct gpio_callback center_button_cb_data;
-static int _config_btn(const gpio_dt_spec* btn);
+static struct gpio_callback down_button_cb_data;
+static struct gpio_callback up_button_cb_data;
+static struct gpio_callback select_button_cb_data;
 
-void button_left_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-    ButtonInterface::send(Button::LEFT);
+
+static int _config_btn(const gpio_dt_spec* btn) {
+    int ret = gpio_pin_configure_dt(btn, GPIO_INPUT);
+    if (ret) return ret;
+	ret &= gpio_pin_interrupt_configure_dt(btn, GPIO_INT_EDGE_TO_ACTIVE);
+	if (ret) return ret;
+    return 0;
 }
 
-void button_right_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-    ButtonInterface::send(Button::RIGHT);
+void button_down_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
+    printk("Down button pressed\n");
+    ButtonInterface::send(Button::DOWN);
 }
 
-void button_center_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-    ButtonInterface::send(Button::CENTER);
+void button_up_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
+    printk("Up button pressed\n");
+    ButtonInterface::send(Button::UP);
+}
+
+void button_select_pressed(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
+    printk("Select button pressed\n");
+    ButtonInterface::send(Button::SELECT);
 }
 
 void control::start() {
-    _config_btn(&left_btn);
-    gpio_init_callback(&left_button_cb_data, button_left_pressed, BIT(left_btn.pin));
-	gpio_add_callback(left_btn.port, &left_button_cb_data);
+    printk("Down pin: %d\n", down_btn.pin);
+    printk("Up pin: %d\n", up_btn.pin);
+    printk("Select pin: %d\n", select_btn.pin);
+    _config_btn(&down_btn);
+    gpio_init_callback(&down_button_cb_data, button_down_pressed, BIT(down_btn.pin));
+	gpio_add_callback(down_btn.port, &down_button_cb_data);
 
-    _config_btn(&right_btn);
-    gpio_init_callback(&right_button_cb_data, button_right_pressed, BIT(right_btn.pin));
-	gpio_add_callback(right_btn.port, &right_button_cb_data);
+    _config_btn(&up_btn);
+    gpio_init_callback(&up_button_cb_data, button_up_pressed, BIT(up_btn.pin));
+	gpio_add_callback(up_btn.port, &up_button_cb_data);
 
-    _config_btn(&center_btn);
-    gpio_init_callback(&center_button_cb_data, button_center_pressed, BIT(center_btn.pin));
-	gpio_add_callback(center_btn.port, &center_button_cb_data);
+    _config_btn(&select_btn);
+    gpio_init_callback(&select_button_cb_data, button_select_pressed, BIT(select_btn.pin));
+	gpio_add_callback(select_btn.port, &select_button_cb_data);
 }
