@@ -1,26 +1,31 @@
 from datetime import datetime, timezone
-from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
-from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from fastapi import Request
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from src.db.base import Base
 
 
 class MockRouteArgs:
     def __init__(
         self,
-        req,
-        session,
+        req: Request,
+        session: AsyncSession,
     ) -> None:
         self.req = req
         self.session = session
 
 
 @pytest.fixture
-def mock_session():
-    engine = create_async_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+async def mock_session():
+    engine = create_async_engine("sqlite+aiosqlite:///:memory:")
+
+    # https://stackoverflow.com/questions/68230481/sqlalchemy-attributeerror-asyncengine-object-has-no-attribute-run-ddl-visit
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
     Session = async_sessionmaker(bind=engine)
     return Session()
 
