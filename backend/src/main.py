@@ -3,8 +3,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from src.db.base import init
 
+from .db import DBWrapper
+from .handlers import ada, alert, analytics, routes, stops, vans
+
 # from .handlers import ada, ridership, routes, stops, vans
 from .hardware import HardwareExceptionMiddleware
+from .model.van_tracker_session import VanTrackerSession
 from .routes import alerts
 from .vantracking.factory import van_tracker
 
@@ -33,3 +37,9 @@ app.include_router(alerts.router)
 def startup_event():
     init()
     app.state.van_tracker = van_tracker()
+    app.state.db = DBWrapper()
+    with app.state.db.session() as session:
+        tracker_sessions = session.query(VanTrackerSession).all()
+        for tracker_session in tracker_sessions:
+            tracker_session.dead = True
+        session.commit()

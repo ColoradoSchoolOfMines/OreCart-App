@@ -1,8 +1,8 @@
-"""create waypoints table
+"""create van location table
 
-Revision ID: 233206860d70
-Revises: 87f033493d8b
-Create Date: 2023-10-04 17:35:37.020567
+Revision ID: 3282eafd6bb4
+Revises: 43451376c0bf
+Create Date: 2024-03-11 14:23:32.098485
 
 """
 
@@ -12,31 +12,32 @@ import sqlalchemy as sa
 from alembic import op
 
 # revision identifiers, used by Alembic.
-revision: str = "233206860d70"
-down_revision: Union[str, None] = "87f033493d8b"
+revision: str = "3282eafd6bb4"
+down_revision: Union[str, None] = "43451376c0bf"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
     op.create_table(
-        "waypoints",
+        "van_location",
         sa.Column("id", sa.Integer, primary_key=True),
         sa.Column(
-            "route_id",
-            sa.Integer,
-            sa.ForeignKey("routes.id", ondelete="CASCADE"),
+            "created_at",
+            sa.DateTime,
             nullable=False,
+            server_default=sa.func.now(),  # pylint: disable=all
         ),
+        sa.Column("session_id", sa.Integer, nullable=False),
         sa.Column("lat", sa.Float, nullable=False),
         sa.Column("lon", sa.Float, nullable=False),
-        sa.UniqueConstraint("route_id", "lat", "lon"),
+        sa.ForeignKeyConstraint(["session_id"], ["van_tracker_session.id"]),
     )
 
 
 def downgrade() -> None:
     op.execute(
         """
-        DROP TABLE IF EXISTS public.waypoints;
+        DROP TABLE van_location CASCADE;
     """
     )

@@ -4,7 +4,7 @@ from sqlalchemy import ForeignKey, ForeignKeyConstraint, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from src.db.base import Base
-from src.model.types import TZDateTime
+from src.db.types import TZDateTime
 
 
 class VanLocationModel(Base):
