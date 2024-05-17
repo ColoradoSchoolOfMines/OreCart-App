@@ -7,7 +7,6 @@
 #include <modem/modem_info.h>
 #include <modem/lte_lc.h>
 #include <modem/nrf_modem_lib.h>
-#include <modem/pdn.h>
 #include <nrf_modem.h>
 #include <nrf_modem_gnss.h>
 #include <nrf_socket.h>
