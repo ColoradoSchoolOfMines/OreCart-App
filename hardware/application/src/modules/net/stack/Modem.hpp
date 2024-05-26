@@ -69,4 +69,5 @@ private:
 
     void send_impl(const std::vector<char> &packet);
     void recieve_impl(std::vector<char> &resp);
+    void connect();
 };

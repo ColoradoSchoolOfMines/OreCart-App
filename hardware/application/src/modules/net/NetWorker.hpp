@@ -16,17 +16,15 @@ class NetWorker
 {
 public:
     NetWorker();
-    NetWorker(const std::shared_ptr<Modem> modem, std::unique_ptr<API> api);
-
+    
     NetResult step();
     void add_task(NetTask task);
 
 private:
+    Channel<NetTask> tasks;
     NetResult consume(NetTask task);
 
-    std::shared_ptr<Modem> modem;
-    std::unique_ptr<API> api;
-
-    Channel<NetTask> tasks;
-    std::optional<int> current_tracking_route_id;
+    struct Connection;
+    std::unique_ptr<Connection> connect();
+    std::optional<std::unique_ptr<Connection>> conn;
 };
