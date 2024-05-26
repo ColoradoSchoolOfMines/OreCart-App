@@ -11,7 +11,10 @@ public:
 
     void attach() final override;
     void on_button(Button &button) final override;
+    void on_net_result(NetResult &result) final override;
 
 private:
     std::shared_ptr<SelectGroup> route_options;
+    std::shared_ptr<Text> loading;
+    std::vector<Route> routes;
 };

@@ -17,6 +17,11 @@ void AScreen::on_button(Button &button)
     // Do nothing
 }
 
+void AScreen::on_net_result(NetResult &result)
+{
+    // Do nothing
+}
+
 void AScreen::redraw()
 {
     Dimension bounds;
@@ -61,4 +66,9 @@ void AScreen::redraw()
 void AScreen::add_view(std::shared_ptr<IView> view)
 {
     views.push_back(view);
+}
+
+void AScreen::remove_view(std::shared_ptr<IView> view)
+{
+    views.erase(std::remove(views.begin(), views.end(), view), views.end());
 }

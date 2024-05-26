@@ -7,6 +7,7 @@
 #include "../canvas/SubCanvas.hpp"
 
 #include "../../control/button/Button.hpp"
+#include "../../net/result/NetResult.hpp"
 
 class AScreen
 {
@@ -18,6 +19,7 @@ public:
     virtual void detach();
 
     virtual void on_button(Button &button);
+    virtual void on_net_result(NetResult &result);
 
 protected:
     void redraw();
