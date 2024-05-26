@@ -13,7 +13,7 @@
 
 #include "Modem.hpp"
 
-#include "../../../common/Channel.hpp"
+#include "../../../common/Semaphore.hpp"
 
 /**
  * Controls the pace in which packets will be sent over lte.
@@ -75,13 +75,8 @@ struct Modem::ModemImpl
     }
 };
 
-Channel<Coordinate> gps_pings;
-
-// A total window cycle will run for 5.12s, split evenly between LTE and GNSS,
-// UNLESS LTE still has data to send, in which it's window will bleed over and
-// deny GNSS connectivity for the entire window cycle.
-#define MODEM_WINDOW_SIZE ((1 << 9) * 10)
-
+Coordinate location;
+Semaphore gnss_lock;
 
 static nrf_modem_gnss_pvt_data_frame pvt;
 
@@ -98,10 +93,12 @@ static void gnss_event_handler(int event)
         // We aren't in the GNSS window, do nothing
         return;
     }
-    Coordinate location;
+    if (gnss_lock.count() == 0)
+    {
+        gnss_lock.give();
+    }
     location.latitude = pvt.latitude;
     location.longitude = pvt.longitude;
-    gps_pings.send(location);
 }
 
 Modem::Modem(const std::string_view domain)
@@ -225,11 +222,13 @@ void Modem::recieve_impl(std::vector<char> &resp)
 
 Coordinate Modem::locate() const
 {
-    Coordinate location = gps_pings.recieve();
-    while (gps_pings.empty())
-    {
-        location = gps_pings.recieve();
+    try {
+        gnss_lock.take(1000);
+    } catch (const std::runtime_error &e) {
+        // GNSS lock failed, we can't get a location
+        throw std::runtime_error("Failed to get GNSS lock, error: " + e.what());
     }
+    return location;
 }
 
 std::string_view Modem::id() const
