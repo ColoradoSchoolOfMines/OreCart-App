@@ -19,6 +19,9 @@ struct NetWorker::Connection
 NetWorker::NetWorker() {
 }
 
+NetWorker::~NetWorker() {
+}
+
 NetResult NetWorker::step()
 {
     if (!conn.has_value())

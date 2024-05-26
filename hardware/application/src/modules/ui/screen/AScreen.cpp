@@ -67,8 +67,3 @@ void AScreen::add_view(std::shared_ptr<IView> view)
 {
     views.push_back(view);
 }
-
-void AScreen::remove_view(std::shared_ptr<IView> view)
-{
-    views.erase(std::remove(views.begin(), views.end(), view), views.end());
-}

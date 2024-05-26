@@ -51,4 +51,9 @@ namespace net
     {
         net_task_terminal::send(NetTask::start_tracking(route_id));
     }
+
+    void get_routes()
+    {
+        net_task_terminal::send(NetTask::get_routes());
+    }
 }

@@ -4,6 +4,7 @@
 #include "UIWorker.hpp"
 
 #include "../control/button/button_terminal.hpp"
+#include "../net/result/net_result_terminal.hpp"
 
 UIWorker *ui_worker = nullptr;
 
@@ -33,6 +34,10 @@ static bool ui_event_handler(const app_event_header *aeh)
     std::optional<Button> button = button_terminal::recieve(aeh);
     if (button.has_value()) {
         ui_worker->add_event(UIEvent::button_pressed(*button));
+    }
+    std::optional<NetResult> result = net_result_terminal::recieve(aeh);
+    if (result.has_value()) {
+        ui_worker->add_event(UIEvent::net_result(*result));
     }
     return false;
 }

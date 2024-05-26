@@ -16,6 +16,7 @@ class NetWorker
 {
 public:
     NetWorker();
+    ~NetWorker();
     
     NetResult step();
     void add_task(NetTask task);
