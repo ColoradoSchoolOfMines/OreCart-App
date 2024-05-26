@@ -6,20 +6,16 @@
 // #include "modules/ui/canvas/DisplayCanvas.hpp"
 #include "modules/control/control_module.hpp"
 #include "modules/ui/ui_module.hpp"
-#include "modules/net/stack/Modem.hpp"
+#include "modules/net/net_module.hpp"
 
 #include "Config.hpp"
 
 int main()
 {
-    try {
-        Modem modem { DOMAIN };
-    } catch (std::runtime_error &e) {
-        printf("Modem");
-    }
+    net::start();
     control::start();
     ui::start();
     while (1) {
-        k_sleep(K_MSEC(1000));
+        k_sleep(K_FOREVER);
     }
 }
