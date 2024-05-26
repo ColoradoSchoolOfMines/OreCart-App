@@ -13,7 +13,7 @@
 
 #include "Modem.hpp"
 
-#include "../../../common/Semaphore.hpp"
+#include "../../../common/Channel.hpp"
 
 /**
  * Controls the pace in which packets will be sent over lte.
@@ -75,43 +75,15 @@ struct Modem::ModemImpl
     }
 };
 
-// Here's more or less the issue with the NRF modem: It uses the same antenna to
-// connect GNSS and connect to LTE, which requires it to alternate between the
-// two services in periods we call "windows" for simplicity. This in turn
-// requires us to make locks that we can block on until we can definitively make
-// sure we are in the correct window required to connect to LTE or GNSS. Hence,
-// this semaphore struct.
-Semaphore lte{0, 1};
-Semaphore gnss{0, 1};
+Channel<Coordinate> gps_pings;
 
 // A total window cycle will run for 5.12s, split evenly between LTE and GNSS,
 // UNLESS LTE still has data to send, in which it's window will bleed over and
 // deny GNSS connectivity for the entire window cycle.
 #define MODEM_WINDOW_SIZE ((1 << 9) * 10)
 
-static void lte_event_handler(const lte_lc_evt *const evt)
-{
-    if (evt->type != LTE_LC_EVT_RRC_UPDATE)
-    {
-        // Not a LTE window update, ignore
-        return;
-    }
-    if (evt->rrc_mode == LTE_LC_RRC_MODE_CONNECTED)
-    {
-        // Connected to LTE network, can't use GNSS
-        lte.give();
-        gnss.reset();
-    }
-    else
-    {
-        // Connected to GNSS network, can't use LTE
-        lte.reset();
-        gnss.give();
-    }
-}
 
 static nrf_modem_gnss_pvt_data_frame pvt;
-static Coordinate location;
 
 static void gnss_event_handler(int event)
 {
@@ -126,8 +98,10 @@ static void gnss_event_handler(int event)
         // We aren't in the GNSS window, do nothing
         return;
     }
+    Coordinate location;
     location.latitude = pvt.latitude;
     location.longitude = pvt.longitude;
+    gps_pings.send(location);
 }
 
 Modem::Modem(const std::string_view domain)
@@ -146,12 +120,8 @@ Modem::Modem(const std::string_view domain)
                                  std::to_string(err));
     }
 
-    lte.reset();
-    gnss.reset();
-
     // lte_lc_connect_async adds a handler before connecting, so presumably so
     // can we. Assume the same for GNSS.
-    lte_lc_register_handler(&lte_event_handler);
     nrf_modem_gnss_event_handler_set(&gnss_event_handler);
 
     // LTE & GNSS initialization
@@ -209,7 +179,6 @@ Modem::Modem(const std::string_view domain)
 
 Modem::~Modem()
 {
-    lte_lc_deregister_handler(&lte_event_handler);
     nrf_modem_gnss_event_handler_set(nullptr);
     nrf_close(data->socket);
     nrf_modem_lib_shutdown();
@@ -217,17 +186,6 @@ Modem::~Modem()
 
 std::vector<char> Modem::send(const std::vector<char> &packet)
 {
-    // Block until our LTE window is available. We shouldn't need to wait longer
-    // than the entire window size.
-    try
-    {
-        lte.take(MODEM_WINDOW_SIZE);
-    }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Failed to obtain LTE window");
-    }
-
     data->set_speed(Speed::NORMAL);
     send_impl(packet);
     std::vector<char> resp(1 << 10);
@@ -237,17 +195,6 @@ std::vector<char> Modem::send(const std::vector<char> &packet)
 
 void Modem::yeet(const std::vector<char> &packet)
 {
-    // Block until our LTE window is available. We shouldn't need to wait longer
-    // than the entire window size.
-    try
-    {
-        lte.take(MODEM_WINDOW_SIZE);
-    }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Failed to obtain LTE window");
-    }
-
     data->set_speed(Speed::YEET);
     send_impl(packet);
 }
@@ -278,27 +225,11 @@ void Modem::recieve_impl(std::vector<char> &resp)
 
 Coordinate Modem::locate() const
 {
-    // First wait for the GNSS window to be available.
-    try
+    Coordinate location = gps_pings.recieve();
+    while (gps_pings.empty())
     {
-        gnss.take(MODEM_WINDOW_SIZE);
+        location = gps_pings.recieve();
     }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Failed to obtain GNSS window");
-    }
-    // Then let GNSS data collect until the window is over.
-    try
-    {
-        lte.take(MODEM_WINDOW_SIZE);
-    }
-    catch (const std::exception &e)
-    {
-        throw std::runtime_error("Failed to obtain LTE window");
-    }
-    // Whatever location was collected will be set to the static variable and
-    // should be completely up-to-date.
-    return location;
 }
 
 std::string_view Modem::id() const
