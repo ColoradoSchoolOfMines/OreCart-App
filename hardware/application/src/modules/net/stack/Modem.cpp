@@ -155,7 +155,7 @@ Modem::Modem(const std::string_view domain)
     const nrf_addrinfo hints{.ai_family = NRF_AF_INET,
                              .ai_socktype = NRF_SOCK_STREAM};
     nrf_addrinfo *res;
-    err = nrf_getaddrinfo(domain.data(), nullptr, &hints, &res);
+    err = nrf_getaddrinfo(domain.data(), "80", &hints, &res);
     if (err != 0)
     {
         throw std::runtime_error("Failed to resolve domain address, error: " +
@@ -185,8 +185,10 @@ std::vector<char> Modem::send(const std::vector<char> &packet)
 {
     data->set_speed(Speed::NORMAL);
     send_impl(packet);
+
     std::vector<char> resp(1 << 10);
     recieve_impl(resp);
+
     return resp;
 }
 
@@ -198,8 +200,16 @@ void Modem::yeet(const std::vector<char> &packet)
 
 void Modem::send_impl(const std::vector<char> &packet)
 {
-    const int res = nrf_sendto(data->socket, packet.data(), packet.size(), 0,
-                               data->addr->ai_addr, data->addr->ai_addrlen);
+    int res = nrf_connect(data->socket, data->addr->ai_addr, data->addr->ai_addrlen);
+    if (res < 0)
+    {
+        throw std::runtime_error(
+            "Failed to connect to server, error: " +
+            std::to_string(res));
+    }
+
+    res = nrf_send(data->socket, packet.data(), packet.size(), 0);
+
     if (res < 0)
     {
         throw std::runtime_error(
@@ -210,8 +220,7 @@ void Modem::send_impl(const std::vector<char> &packet)
 
 void Modem::recieve_impl(std::vector<char> &resp)
 {
-    int res = nrf_recvfrom(data->socket, resp.data(), resp.size(), 0,
-                           data->addr->ai_addr, &data->addr->ai_addrlen);
+    int res = nrf_recv(data->socket, resp.data(), resp.size(), 0);
     if (res < 0)
     {
         throw std::runtime_error(
