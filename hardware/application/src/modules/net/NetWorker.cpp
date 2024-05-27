@@ -70,7 +70,7 @@ NetResult NetWorker::consume(NetTask task)
 
 std::unique_ptr<NetWorker::Connection> NetWorker::connect()
 {
-    std::unique_ptr<HTTP> http = std::make_unique<HTTP>();
+    std::unique_ptr<HTTP> http = std::make_unique<HTTP>(DOMAIN);
     std::shared_ptr<Modem> modem = std::make_shared<Modem>(DOMAIN);
     std::unique_ptr<API> api = std::make_unique<API>(modem, std::move(http), modem->id());
     return std::make_unique<Connection>(modem, std::move(api), std::nullopt);

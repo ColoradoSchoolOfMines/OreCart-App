@@ -4,7 +4,7 @@
 #include <algorithm>
 #include <string>
 
-HTTP::HTTP() {}
+HTTP::HTTP(const std::string_view host) : host(host) {}
 
 std::vector<char> HTTP::get(const std::string_view route, const std::vector<char> &body) const
 {
@@ -23,6 +23,7 @@ std::string_view HTTP::build_header(const std::string_view &method, const std::s
     std::ostringstream oss;
     oss << method << " " << route << " HTTP/1.1\r\n";
     oss << "Connection: close\r\n";
+    oss << "Host: " << host << "\r\n";
     oss << "User-Agent: PostManRuntime/10.24.11\r\n";
     oss << "Content-Type: application/octet-stream\r\n";
     oss << "Content-Length: " << contentLength << "\r\n";
