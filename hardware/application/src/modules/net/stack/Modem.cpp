@@ -132,7 +132,6 @@ Modem::Modem(const std::string_view domain)
     err = lte_lc_connect();
     if (err != 0)
     {
-        printf("NRF init 5 throw %d", err);
         throw std::runtime_error("Failed to connect to LTE network, error: " +
                                  std::to_string(err));
     }
@@ -168,6 +167,7 @@ Modem::Modem(const std::string_view domain)
     const int socket = nrf_socket(NRF_AF_INET, NRF_SOCK_STREAM, NRF_IPPROTO_TCP);
     if (socket < 0)
     {
+
         throw std::runtime_error("Failed to create socket, error: " +
                                  std::to_string(socket));
     }
@@ -235,7 +235,7 @@ Coordinate Modem::locate() const
         gnss_lock.take(1000);
     } catch (const std::runtime_error &e) {
         // GNSS lock failed, we can't get a location
-        throw std::runtime_error("Failed to get GNSS lock, error: " + e.what());
+        throw std::runtime_error("Failed to get GNSS lock, error: " + std::string(e.what()));
     }
     return location;
 }
