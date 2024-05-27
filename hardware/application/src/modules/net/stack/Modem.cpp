@@ -186,7 +186,7 @@ std::vector<char> Modem::send(const std::vector<char> &packet)
     data->set_speed(Speed::NORMAL);
     send_impl(packet);
 
-    std::vector<char> resp(1 << 10);
+    std::vector<char> resp;
     recieve_impl(resp);
 
     return resp;
@@ -218,15 +218,33 @@ void Modem::send_impl(const std::vector<char> &packet)
     }
 }
 
+// Tune this to the expected packet size, for our HTTP responses w/byte bodies 256 is good,
+// but you will need to change this for bigger ones with i.e HTML or JSON
+#define START_PACKET_SIZE 256
+
 void Modem::recieve_impl(std::vector<char> &resp)
 {
-    int res = nrf_recv(data->socket, resp.data(), resp.size(), 0);
-    if (res < 0)
-    {
-        throw std::runtime_error(
-            "Failed to recieve TCP response, error: " +
-            std::to_string(res));
-    }
+    int packet_size = START_PACKET_SIZE;
+    resp.resize(packet_size);
+
+    int total_bytes_received = 0;
+    int bytes_received = 0;
+
+    do {
+        bytes_received = nrf_recv(data->socket, resp.data() + total_bytes_received, packet_size - total_bytes_received, 0);
+        if (bytes_received < 0) {
+            throw std::runtime_error("Failed to receive TCP packet, error: " + std::to_string(bytes_received));
+        }
+
+        total_bytes_received += bytes_received;
+
+        if (total_bytes_received == packet_size) {
+            packet_size *= 2;
+            resp.resize(packet_size);
+        }
+    } while (bytes_received > 0);
+
+    resp.resize(total_bytes_received);
 }
 
 Coordinate Modem::locate() const
