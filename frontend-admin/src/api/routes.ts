@@ -1,6 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
-import { Route, Stop } from "../pages/routes/route-types";
-
+import { Route, Stop } from "./types";
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
 export const fetchRoutes = async () => {

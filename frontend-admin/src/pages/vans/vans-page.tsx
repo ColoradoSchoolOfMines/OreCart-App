@@ -1,8 +1,8 @@
 import { Select, Stack, Title } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
 import { fetchRoutes } from "../../api/routes.ts";
+import { Van } from "../../api/types.ts";
 import Card from "../../components/card/card.tsx";
-import { Van } from "./van-types.tsx";
 import "./vans-page.scss";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
@@ -26,8 +26,8 @@ const VanPage: React.FC = () => {
     error: routesError,
   } = useQuery({ queryKey: ["routes"], queryFn: fetchRoutes });
 
-  if (vansLoading) return <div>Loading...</div>;
-  if (vansError)
+  if (vansLoading || routesLoading) return <div>Loading...</div>;
+  if (vansError || routesError)
     return <div>An error occurred: {(vansError as Error).message}</div>;
 
   return (

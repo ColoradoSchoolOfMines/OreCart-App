@@ -2,9 +2,9 @@ import { Modal } from "@mantine/core";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
 import { clearRoutes, fetchRoutes, fetchStops, getKML } from "../../api/routes";
+import { Route, Stop } from "../../api/types";
 import Card from "../../components/card/card";
 import AddRouteForm from "./add-route-form";
-import { Route, Stop } from "./route-types";
 import "./routes-page.scss";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
