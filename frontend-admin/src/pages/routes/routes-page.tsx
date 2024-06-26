@@ -1,20 +1,13 @@
 import { Modal } from "@mantine/core";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { clearRoutes, fetchStops, getKML } from "../../api/routes";
+import { clearRoutes, fetchRoutes, fetchStops, getKML } from "../../api/routes";
 import Card from "../../components/card/card";
 import AddRouteForm from "./add-route-form";
 import { Route, Stop } from "./route-types";
 import "./routes-page.scss";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
-
-const fetchRoutes = async () => {
-  const response = await fetch(`${baseUrl}/routes/`);
-  const data = await response.json();
-  const route_data = data as Route[];
-  return route_data;
-};
 
 const RoutesPage: React.FC = () => {
   const {

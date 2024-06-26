@@ -1,7 +1,14 @@
 import { QueryClient } from "@tanstack/react-query";
-import { Stop } from "../pages/routes/route-types";
+import { Route, Stop } from "../pages/routes/route-types";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
+export const fetchRoutes = async () => {
+  const response = await fetch(`${baseUrl}/routes/`);
+  const data = await response.json();
+  const route_data = data as Route[];
+  return route_data;
+};
 
 export const getKML = async () => {
   const response = await fetch(`${baseUrl}/routes/kmlfile`);

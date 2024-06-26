@@ -1,5 +1,6 @@
-import { Stack, Title } from "@mantine/core";
+import { Select, Stack, Title } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
+import { fetchRoutes } from "../../api/routes.ts";
 import Card from "../../components/card/card.tsx";
 import { Van } from "./van-types.tsx";
 import "./vans-page.scss";
@@ -16,12 +17,18 @@ const fetchVans = async () => {
 const VanPage: React.FC = () => {
   const {
     data: vans,
-    isLoading,
-    error,
+    isLoading: vansLoading,
+    error: vansError,
   } = useQuery({ queryKey: ["vans"], queryFn: fetchVans });
+  const {
+    data: routes,
+    isLoading: routesLoading,
+    error: routesError,
+  } = useQuery({ queryKey: ["routes"], queryFn: fetchRoutes });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>An error occurred: {(error as Error).message}</div>;
+  if (vansLoading) return <div>Loading...</div>;
+  if (vansError)
+    return <div>An error occurred: {(vansError as Error).message}</div>;
 
   return (
     <main className="p-van-page">
@@ -31,6 +38,12 @@ const VanPage: React.FC = () => {
           {vans?.map((van: Van) => (
             <Card>
               <Title order={2}>Van #{van.id}</Title>
+              <Select
+                label="Assign route"
+                placeholder="Pick value"
+                value={routes?.find((route) => route.id === van.routeId)?.name}
+                data={routes?.map((route) => route.name)}
+              />
             </Card>
           ))}
         </div>
