@@ -46,7 +46,7 @@ const queryClient = new QueryClient();
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <QueryClientProvider client={queryClient}>
     <React.StrictMode>
-      <MantineProvider>
+      <MantineProvider forceColorScheme="light">
         <RouterProvider router={router} />
       </MantineProvider>
     </React.StrictMode>
