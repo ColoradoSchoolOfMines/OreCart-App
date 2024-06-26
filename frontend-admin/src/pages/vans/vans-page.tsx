@@ -1,5 +1,6 @@
-import { Paper, Stack, Title } from "@mantine/core";
+import { Stack, Title } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
+import Card from "../../components/card/card.tsx";
 import { Van } from "./van-types.tsx";
 import "./vans-page.scss";
 
@@ -28,13 +29,9 @@ const VanPage: React.FC = () => {
         <Title> Vans</Title>
         <div className="van-grid">
           {vans?.map((van: Van) => (
-            <Paper
-              p="md"
-              shadow="xs"
-              className="van-card"
-            >
+            <Card>
               <Title order={2}>Van #{van.id}</Title>
-            </Paper>
+            </Card>
           ))}
         </div>
       </Stack>

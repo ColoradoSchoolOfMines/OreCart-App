@@ -86,13 +86,16 @@ const RoutesPage: React.FC = () => {
       <div className="cards-container">
         {routes?.map((route: Route) => (
           <Card
-            title={`${route.name} (${route.id})`}
+            key={route.id}
             onClick={() => {
               setCurrentRouteId(route.id);
               setIsRouteEditModalOpen(true);
             }}
-            key={route.id}
-          ></Card>
+          >
+            <h2>
+              {route.name} {route.id}
+            </h2>
+          </Card>
         ))}
       </div>
 

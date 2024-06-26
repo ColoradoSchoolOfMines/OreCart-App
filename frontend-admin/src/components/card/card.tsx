@@ -3,21 +3,12 @@ import React from "react";
 import "./card.scss";
 
 interface CardProps {
-  title: string;
   onClick?: () => void;
   children?: React.ReactNode;
 }
-const Card: React.FC<CardProps> = ({ title, onClick, children }) => {
+const Card: React.FC<CardProps> = ({ children, onClick }) => {
   return (
-    <Paper
-      withBorder
-      onClick={onClick}
-      p="md"
-      shadow="xs"
-      className="c-card
-    "
-    >
-      <h2>{title}</h2>
+    <Paper p="md" className="c-card" onClick={onClick}>
       <div className="card-content">{children}</div>
     </Paper>
   );
