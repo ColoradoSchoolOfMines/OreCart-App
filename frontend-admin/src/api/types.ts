@@ -5,6 +5,7 @@ export interface Van {
 export interface Route {
   id: number;
   name: string;
+  color: string;
   description: string;
 }
 

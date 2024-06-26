@@ -1,8 +1,10 @@
-import { Select, Stack, Title } from "@mantine/core";
+import { ActionIcon, Stack, Title } from "@mantine/core";
+import { IconPencil } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchRoutes } from "../../api/routes.ts";
 import { Van } from "../../api/types.ts";
 import Card from "../../components/card/card.tsx";
+import { ColoredSelect } from "./ColoredSelect.tsx";
 import "./vans-page.scss";
 
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
@@ -35,15 +37,39 @@ const VanPage: React.FC = () => {
       <Stack gap="md">
         <Title> Vans</Title>
         <div className="van-grid">
-          {vans?.map((van: Van) => (
-            <Card>
-              <Title order={2}>Van #{van.id}</Title>
-              <Select
-                label="Assign route"
-                placeholder="Pick value"
-                value={routes?.find((route) => route.id === van.routeId)?.name}
-                data={routes?.map((route) => route.name)}
-              />
+          {vans?.map((van: Van, index: number) => (
+            <Card className="van-card">
+              <Title order={2}>
+                Van #{index + 1}{" "}
+                <ActionIcon
+                  variant="transparent"
+                  color="black"
+                  aria-label="Edit van settings"
+                >
+                  <IconPencil
+                    // style={{ width: "70%", height: "70%" }}
+                    stroke={1.5}
+                  />
+                </ActionIcon>
+              </Title>
+              <label>
+                Assign to
+                {routes && (
+                  <ColoredSelect
+                    // label="Assign route"
+                    // className="van-route-select"
+                    // placeholder="Pick value"
+                    value={
+                      routes.find((route) => route.id === van.routeId)?.name
+                    }
+                    data={routes.map((route) => ({
+                      name: route.name,
+                      color: route.color,
+                    }))}
+                    setValue={(val: string) => null} //TODO: Implement me lmao
+                  />
+                )}
+              </label>
             </Card>
           ))}
         </div>
@@ -51,5 +77,4 @@ const VanPage: React.FC = () => {
     </main>
   );
 };
-
 export default VanPage;
