@@ -1,6 +1,13 @@
 import { QueryClient } from "@tanstack/react-query";
-import { Route, Stop } from "./types";
+import { Route, Stop, VanStatus } from "./types";
 const baseUrl = import.meta.env.VITE_BACKEND_URL;
+
+export const getVanStatus = async () => {
+  const response = await fetch(`${baseUrl}/vans/v2`);
+  const data = await response.json() as VanStatus[];
+  return data;
+}
+
 
 export const fetchRoutes = async () => {
   const response = await fetch(`${baseUrl}/routes/`);
