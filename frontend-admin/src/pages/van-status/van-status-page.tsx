@@ -64,7 +64,7 @@ export const VanStatusPage = () => {
                       name: route.name,
                       color: route.color,
                     }))}
-                    setValue={(val: string) => null} //TODO: Implement me lmao
+                    setValue={(val: string) => val} //TODO: Implement me lmao
                   />
                 )}
               </Table.Td>

@@ -58,7 +58,7 @@ const VanPage: React.FC = () => {
                       name: route.name,
                       color: route.color,
                     }))}
-                    setValue={(val: string) => null} //TODO: Implement me lmao
+                    setValue={(val: string) => val} //TODO: Implement me lmao
                   />
                 )}
               </label>
