@@ -1,7 +1,7 @@
 import { Modal } from "@mantine/core";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { clearRoutes, fetchRoutes, fetchStops, getKML } from "../../api/routes";
+import { clearRoutes, getKML, getRoutes, getStops } from "../../api/routes";
 import { Route, Stop } from "../../api/types";
 import Card from "../../components/card/card";
 import AddRouteForm from "./add-route-form";
@@ -14,7 +14,7 @@ const RoutesPage: React.FC = () => {
     data: routes,
     isLoading,
     error,
-  } = useQuery({ queryKey: ["routes"], queryFn: fetchRoutes });
+  } = useQuery({ queryKey: ["routes"], queryFn: getRoutes });
 
   const [currentRouteId, setCurrentRouteId] = useState<number>(-1);
   const [isRouteEditModalOpen, setIsRouteEditModalOpen] =
@@ -28,7 +28,7 @@ const RoutesPage: React.FC = () => {
     error: stopsError,
   } = useQuery({
     queryKey: ["stops", currentRouteId],
-    queryFn: () => fetchStops(currentRouteId),
+    queryFn: () => getStops(currentRouteId),
   });
 
   const queryClient = useQueryClient();

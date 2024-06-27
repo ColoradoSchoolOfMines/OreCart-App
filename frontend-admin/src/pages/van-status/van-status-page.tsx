@@ -1,16 +1,8 @@
 import { Table } from "@mantine/core";
 import { useQuery } from "@tanstack/react-query";
-import { fetchRoutes, getVanStatus } from "../../api/routes";
-import { Van } from "../../api/types";
+import { getRoutes, getVanStatus, getVans } from "../../api/routes";
 import { ColoredSelect } from "../vans/ColoredSelect";
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
 
-const fetchVans = async () => {
-  const response = await fetch(`${baseUrl}/vans/`);
-  const data = await response.json();
-  const van_data = (data as Van[]) || [];
-  return van_data;
-};
 export const VanStatusPage = () => {
   const {
     data: vanStatus,
@@ -19,15 +11,14 @@ export const VanStatusPage = () => {
   } = useQuery({ queryKey: ["vansStatus"], queryFn: getVanStatus });
   const {
     data: vans,
-    isLoading: vansLoading,
-    error: vansError,
-  } = useQuery({ queryKey: ["vans"], queryFn: fetchVans });
-
+    // isLoading: vansLoading,
+    // error: vansError,
+  } = useQuery({ queryKey: ["vans"], queryFn: getVans });
   const {
     data: routes,
-    isLoading: routesLoading,
-    error: routesError,
-  } = useQuery({ queryKey: ["routes"], queryFn: fetchRoutes });
+    // isLoading: routesLoading,
+    // error: routesError,
+  } = useQuery({ queryKey: ["routes"], queryFn: getRoutes });
   if (vansStatusLoading) return <div>Loading...</div>;
   if (vansStatusError)
     return <div>An error occurred: {(vansStatusError as Error).message}</div>;
@@ -65,9 +56,6 @@ export const VanStatusPage = () => {
               <Table.Td>
                 {routes && (
                   <ColoredSelect
-                    // label="Assign route"
-                    // className="van-route-select"
-                    // placeholder="Pick value"
                     value={
                       routeMap?.get(vanMap?.get(Number(item.guid))?.routeId)
                         ?.name

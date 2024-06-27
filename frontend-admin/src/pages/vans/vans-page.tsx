@@ -1,32 +1,24 @@
 import { ActionIcon, Stack, Title } from "@mantine/core";
 import { IconPencil } from "@tabler/icons-react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchRoutes } from "../../api/routes.ts";
+import { getRoutes, getVans } from "../../api/routes.ts";
 import { Van } from "../../api/types.ts";
 import Card from "../../components/card/card.tsx";
 import { ColoredSelect } from "./ColoredSelect.tsx";
 import "./vans-page.scss";
-
-const baseUrl = import.meta.env.VITE_BACKEND_URL;
-
-const fetchVans = async () => {
-  const response = await fetch(`${baseUrl}/vans/`);
-  const data = await response.json();
-  const van_data = (data as Van[]) || [];
-  return van_data;
-};
 
 const VanPage: React.FC = () => {
   const {
     data: vans,
     isLoading: vansLoading,
     error: vansError,
-  } = useQuery({ queryKey: ["vans"], queryFn: fetchVans });
+  } = useQuery({ queryKey: ["vans"], queryFn: getVans });
+
   const {
     data: routes,
     isLoading: routesLoading,
     error: routesError,
-  } = useQuery({ queryKey: ["routes"], queryFn: fetchRoutes });
+  } = useQuery({ queryKey: ["routes"], queryFn: getRoutes });
 
   if (vansLoading || routesLoading) return <div>Loading...</div>;
   if (vansError || routesError)
