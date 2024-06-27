@@ -47,6 +47,16 @@ interface MapProps extends ViewProps {
   onStopPressed: (stop: Stop) => void;
 }
 
+interface InterpolatedLocation {
+  van: Van;
+  earlier?: Coordinate;
+  now?: Coordinate;
+  cur?: Coordinate;
+  steps: number;
+}
+
+type Locations = Record<number, InterpolatedLocation>;
+
 /**
  * A wrapper around react native {@class MapView} that provides a simplified interface for the purposes of this app.
  */
@@ -54,7 +64,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
   const mapRef = useRef<MapView>(null);
   const [followingLocation, setFollowingLocation] = useState<boolean>(true);
   const [lastLocation, setLastLocation] = useState<Coordinate | undefined>(
-    undefined,
+    undefined
   );
 
   const focus = useMapFocus();
@@ -62,6 +72,58 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
   const { data: routes } = useGetRoutesQuery();
   const { data: stops } = useGetStopsQuery();
   const { data: vans } = useVanLocations();
+
+  const [locations, setLocations] = useState<Locations>({});
+
+  useEffect(() => {
+    console.log("qwelkjhqewklj;hqwehjkeqwewq");
+    const interval = setInterval(() => {
+      console.log(":weqqweqweqewqew");
+      if (vans === undefined) {
+        return;
+      }
+      setLocations((locations) => {
+        const newLocations = { ...locations };
+        for (const van of vans) {
+          let location = newLocations[van.guid];
+          if (location === undefined) {
+            location = { van, steps: 0 };
+            newLocations[van.guid] = location;
+          }
+
+          if (location.now !== van.location) {
+            location.earlier = location.now;
+            location.now = van.location;
+            location.steps = 0;
+          }
+
+          // Interpolate between earlier and now, subdividing in intervals of
+          // 10 indexed by steps. This is to ensure that the van moves smoothly
+          // between the two points.
+          if (location.earlier !== undefined && location.now !== undefined) {
+            const dx = location.now.latitude - location.earlier.latitude;
+            const dy = location.now.longitude - location.earlier.longitude;
+            const steps = 20;
+            location.cur = {
+              latitude:
+                location.earlier.latitude + (dx / steps) * location.steps,
+              longitude:
+                location.earlier.longitude + (dy / steps) * location.steps,
+            };
+            location.steps = Math.min(location.steps + 1, steps);
+          } else {
+            location.cur = location.now;
+          }
+        }
+        console.log(newLocations);
+        return newLocations;
+      });
+    }, 100);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [vans]);
 
   function panToLocation(location: Coordinate | undefined): void {
     if (location !== undefined && mapRef.current != null) {
@@ -230,7 +292,7 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
             zIndex={2 + (isStopVisible(stop) ? 1 : 0)}
             coordinate={stop}
             // opacity={isStopVisible(stop) ? 1 : 0.25}
-            tracksViewChanges={false}
+            tracksViewChanges={true}
             anchor={{ x: 0.5, y: 0.5 }}
           >
             <View style={[styles.marker]}>
@@ -254,30 +316,33 @@ const Map = ({ insets, onStopPressed }: MapProps): React.JSX.Element => {
             </View>
           </Marker>
         ))}
-        {vans?.map((van) => (
-          <Marker
-            key={van.guid}
-            tracksViewChanges={false}
-            coordinate={van.location}
-            anchor={{ x: 0.5, y: 0.5 }}
-          >
-            <View
-              style={[
-                styles.marker,
-                {
-                  borderColor: van.color,
-                  padding: 4,
-                  borderWidth: 4,
-                },
-              ]}
-            >
-              <Image
-                style={styles.indicator}
-                source={require("../../../assets/van_indicator.png")}
-              />
-            </View>
-          </Marker>
-        ))}
+        {Object.values(locations)?.map(
+          (location) =>
+            location.cur !== undefined && (
+              <Marker
+                key={location.van.guid}
+                tracksViewChanges={true}
+                coordinate={location.cur}
+                anchor={{ x: 0.5, y: 0.5 }}
+              >
+                <View
+                  style={[
+                    styles.marker,
+                    {
+                      borderColor: location.van.color,
+                      padding: 4,
+                      borderWidth: 4,
+                    },
+                  ]}
+                >
+                  <Image
+                    style={styles.indicator}
+                    source={require("../../../assets/van_indicator.png")}
+                  />
+                </View>
+              </Marker>
+            )
+        )}
       </MapView>
       {/* Layer the location button on the map instead of displacing it. */}
       <View
