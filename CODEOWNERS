@@ -1,10 +1,10 @@
 # Leads
-* @OreCart/leads
+* @OreCode/leads
 
 # general
-backend/ @OreCart/backend @OreCart/code-reviewers
-frontend/ @OreCart/frontend @OreCart/code-reviewers
-frontend-admin/ @OreCart/frontend-admin @OreCart/code-reviewers
+backend/ @OreCode/backend @OreCode/code-reviewers
+frontend/ @OreCode/frontend @OreCode/code-reviewers
+frontend-admin/ @OreCode/frontend-admin @OreCode/code-reviewers
 
 # DevOps Things
 .github/ @tbwrigh

@@ -56,7 +56,7 @@ export const StopRouteItem = ({
             body={(arrivalEstimate: number | undefined) =>
               arrivalEstimate !== undefined ? (
                 <>
-                  Next OreCart in{" "}
+                  Next OreCode in{" "}
                   <Text style={styles.emphasis}>
                     {formatSecondsAsMinutes(arrivalEstimate)}
                   </Text>

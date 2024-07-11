@@ -26,7 +26,7 @@ const LocationPermissionPrompt = (): React.JSX.Element | null => {
   return (
     <View style={styles.container}>
       <Text style={styles.message}>
-        Allow OreCart to access your location to see nearby stops and arrival
+        Allow OreCode to access your location to see nearby stops and arrival
         estimates
       </Text>
 

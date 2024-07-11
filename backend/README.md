@@ -6,7 +6,7 @@ The backend will be used to store locations of the shuttles, serve that data to 
 
 The backend is a Python based project. It uses FastAPI, SQLAlchemy and Alembic.  
 
-The structure of the project is fairily simple. The tests are in the tests folder and the main source code is in the source folder. The database schema is defined in the alembic folder, but it should not be changed without first discussing with a member of the [OreCart/leads](https://github.com/orgs/OreCart/teams/leads) team. At that time, they will assist in updating the alembic models.
+The structure of the project is fairily simple. The tests are in the tests folder and the main source code is in the source folder. The database schema is defined in the alembic folder, but it should not be changed without first discussing with a member of the [OreCode/leads](https://github.com/orgs/OreCode/teams/leads) team. At that time, they will assist in updating the alembic models.
 
 ### Src Folder Tour
 

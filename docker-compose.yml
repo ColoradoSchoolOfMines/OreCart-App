@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   database:
-    container_name: orecart-database
+    container_name: orecode-database
     image: postgres
     restart: always
     healthcheck:
@@ -14,13 +14,13 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - orecart-db-dev-volume:/var/lib/postgresql/data
+      - orecode-db-dev-volume:/var/lib/postgresql/data
     env_file:
       - database.env
     networks:
       - dev
   migration:
-    container_name: orecart-migration
+    container_name: orecode-migration
     build: ./backend
     command: alembic upgrade head
     env_file:
@@ -31,7 +31,7 @@ services:
     networks:
       - dev
   backend:
-    container_name: orecart-backend
+    container_name: orecode-backend
     build: ./backend
     restart: always
     ports:
@@ -50,7 +50,7 @@ services:
     networks:
       - dev
   frontend-admin:
-    container_name: orecart-frontend-admin
+    container_name: orecode-frontend-admin
     build: ./frontend-admin
     restart: always
     ports:
@@ -73,4 +73,4 @@ networks:
   dev:
 
 volumes:
-  orecart-db-dev-volume: {}
+  orecode-db-dev-volume: {}

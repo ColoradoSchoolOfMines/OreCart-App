@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   database:
-    container_name: orecart-database-staging
+    container_name: orecode-database-staging
     image: postgres
     restart: always
     healthcheck:
@@ -12,13 +12,13 @@ services:
       retries: 10
       start_period: 10s
     volumes:
-      - orecart-db-volume-staging:/var/lib/postgresql/data
+      - orecode-db-volume-staging:/var/lib/postgresql/data
     env_file:
       - database.env
     networks:
       - staging
   migration:
-    container_name: orecart-migration-staging
+    container_name: orecode-migration-staging
     build: ./backend
     command: alembic upgrade head
     env_file:
@@ -29,7 +29,7 @@ services:
     networks:
       - staging
   backend:
-    container_name: orecart-backend-staging
+    container_name: orecode-backend-staging
     build: ./backend
     restart: always
     env_file:
@@ -49,4 +49,4 @@ networks:
   staging:
 
 volumes:
-  orecart-db-volume-staging: {}
+  orecode-db-volume-staging: {}

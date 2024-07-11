@@ -10,8 +10,8 @@ if (process.env.ORECART_API_SECURE === "1") {
 }
 
 module.exports = {
-  name: "OreCart",
-  slug: "orecart",
+  name: "OreCode",
+  slug: "orecode",
   version: "1.0.4",
   orientation: "portrait",
   icon: "./assets/icon.png",
@@ -24,18 +24,18 @@ module.exports = {
   assetBundlePatterns: ["**/*"],
   ios: {
     supportsTablet: true,
-    bundleIdentifier: "edu.mines.orecart.app",
+    bundleIdentifier: "edu.mines.orecode.app",
     buildNumber: "4",
     config: {
       googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY_IOS,
     },
     infoPlist: {
       NSLocationWhenInUseUsageDescription:
-        "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you.",
+        "We need to access your location while using the app in order to provide accurate time estimates for OreCodes near you.",
     },
   },
   android: {
-    package: "edu.mines.orecart.app",
+    package: "edu.mines.orecode.app",
     versionCode: 4,
     adaptiveIcon: {
       foregroundImage: "./assets/adaptive-icon.png",
@@ -60,7 +60,7 @@ module.exports = {
       "expo-location",
       {
         locationAlwaysAndWhenInUsePermission:
-          "We need to access your location while using the app in order to provide accurate time estimates for OreCarts near you.",
+          "We need to access your location while using the app in order to provide accurate time estimates for OreCodes near you.",
       },
     ],
   ],
@@ -71,5 +71,5 @@ module.exports = {
       projectId: "a3e0fe9f-6732-488e-8a42-be63d20b24f9",
     },
   },
-  owner: "orecart",
+  owner: "orecode",
 };

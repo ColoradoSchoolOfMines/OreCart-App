@@ -148,7 +148,7 @@ def get_kml(req: Request):
 
         k = kml.KML()
         ns = "{http://www.opengis.net/kml/2.2}"
-        d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCart app.")
+        d = kml.Document(ns, "3.14", "Routes", "Routes for the OreCode app.")
         k.append(d)
 
         for route in routes:

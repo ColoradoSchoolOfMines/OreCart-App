@@ -11,7 +11,7 @@
         "buildType": "apk"
       },
       "env": {
-        "ORECART_API_DOMAIN": "orecart-backend.tbwright.dev",
+        "ORECART_API_DOMAIN": "orecode-backend.tbwright.dev",
         "ORECART_API_SECURE": "1",
         "GOOGLE_MAPS_API_KEY_IOS": "KEY",
         "GOOGLE_MAPS_API_KEY_ANDROID": "KEY"
@@ -25,7 +25,7 @@
         "credentialsSource": "local"
       },
       "env": {
-        "ORECART_API_DOMAIN": "orecart-backend.tbwright.dev",
+        "ORECART_API_DOMAIN": "orecode-backend.tbwright.dev",
         "ORECART_API_SECURE": "1",
         "GOOGLE_MAPS_API_KEY_IOS": "KEY",
         "GOOGLE_MAPS_API_KEY_ANDROID": "KEY"

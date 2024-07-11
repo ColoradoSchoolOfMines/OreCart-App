@@ -72,13 +72,13 @@ You can read more about api key config in the [MapView Documentation](https://do
 You can then create a preview build with this:
 
 ```
-npx eas build -p android --local -e preview --output builds/OreCart_Preview.apk
+npx eas build -p android --local -e preview --output builds/OreCode_Preview.apk
 ```
 
 You can then create a production build with this:
 
 ```
-npx eas build -p android --local -e production --output builds/OreCart_Production.apk
+npx eas build -p android --local -e production --output builds/OreCode_Production.apk
 ```
 
 ## Building on iOS
