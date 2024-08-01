@@ -1,5 +1,7 @@
 # Ore Cart App [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
+**The OreCart Project was discontinued after Mines & The City of Golden chose to purchase a solution from an alternate vendor. Please direct any questions to Ethan.**
+
 The master monorepo for all OreCode app software! The OreCode app includes a backend made with [FastAPI](https://fastapi.tiangolo.com), an admin dashboard built with [React](https://react.dev/)/[Vite](https://v3.vitejs.dev/guide/), and a crossplatform mobile app made with [React-Native](https://reactnative.dev).
 
 For full documentation and project details, please see the Google Drive (ask leads for access) and [orecode.github.io](https://orecode.github.io). The frontend, frontend-admin, and backend folders have READMEs with more information about developing in each as well.
